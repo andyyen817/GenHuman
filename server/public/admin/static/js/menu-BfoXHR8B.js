@@ -1,0 +1,1 @@
+import{a3 as e}from"./index-CyyHvq4l.js";function n(){return e.get("/permission/Menu/getMenuList")}function t(n){return e.get("/permission/Menu/getMenuDetail",n)}function s(){return e.get("/permission/Menu/getMenuList")}function i(n){return e.post("/permission/Menu/saveMenu",n)}export{t as a,s as b,n as g,i as s};
