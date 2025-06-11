@@ -18,6 +18,10 @@ GenHuman是一款基于API的数字人产品，包括web、应用程序、微信
 
 UI界面简洁大气，功能齐全，可直接部署商用变现，开发不易，大家且行且珍惜。
 
+<br />
+
+# List of Future Plans for the Project
+
 - [x] User System Management
 
 - [x] Package recharge management
