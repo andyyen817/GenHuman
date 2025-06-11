@@ -169,7 +169,7 @@ curl -Ss https://www.workerman.net/webman/check | php
 
 ### 7、Accessing the management backend
  
->https://Your Domain/admin
+>https://YourDomain/admin
 
 >Account: admin
 
