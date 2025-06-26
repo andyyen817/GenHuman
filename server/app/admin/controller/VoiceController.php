@@ -12,6 +12,7 @@
 namespace app\admin\controller;
 
 use app\common\BaseController;
+use app\common\providers\UploadProviders;
 use app\model\Voice;
 use support\Request;
 
@@ -55,7 +56,13 @@ class VoiceController extends BaseController
             ->paginate([
                 'list_rows' => $limit,
                 'page' => $page
-            ]);
+            ])->each(function ($model) {
+                if (!empty($model->avatar)) {
+                    if (strpos($model->avatar, 'mmopen') === false) {
+                        $model->avatar = UploadProviders::url($model->avatar);
+                    }
+                }
+            });
         return $this->successData($list);
     }
 

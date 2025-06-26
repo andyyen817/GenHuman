@@ -47,10 +47,13 @@ class BillController extends BaseController
             ->paginate([
                 'list_rows' => $limit,
                 'page' => $page
-            ])->toArray();
-        foreach ($list['data'] as $key => $item) {
-            $list['data'][$key]['avatar'] = UploadProviders::url($item['avatar']);
-        }
+            ])->each(function ($model) {
+                if (!empty($model->avatar)) {
+                    if (strpos($model->avatar, 'mmopen') === false) {
+                        $model->avatar = UploadProviders::url($model->avatar);
+                    }
+                }
+            });
         return $this->successData($list);
     }
 }

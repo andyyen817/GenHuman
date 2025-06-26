@@ -9,7 +9,7 @@
             </a-space>
         </a-row>
 
-        <a-table class="gi_table" row-key="id" :data="roleList" :bordered="{ cell: true }" :loading="loading"
+        <a-table class="gi_table" row-key="id" :data="list" :bordered="{ cell: true }" :loading="loading"
             :scroll="{ x: '100%', y: '100%', minWidth: 1200 }" :pagination="pagination">
             <template #columns>
                 <a-table-column title="序号" :width="64">
@@ -66,7 +66,7 @@ const form = reactive({
 
 const {
     loading,
-    tableData: roleList,
+    tableData:list,
     pagination,
     search,
     fixed

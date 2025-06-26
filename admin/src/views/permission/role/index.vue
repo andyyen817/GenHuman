@@ -9,7 +9,7 @@
       </a-space>
     </a-row>
 
-    <a-table class="gi_table" row-key="id" :data="roleList" :bordered="{ cell: true }" :loading="loading"
+    <a-table class="gi_table" row-key="id" :data="list" :bordered="{ cell: true }" :loading="loading"
       :scroll="{ x: '100%', y: '100%', minWidth: 1200 }" :pagination="pagination"
       :row-selection="{ type: 'checkbox', showCheckedAll: true }" :selected-keys="selectedKeys" @select="select"
       @select-all="selectAll">
@@ -73,7 +73,7 @@ const form = reactive({
 
 const {
   loading,
-  tableData: roleList,
+  tableData:list,
   pagination,
   selectedKeys,
   search,

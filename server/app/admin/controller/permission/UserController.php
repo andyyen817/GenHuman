@@ -117,6 +117,9 @@ class UserController extends BaseController
         ]);
     }
 
+
+
+
     /**
      * 获取用户信息
      * @author:下次一定
@@ -139,6 +142,8 @@ class UserController extends BaseController
             'permissions' => $permissions
         ]);
     }
+
+
 
     /**
      * 获取权限菜单

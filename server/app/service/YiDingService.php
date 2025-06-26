@@ -41,7 +41,7 @@ class YiDingService
             2 => "https://api.yidevs.com/app/human/human/Voice/deepClone",
             3 => throw new \Exception('未知的音色频道'),
         };
-        $cilent = new Client();
+        $cilent = new Client(['verify' => false]);
         $response = $cilent->request('POST', $url, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->token
@@ -74,7 +74,7 @@ class YiDingService
     public function createScene($name, $video_url)
     {
         $url = 'https://api.yidevs.com/app/human/human/Scene/created';
-        $cilent = new Client();
+        $cilent = new Client(['verify' => false]);
         $webUrl = ConfigProviders::get('site', 'webUrl');
         $response = $cilent->request('POST', $url, [
             'headers' => [
@@ -111,7 +111,7 @@ class YiDingService
             2 => "https://api.yidevs.com/app/human/human/Voice/deepCreated",
             3 => throw new \Exception('未知的音色频道'),
         };
-        $cilent = new Client();
+        $cilent = new Client(['verify' => false]);
         $response = $cilent->request('POST', $url, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->token
@@ -148,7 +148,7 @@ class YiDingService
         };
 
         $url = "https://api.yidevs.com/app/human/human/Index/created";
-        $cilent = new Client();
+        $cilent = new Client(['verify' => false]);
         $webUrl = ConfigProviders::get('site', 'webUrl');
         $response = $cilent->request('POST', $url, [
             'headers' => [
@@ -181,7 +181,7 @@ class YiDingService
     public function copywrite($title, $size)
     {
         $url = "https://api.yidevs.com/app/human/human/Chat/generate";
-        $cilent = new Client();
+        $cilent = new Client(['verify' => false]);
         $response = $cilent->request('POST', $url, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->token
@@ -204,6 +204,39 @@ class YiDingService
         }
         if ($result['code'] != 200) {
             throw new \Exception($result['msg']);
+        }
+        return $result['data'];
+    }
+
+    /**
+     * 通用工具类
+     * @author:下次一定
+     * @email:1950781041@qq.com
+     * @Date:2025-06-20
+     */
+    public function yiDingUtil($type, $data)
+    {
+        $url = match ($type) {
+            'oralCopy' => 'https://api.yidevs.com/app/human/human/Chat/generate',
+            'facialFusion' => 'https://api.yidevs.com/app/human/human/Tool/facialFusion',
+            default => throw new \Exception('未知的工具类型'),
+        };
+        // $url = "https://api.yidevs.com/app/human/human/Tool/facialFusion";
+        $cilent = new Client(['verify' => false]);
+        $response = $cilent->request('POST', $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->token
+            ],
+            'json' => $data
+        ]);
+        $res = $response->getBody()->getContents();
+        Log::info('请求壹定结果' . $res);
+        $result = json_decode($res, true);
+        if (isset($result['code']) && $result['code'] != 200) {
+            throw new \Exception($result['msg']);
+        }
+        if (!is_array($result)) {
+            throw new \Exception($res);
         }
         return $result['data'];
     }

@@ -32,7 +32,6 @@ class Admin extends Model
         if (empty($value)) {
             return '';
         }
-
         if (strpos($value, 'static/logo.svg') === 0) {
             return '//' . request()->host() . '/' . $value;
         }

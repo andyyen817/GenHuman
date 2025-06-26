@@ -1,0 +1,1 @@
+const l=[{label:"口播文案",value:"oralCopy"},{label:"人脸融合",value:"facialFusion"}],a=[{label:"输入框",value:"input"},{label:"单选框",value:"radio"},{label:"多选框",value:"checkbox"},{label:"文本域",value:"textarea"}];function e(e,u="AppList"){const t=("AppList"===u?l:a).find((l=>l.value===e));return t?t.label:""}export{l as A,e as g};

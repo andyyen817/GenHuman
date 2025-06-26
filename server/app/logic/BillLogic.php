@@ -11,10 +11,8 @@
 
 namespace app\logic;
 
-use app\common\providers\ConfigProviders;
 use app\model\Bill;
 use app\model\User;
-use GuzzleHttp\Client;
 
 class BillLogic
 {

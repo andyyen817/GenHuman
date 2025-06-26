@@ -3,7 +3,7 @@
         <GiForm v-model="searchParams" search :columns="searchColumns"
             :grid-item-props="{ span: { xs: 24, sm: 12, md: 8, lg: 8, xl: 6, xxl: 6 } }" @search="search" @reset="reset">
         </GiForm>
-        <a-table class="gi_table" row-key="id" :data="roleList" :bordered="{ cell: true }" :loading="loading"
+        <a-table class="gi_table" row-key="id" :data="list" :bordered="{ cell: true }" :loading="loading"
             :scroll="{ x: '100%', y: '100%', minWidth: 1200 }" :pagination="pagination">
             <template #columns>
                 <a-table-column title="序号" :width="64">
@@ -99,7 +99,7 @@ const searchColumns = [
 ]
 const {
     loading,
-    tableData: roleList,
+    tableData:list,
     pagination,
     search,
     fixed,

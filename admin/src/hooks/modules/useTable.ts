@@ -178,7 +178,6 @@ export function useTable<T extends U, U = T>(api: Api<T>, options?: Options<T, U
       onBeforeOk: () => onDelete(true)
     })
   }
-
   // 响应式处理表格操作列固定状态
   const { breakpoint } = useBreakpoint()
   const fixed = computed(() => !['xs', 'sm'].includes(breakpoint.value) ? 'right' : undefined)

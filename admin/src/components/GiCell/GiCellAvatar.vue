@@ -1,7 +1,7 @@
 <template>
   <a-space fill>
     <a-avatar :size="24" shape="circle">
-      <img :src="props?.avatar" />
+      <img :src="props.avatar" />
     </a-avatar>
     <a-link v-if="props.isLink" @click="emit('click')">{{ props.name }}</a-link>
     <span v-else>{{ props.name }}</span>
