@@ -22,6 +22,21 @@ UI界面简洁大气，功能齐全，可直接部署商用变现，开发不易
 
 # List of Future Plans for the Project
 
+- 2025/06/26
+
+- [x] 新增手持数字人
+
+- [x] 新增人脸融合
+
+- [x] 新增AI换发型
+
+- [x] 新增老照片高清修复
+
+- [x] 修复其他已知BUG
+
+
+- 2025/06/01
+
 - [x] User System Management
 
 - [x] Package recharge management
