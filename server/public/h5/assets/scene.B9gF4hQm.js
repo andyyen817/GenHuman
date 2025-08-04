@@ -1,0 +1,1 @@
+import{K as e}from"./index-typXh9T4.js";function n(n){return e.get("Scene/getList",n)}function t(n){return e.post("Scene/addScene",n)}function r(n){return e.post("Scene/editName",n)}function c(n){return e.post("Scene/delete",n)}export{t as c,c as d,r as e,n as g};

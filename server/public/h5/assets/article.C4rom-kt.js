@@ -1,0 +1,1 @@
+import{K as t}from"./index-I9XTqCxv.js";function e(){return t.get("Article/getCategory")}function r(e){return t.get("Article/getList",e)}function i(e){return t.get("Article/getDetail",e)}export{i as a,e as b,r as g};

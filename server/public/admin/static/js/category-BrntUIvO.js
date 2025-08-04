@@ -1,0 +1,1 @@
+import{a3 as t}from"./index-CbZLgSae.js";function e(e){return t.get("/Category/getList",e)}function r(){return t.get("/Category/getOptions")}function n(e){return t.post("/Category/saveCategory",e)}function o(e){return t.get("/Category/getDetail",e)}function a(e){return t.post("/Category/delete",e)}export{o as a,r as b,a as d,e as g,n as s};

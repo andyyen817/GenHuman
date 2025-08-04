@@ -1,0 +1,1 @@
+import{K as e}from"./index-I9XTqCxv.js";function t(t){return e.get("Voice/getList",t)}function o(t){return e.post("Voice/addVoice",t)}function i(t){return e.post("Voice/editName",t)}function n(t){return e.post("Voice/delete",t)}export{o as c,n as d,i as e,t as g};

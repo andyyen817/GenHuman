@@ -1,0 +1,1 @@
+import{a3 as e}from"./index-C2oOc9l2.js";function o(o){return e.get("/permission/Role/getRoleList",o)}function s(o){return e.get("/permission/Role/getRoleDetail",o)}function t(o){return e.post("/permission/Role/saveRole",o)}function n(o){return e.post("/permission/Role/editRoleMenu",o)}export{o as a,n as e,s as g,t as s};

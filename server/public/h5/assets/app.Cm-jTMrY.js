@@ -1,0 +1,1 @@
+import{K as t}from"./index-BGeS12dv.js";function e(){return t.get("App/getList")}function n(e){return t.get("App/getDetail",e)}function r(e){return t.post("App/yiDingUtil",e)}function i(e){return t.get("Record/getList",e)}function o(e){return t.post("Record/del",e)}export{n as a,o as d,e as g,i as r,r as u};

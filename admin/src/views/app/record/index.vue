@@ -26,6 +26,9 @@
                     <template #cell="{ record }">
                         <span v-if="record.type=='oralCopy'">{{ record.result }}</span>
                         <a-image v-if="record.type=='facialFusion'"  width="60" height="60" :src="record.result"></a-image>
+                        <a-image v-if="record.type=='photoHD'"  width="60" height="60" :src="record.result"></a-image>
+                        <a-image v-if="record.type=='oldPhotoRestoration'"  width="60" height="60" :src="record.result"></a-image>
+                        <a-image v-if="record.type=='hairStyle'"  width="60" height="60" :src="record.result"></a-image>
                     </template>
                 </a-table-column>
                 <a-table-column title="状态"  align="center">

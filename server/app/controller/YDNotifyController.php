@@ -51,7 +51,7 @@ class YDNotifyController extends BaseController
                 //把图片保存到本地
                 $coverUrl = UploadProviders::saveRemoteFile($data['data']['coverUrl'], $model->uid);
                 $model->cover = $coverUrl;
-                BillLogic::Bill($request->uid, 1, $createConfig['scenePoint'], '分身克隆');
+                BillLogic::Bill($model->uid, 1, $createConfig['scenePoint'], '分身克隆');
             } else {
                 $model->status = 3;
             }
@@ -93,7 +93,7 @@ class YDNotifyController extends BaseController
                 $model->video_url = $data['data']['videoUrl'];
                 $model->duration = $data['data']['duration'];
                 $points = ceil($data['data']['duration']) * $createConfig['worksPoint'];
-                BillLogic::Bill($request->uid, 1, $points, '视频合成');
+                BillLogic::Bill($model->uid, 1, $points, '视频合成');
             } else {
                 $model->status = 3;
             }

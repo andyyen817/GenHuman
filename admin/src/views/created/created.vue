@@ -17,9 +17,6 @@
                 <a-form-item label="创建视频扣点(每秒)">
                     <a-input-number placeholder="请输入创建视频扣点" v-model="form.worksPoint" />
                 </a-form-item>
-                <a-form-item label="AI文案扣点">
-                    <a-input-number placeholder="请输入AI文案扣点" v-model="form.aiCwPoint" />
-                </a-form-item>
                 <a-form-item>
                     <a-button type="primary" @click="submit">保存</a-button>
                 </a-form-item>

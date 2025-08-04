@@ -1,0 +1,1 @@
+import{K as t}from"./index-BGeS12dv.js";function r(r){return t.post("Works/addWorks",r)}function o(r){return t.get("Works/getList",r)}function s(r){return t.post("Works/editName",r)}function e(r){return t.post("Works/delete",r)}export{r as c,e as d,s as e,o as g};

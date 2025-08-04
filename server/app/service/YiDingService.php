@@ -141,13 +141,11 @@ class YiDingService
     public function createVideo($task_id, $voice_url, $worksChannel = 1)
     {
         $url = match ((int) $worksChannel) {
-            1 => "https://api.yidevs.com/app/human/human/Index/created",
-            2 => "https://api.yidevs.com/app/human/human/Musetalk/generate",
-            3 => "https://api.yidevs.com/app/human/human/Musetalk/create",
+            1 => "https://api.yidevs.com/app/human/human/Index/created",//免费
+            2 => "https://api.yidevs.com/app/human/human/Musetalk/create",//统一
+            3 => "https://api.yidevs.com/app/human/human/Musetalk/generate",//极速
             default => throw new \Exception('未知的作品频道'),
         };
-
-        $url = "https://api.yidevs.com/app/human/human/Index/created";
         $cilent = new Client(['verify' => false]);
         $webUrl = ConfigProviders::get('site', 'webUrl');
         $response = $cilent->request('POST', $url, [
@@ -219,6 +217,9 @@ class YiDingService
         $url = match ($type) {
             'oralCopy' => 'https://api.yidevs.com/app/human/human/Chat/generate',
             'facialFusion' => 'https://api.yidevs.com/app/human/human/Tool/facialFusion',
+            'hairStyle' => 'https://api.yidevs.com/app/human/human/Tool/hairStyle',
+            'oldPhotoRestoration' => 'https://api.yidevs.com/app/human/human/Tool/oldPhotoRestoration',
+            'photoHD' => 'https://api.yidevs.com/app/human/human/Tool/photoHD',
             default => throw new \Exception('未知的工具类型'),
         };
         // $url = "https://api.yidevs.com/app/human/human/Tool/facialFusion";

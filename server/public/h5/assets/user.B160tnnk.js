@@ -1,0 +1,1 @@
+import{K as t}from"./index--fVdvEP2.js";function e(e){return t.post("User/officialLogin",e)}function r(){return t.get("User/getUserStatistics")}function s(e){return t.get("Bill/getList",e)}function i(e){return t.post("User/editUser",e)}export{s as a,i as e,r as g,e as o};

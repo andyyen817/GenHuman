@@ -37,7 +37,10 @@ class AppController extends BaseController
      */
     protected $util = [
         'oralCopy' => ['size', 'title'],
-        'facialFusion' => ['face_url', 'template_url']
+        'facialFusion' => ['face_url', 'template_url'],
+        'photoHD' => ['photo_url'],
+        'oldPhotoRestoration' => ['photo_url'],
+        'hairStyle' => ['hair_url', 'hair_type'],
     ];
 
     /**
@@ -48,7 +51,10 @@ class AppController extends BaseController
      */
     protected $immediate = [
         'oralCopy',
-        'facialFusion'
+        'facialFusion',
+        'photoHD',
+        'oldPhotoRestoration',
+        'hairStyle',
     ];
     /**
      * 需要保存本地的应用工具
@@ -57,7 +63,10 @@ class AppController extends BaseController
      * @Date:2025-06-24
      */
     protected $localSave = [
-        'facialFusion'
+        'facialFusion',
+        'photoHD',
+        'oldPhotoRestoration',
+        'hairStyle',
     ];
 
     public function getList(Request $request)

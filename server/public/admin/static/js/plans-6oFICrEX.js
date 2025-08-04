@@ -1,0 +1,1 @@
+import{a3 as t}from"./index-C2oOc9l2.js";function n(n){return t.get("/Plans/getList",n)}function s(n){return t.post("/Plans/savePlans",n)}function e(n){return t.get("/Plans/getDetail",n)}function a(n){return t.post("/Plans/delete",n)}function r(){return t.get("/Plans/getOptions")}export{n as a,r as b,a as d,e as g,s};

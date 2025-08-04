@@ -11,7 +11,7 @@
  Target Server Version : 50744 (5.7.44-log)
  File Encoding         : 65001
 
- Date: 10/06/2025 11:50:26
+ Date: 25/06/2025 10:46:39
 */
 
 SET NAMES utf8mb4;
@@ -35,11 +35,31 @@ CREATE TABLE `yc_admin`  (
   `update_time` datetime NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '管理员' ROW_FORMAT = Dynamic;
+INSERT INTO `yc_admin` VALUES (1, 'static/logo.png', 'admin', '超级管理员', '$2y$10$FrmlLB/OjKq/OhTI0f55Ve.LO3FLg1/905x.gO0lZJt3gvgbU9SsS', 1, 2, 'asdf', 1, '2025-05-21 10:58:24', '2025-05-30 17:51:06');
 
 -- ----------------------------
--- Records of yc_admin
+-- Table structure for yc_app
 -- ----------------------------
-INSERT INTO `yc_admin` VALUES (1, 'static/logo.png', 'admin', '超级管理员', '$2y$10$FrmlLB/OjKq/OhTI0f55Ve.LO3FLg1/905x.gO0lZJt3gvgbU9SsS', 1, 2, 'asdf', 1, '2025-05-21 10:58:24', '2025-05-30 17:51:06');
+DROP TABLE IF EXISTS `yc_app`;
+CREATE TABLE `yc_app`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '应用名称',
+  `sub_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '应用服标题',
+  `image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '应用图标',
+  `status` tinyint(1) NULL DEFAULT 1 COMMENT '1 正常 2禁用',
+  `sort` int(11) NULL DEFAULT 0 COMMENT '排序',
+  `content_instruct` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '内容指令 （备用）',
+  `role_instruct` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '角色指令（别用）',
+  `points` int(11) NULL DEFAULT 0 COMMENT '扣除点数',
+  `type` char(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '应用类型',
+  `result` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `tableData` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+  `create_time` datetime NULL DEFAULT NULL,
+  `update_time` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用' ROW_FORMAT = Dynamic;
+
+
 
 -- ----------------------------
 -- Table structure for yc_article
@@ -62,11 +82,6 @@ CREATE TABLE `yc_article`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文章' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_article
--- ----------------------------
-
-
--- ----------------------------
 -- Table structure for yc_bill
 -- ----------------------------
 DROP TABLE IF EXISTS `yc_bill`;
@@ -82,10 +97,6 @@ CREATE TABLE `yc_bill`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_bill
--- ----------------------------
-
--- ----------------------------
 -- Table structure for yc_category
 -- ----------------------------
 DROP TABLE IF EXISTS `yc_category`;
@@ -97,11 +108,7 @@ CREATE TABLE `yc_category`  (
   `create_time` datetime NULL DEFAULT NULL,
   `update_time` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of yc_category
--- ----------------------------
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '分类' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for yc_config
@@ -116,9 +123,6 @@ CREATE TABLE `yc_config`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '配置' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of yc_config
--- ----------------------------
 -- ----------------------------
 -- Table structure for yc_menu
 -- ----------------------------
@@ -145,7 +149,7 @@ CREATE TABLE `yc_menu`  (
   `create_time` datetime NOT NULL,
   `update_time` datetime NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 36 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜单' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 40 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of yc_menu
@@ -165,7 +169,7 @@ INSERT INTO `yc_menu` VALUES (12, 5, '/system/customer', 'system/customer', '', 
 INSERT INTO `yc_menu` VALUES (13, 0, '/created', 'Layout', '', 1, '创作配置', 'menu-about', '', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-05-27 17:57:15', '2025-05-27 17:59:01');
 INSERT INTO `yc_menu` VALUES (14, 13, '/created/created', 'created/created', '', 2, '基础配置', '', 'IconLayers', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-05-27 17:58:00', '2025-05-27 17:58:58');
 INSERT INTO `yc_menu` VALUES (15, 13, '/created/yiding', 'created/yiding', '', 2, '壹定平台', '', 'IconTool', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-05-27 18:22:06', '2025-05-27 18:26:14');
-INSERT INTO `yc_menu` VALUES (16, 5, '/system/pay', 'system/pay', '', 1, '支付配置', '', 'IconCloud', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-05-29 18:17:37', '2025-05-29 18:18:54');
+INSERT INTO `yc_menu` VALUES (16, 8, '/system/pay', 'system/pay', '', 1, '支付配置', '', 'IconCloud', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-05-29 18:17:37', '2025-05-29 18:18:54');
 INSERT INTO `yc_menu` VALUES (17, 16, '/system/pay/wechat', 'system/pay/wechat', '', 2, '微信支付', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-05-29 18:18:11', '2025-05-30 14:29:02');
 INSERT INTO `yc_menu` VALUES (18, 0, '/marketing', 'Layout', '', 1, '营销管理', 'menu-document', '', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-05-30 15:15:41', '2025-05-30 15:17:38');
 INSERT INTO `yc_menu` VALUES (19, 18, '/marketing/plans', 'marketing/plans/index', '', 1, '充值套餐', '', 'IconBarChart', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-05-30 15:17:23', '2025-05-30 15:17:23');
@@ -180,11 +184,15 @@ INSERT INTO `yc_menu` VALUES (27, 0, '/app', 'Layout', '', 1, '应用管理', 'm
 INSERT INTO `yc_menu` VALUES (28, 27, '/app/article', 'app/article', '', 1, '文章管理', '', '', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-06-03 16:52:07', '2025-06-03 16:52:07');
 INSERT INTO `yc_menu` VALUES (29, 28, '/app/article/category', 'article/category/index', '', 2, '文章分类', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-03 16:53:22', '2025-06-03 16:53:22');
 INSERT INTO `yc_menu` VALUES (30, 28, '/app/article/index', 'article/index', '', 2, '文章列表', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-03 16:53:51', '2025-06-03 16:53:51');
-INSERT INTO `yc_menu` VALUES (31, 27, '/app/tags', '', '', 1, '单页管理', '', '', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-06-03 18:34:23', '2025-06-04 11:55:26');
+INSERT INTO `yc_menu` VALUES (31, 27, '/app/tags', 'Layout', '', 1, '单页管理', '', '', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-06-03 18:34:23', '2025-06-04 11:55:26');
 INSERT INTO `yc_menu` VALUES (32, 31, '/app/tags/privacy', 'tags/index', '', 2, '隐私协议', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-03 18:35:42', '2025-06-03 18:35:42');
 INSERT INTO `yc_menu` VALUES (33, 31, '/app/tags/service', 'tags/index', '', 2, '服务协议', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-04 10:08:16', '2025-06-04 10:08:16');
 INSERT INTO `yc_menu` VALUES (34, 31, '/app/tags/recharge', 'tags/index', '', 2, '充值说明', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-06 17:49:35', '2025-06-06 17:49:35');
 INSERT INTO `yc_menu` VALUES (35, 31, '/app/tags/agreement', 'tags/index', '', 2, '使用协议', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-07 17:27:57', '2025-06-07 17:27:57');
+INSERT INTO `yc_menu` VALUES (36, 27, '/app/app', 'app/index', '', 2, '智能工具', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-20 15:07:36', '2025-06-20 15:07:36');
+INSERT INTO `yc_menu` VALUES (37, 0, '/order', 'Layout', '', 1, '订单管理', 'menu-data', '', 0, 0, 0, 1, 1, 1, 1, 1, '', '2025-06-24 17:40:56', '2025-06-24 17:40:56');
+INSERT INTO `yc_menu` VALUES (38, 37, '/order/index', 'order/index', '', 2, '订单列表', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-24 17:41:25', '2025-06-24 17:41:25');
+INSERT INTO `yc_menu` VALUES (39, 27, '/app/record', 'app/record/index', '', 2, '创作记录', '', '', 0, 0, 0, 1, 1, 1, 1, 0, '', '2025-06-24 17:55:57', '2025-06-24 17:56:21');
 
 -- ----------------------------
 -- Table structure for yc_order
@@ -207,9 +215,6 @@ CREATE TABLE `yc_order`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '订单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_order
--- ----------------------------
--- ----------------------------
 -- Table structure for yc_plans
 -- ----------------------------
 DROP TABLE IF EXISTS `yc_plans`;
@@ -230,10 +235,6 @@ CREATE TABLE `yc_plans`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '套餐' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_plans
--- ----------------------------
-
--- ----------------------------
 -- Table structure for yc_role
 -- ----------------------------
 DROP TABLE IF EXISTS `yc_role`;
@@ -250,10 +251,6 @@ CREATE TABLE `yc_role`  (
   `update_time` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of yc_role
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for yc_scene
@@ -275,9 +272,6 @@ CREATE TABLE `yc_scene`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '场景' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_scene
--- ----------------------------
--- ----------------------------
 -- Table structure for yc_tags
 -- ----------------------------
 DROP TABLE IF EXISTS `yc_tags`;
@@ -289,11 +283,8 @@ CREATE TABLE `yc_tags`  (
   `create_time` datetime NULL DEFAULT NULL,
   `update_time` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '单页' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of yc_tags
--- ----------------------------
 -- ----------------------------
 -- Table structure for yc_upload
 -- ----------------------------
@@ -317,8 +308,26 @@ CREATE TABLE `yc_upload`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文件' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_upload
+-- Table structure for yc_use_app_record
 -- ----------------------------
+DROP TABLE IF EXISTS `yc_use_app_record`;
+CREATE TABLE `yc_use_app_record`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `app_id` int(11) NULL DEFAULT NULL COMMENT '应用ID',
+  `type` char(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '应用分类',
+  `app_type` char(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `uid` int(11) NULL DEFAULT NULL COMMENT '所属用户',
+  `points` int(11) NULL DEFAULT 0 COMMENT '请求扣除点数',
+  `req_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '请求参数',
+  `rep_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '响应参数',
+  `error` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+  `status` int(1) NULL DEFAULT 1 COMMENT '1 生成中 2生成成功  3生成失败',
+  `result` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+  `create_time` datetime NULL DEFAULT NULL,
+  `update_time` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '应用工具使用记录' ROW_FORMAT = Dynamic;
+
 -- ----------------------------
 -- Table structure for yc_user
 -- ----------------------------
@@ -342,10 +351,6 @@ CREATE TABLE `yc_user`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_user
--- ----------------------------
-
--- ----------------------------
 -- Table structure for yc_voice
 -- ----------------------------
 DROP TABLE IF EXISTS `yc_voice`;
@@ -367,9 +372,6 @@ CREATE TABLE `yc_voice`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '音频' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of yc_voice
--- ----------------------------
--- ----------------------------
 -- Table structure for yc_works
 -- ----------------------------
 DROP TABLE IF EXISTS `yc_works`;
@@ -390,9 +392,6 @@ CREATE TABLE `yc_works`  (
   `create_time` datetime NULL DEFAULT NULL,
   `update_time` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '作品' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of yc_works
--- ----------------------------
 SET FOREIGN_KEY_CHECKS = 1;
