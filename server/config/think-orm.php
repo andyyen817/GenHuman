@@ -7,13 +7,13 @@ return [
             // 数据库类型
             'type' => 'mysql',
             // 服务器地址
-            'hostname' => '127.0.0.1',
+            'hostname' => $_ENV['DB_HOST'] ?? '34.81.238.150',
             // 数据库名
-            'database' => 'digitalhuman_qif',
+            'database' => $_ENV['DB_DATABASE'] ?? 'genhuman_db',
             // 数据库用户名
-            'username' => 'digitalhuman_qif',
+            'username' => $_ENV['DB_USERNAME'] ?? 'root',
             // 数据库密码
-            'password' => 'ERKf9pBPWw8fZY6b',
+            'password' => $_ENV['DB_PASSWORD'] ?? 'Creat680817@',
             // 数据库连接端口
             'hostport' => '3306',
             // 数据库连接参数

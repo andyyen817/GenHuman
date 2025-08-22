@@ -1,26 +1,3 @@
 {
-  "name": "genhuman-digital-human",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "deploy": {
-    "env": {
-      "NODE_ENV": "production",
-      "PHP_VERSION": "8.1",
-      "PORT": "8080"
-    }
-  },
-  "services": {
-    "web": {
-      "type": "web",
-      "port": 8080,
-      "healthCheck": {
-        "path": "/",
-        "timeout": 30
-      }
-    }
-  },
-  "domains": {
-    "production": "your-domain.com"
-  }
+  "name": "genhuman-digital-human"
 }
