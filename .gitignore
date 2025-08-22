@@ -1,0 +1,59 @@
+# PHP
+/vendor/
+/server/vendor/
+/server/runtime/logs/*
+/server/runtime/cache/*
+/server/runtime/sessions/*
+/server/runtime/tmp/*
+*.log
+
+# 系統文件
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# 環境配置
+.env.local
+.env.production
+
+# Node.js (如果有前端構建)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 編譯文件
+*.class
+*.jar
+*.war
+*.ear
+
+# 備份文件
+*.bak
+*.backup
+*.old
+
+# 壓縮文件
+*.zip
+*.tar.gz
+*.rar
+
+# 數據庫文件（保留 SQL 但排除數據庫文件）
+*.db
+*.sqlite
+*.sqlite3
+
+# 上傳文件目錄
+/server/public/uploads/*
+!/server/public/uploads/.gitkeep
+
+# 緩存目錄
+/server/runtime/
+!/server/runtime/.gitkeep
