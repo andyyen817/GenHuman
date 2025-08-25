@@ -10,22 +10,29 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libzip-dev \
     unzip \
-    && docker-php-ext-install pdo_mysql \
+    git \
+    && docker-php-ext-install pdo_mysql zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # 安裝 Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 複製應用代碼
-COPY . .
+# 先複製 composer 文件
+COPY server/composer.json server/composer.lock* ./server/
 
 # 創建必要的目錄並設置權限
 RUN mkdir -p server/runtime/logs \
     && chmod -R 777 server/runtime
 
-# 安裝 PHP 依賴
-RUN cd server && composer install --no-dev --optimize-autoloader --no-interaction || true
+# 安裝 PHP 依賴 (移除 || true 以確保安裝成功)
+RUN cd server && composer install --no-dev --optimize-autoloader --no-interaction
+
+# 複製其餘應用代碼
+COPY . .
+
+# 確保權限正確
+RUN chmod -R 777 server/runtime
 
 # 暴露端口 8080 (對應 Zeabur 配置)
 EXPOSE 8080
