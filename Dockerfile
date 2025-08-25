@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg62-turbo-dev \
     libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql zip bcmath gd mbstring \
+    && docker-php-ext-install pdo_mysql zip bcmath gd mbstring pcntl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
