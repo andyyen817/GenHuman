@@ -22,21 +22,15 @@ RUN apt-get update && apt-get install -y \
 # 安裝 Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 先複製 composer 文件
-COPY server/composer.json server/composer.lock* ./server/
+# 複製所有應用代碼 (修改順序，先複製再安裝依賴)
+COPY . .
 
 # 創建必要的目錄並設置權限
 RUN mkdir -p server/runtime/logs \
     && chmod -R 777 server/runtime
 
-# 安裝 PHP 依賴 (移除 || true 以確保安裝成功)
+# 安裝 PHP 依賴 (現在所有配置文件都已複製)
 RUN cd server && composer install --no-dev --optimize-autoloader --no-interaction
-
-# 複製其餘應用代碼
-COPY . .
-
-# 確保權限正確
-RUN chmod -R 777 server/runtime
 
 # 暴露端口 8080 (對應 Zeabur 配置)
 EXPOSE 8080
