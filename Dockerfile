@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     git \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
+    libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql zip bcmath gd mbstring \
     && apt-get clean \
