@@ -8,7 +8,7 @@
 namespace app\controller;
 
 use support\Response;
-use support\Db;
+use think\facade\Db;
 
 class DebugController
 {
