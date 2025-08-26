@@ -69,6 +69,9 @@ Route::group('/mobile', function () {
     Route::get('/register', [app\controller\MobileLoginController::class, 'register']);
 });
 
+// 主頁面路由 - 智能登入檢測
+Route::get('/', [app\controller\IndexController::class, 'index']);
+
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
     return response('API endpoint not found', 404);
