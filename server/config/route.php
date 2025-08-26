@@ -54,6 +54,21 @@ Route::group('/database', function () {
     Route::get('/clean', [app\controller\DatabaseController::class, 'clean']);
 });
 
+// 路由測試工具路由
+Route::group('/routetest', function () {
+    Route::get('/check', [app\controller\RouteTestController::class, 'check']);
+    Route::get('/fixroute', [app\controller\RouteTestController::class, 'fixroute']);
+    Route::get('/apitest', [app\controller\RouteTestController::class, 'apitest']);
+    Route::any('/userlogin', [app\controller\RouteTestController::class, 'userlogin']);
+    Route::get('/applist', [app\controller\RouteTestController::class, 'applist']);
+});
+
+// 移動端登入路由 - 解決微信登入問題
+Route::group('/mobile', function () {
+    Route::get('/login', [app\controller\MobileLoginController::class, 'login']);
+    Route::get('/register', [app\controller\MobileLoginController::class, 'register']);
+});
+
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
     return response('API endpoint not found', 404);

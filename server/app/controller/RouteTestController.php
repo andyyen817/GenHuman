@@ -266,7 +266,7 @@ class RouteTestController
                 $apps = Db::table("yc_app")->where("status", 1)->select();
             }
 
-            return $this->jsonResponse(200, "獲取成功", $apps);
+            return $this->jsonResponse(200, "獲取成功", $apps->toArray());
 
         } catch (\Exception $e) {
             return $this->jsonResponse(500, "獲取失敗: " . $e->getMessage());
@@ -288,3 +288,4 @@ class RouteTestController
     }
 }
 ?>
+
