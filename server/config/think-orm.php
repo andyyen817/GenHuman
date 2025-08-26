@@ -7,13 +7,13 @@ return [
             // 数据库类型
             'type' => 'mysql',
             // 服务器地址
-            'hostname' => $_ENV['DB_HOST'] ?? '34.81.238.150',
+            'hostname' => $_ENV['DB_HOST'] ?? 'mysql.zeabur.internal',
             // 数据库名
-            'database' => $_ENV['DB_DATABASE'] ?? 'genhuman_db',
+            'database' => $_ENV['DB_DATABASE'] ?? 'zeabur',
             // 数据库用户名
             'username' => $_ENV['DB_USERNAME'] ?? 'root',
             // 数据库密码
-            'password' => $_ENV['DB_PASSWORD'] ?? 'Creat680817@',
+            'password' => $_ENV['DB_PASSWORD'] ?? 'fhlkzgNuRQL79C5eFb4036vX2T18YdAn',
             // 数据库连接端口
             'hostport' => '3306',
             // 数据库连接参数

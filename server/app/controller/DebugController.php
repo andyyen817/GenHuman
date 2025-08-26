@@ -26,13 +26,20 @@ class DebugController
         // 1. 檢查數據庫連接
         $output .= "🔍 步驟1：檢查數據庫連接\n";
         try {
-            $config = config('database.connections.mysql');
+            // 正確讀取think-orm配置
+            $config = config('think-orm.connections.mysql');
+            
+            if (!$config) {
+                $output .= "❌ 無法讀取數據庫配置\n";
+                return $this->textResponse($output);
+            }
             
             $output .= "數據庫配置信息：\n";
-            $output .= "  主機: {$config['host']}\n";
+            $output .= "  主機: {$config['hostname']}\n";
             $output .= "  數據庫: {$config['database']}\n";
             $output .= "  用戶名: {$config['username']}\n";
             $output .= "  密碼: " . str_repeat('*', strlen($config['password'])) . "\n";
+            $output .= "  前綴: {$config['prefix']}\n";
             
             // 測試數據庫連接
             $result = Db::select('SELECT 1 as test');
