@@ -210,6 +210,92 @@ class DatabaseController
     }
 
     /**
+     * 清理錯誤的表結構
+     * 訪問路徑：/database/clean
+     */
+    public function clean(): Response
+    {
+        $output = "";
+        $output .= "=== GenHuman 數據庫清理工具 v2.0 ===\n";
+        $output .= "開始時間：" . date('Y-m-d H:i:s') . "\n";
+        $output .= "⚠️  此操作將刪除錯誤的表結構，請謹慎操作！\n\n";
+
+        try {
+            // 1. 檢查數據庫連接
+            $output .= "🔍 步驟1：檢查數據庫連接\n";
+            $result = Db::query('SELECT 1 as test');
+            $output .= "✅ 數據庫連接成功\n\n";
+
+            // 2. 檢查當前表
+            $output .= "🔍 步驟2：檢查當前表結構\n";
+            $tables = Db::query("SHOW TABLES");
+            $output .= "當前數據庫表數量: " . count($tables) . "\n";
+            
+            foreach ($tables as $table) {
+                $tableName = array_values((array)$table)[0];
+                $output .= "  - {$tableName}\n";
+            }
+
+            // 3. 檢查yc_upload表結構
+            $output .= "\n🔍 步驟3：檢查yc_upload表結構\n";
+            try {
+                $columns = Db::query("SHOW COLUMNS FROM yc_upload");
+                $hasAdapter = false;
+                $output .= "yc_upload表字段：\n";
+                foreach ($columns as $column) {
+                    $columnName = $column->Field;
+                    $output .= "  - {$columnName}\n";
+                    if ($columnName === 'adapter') {
+                        $hasAdapter = true;
+                    }
+                }
+                
+                if ($hasAdapter) {
+                    $output .= "✅ yc_upload表結構正確，包含adapter字段\n";
+                } else {
+                    $output .= "❌ yc_upload表結構錯誤，缺少adapter字段\n";
+                    
+                    // 4. 刪除錯誤的表
+                    $output .= "\n🔍 步驟4：刪除錯誤的yc_upload表\n";
+                    Db::query("DROP TABLE IF EXISTS yc_upload");
+                    $output .= "✅ 錯誤的yc_upload表已刪除\n";
+                }
+            } catch (\Exception $e) {
+                $output .= "ℹ️  yc_upload表不存在，跳過檢查\n";
+            }
+
+            // 5. 檢查其他可能有問題的表
+            $output .= "\n🔍 步驟5：檢查其他表\n";
+            $problemTables = [];
+            
+            // 檢查一些常見的問題表
+            $checkTables = ['yc_menu', 'yc_role', 'yc_config'];
+            foreach ($checkTables as $tableName) {
+                try {
+                    $result = Db::query("SELECT COUNT(*) as count FROM {$tableName}");
+                    $output .= "✅ {$tableName} 表存在\n";
+                } catch (\Exception $e) {
+                    $output .= "ℹ️  {$tableName} 表不存在\n";
+                    $problemTables[] = $tableName;
+                }
+            }
+
+            $output .= "\n=== 數據庫清理完成 ===\n";
+            $output .= "完成時間：" . date('Y-m-d H:i:s') . "\n";
+            $output .= "\n📋 下一步：\n";
+            $output .= "1. 訪問初始化工具：https://genhuman-digital-human.zeabur.app/database/init\n";
+            $output .= "2. 重新創建正確的表結構\n";
+            $output .= "3. 測試管理後台登入\n";
+
+        } catch (\Exception $e) {
+            $output .= "❌ 數據庫清理失敗: " . $e->getMessage() . "\n";
+            $output .= "錯誤詳情: " . $e->getTraceAsString() . "\n";
+        }
+
+        return $this->textResponse($output);
+    }
+
+    /**
      * 返回純文本響應
      */
     private function textResponse(string $content): Response
