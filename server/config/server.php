@@ -19,8 +19,5 @@ return [
     'status_file' => runtime_path() . '/webman.status',
     'stdout_file' => runtime_path() . '/logs/stdout.log',
     'log_file' => runtime_path() . '/logs/workerman.log',
-    'max_package_size' => 10 * 1024 * 1024,
-    // Zeabur 容器環境配置
-    'daemonize' => false, // 容器環境不使用守護進程
-    'count' => 1, // 容器環境使用單進程
+    'max_package_size' => 10 * 1024 * 1024
 ];

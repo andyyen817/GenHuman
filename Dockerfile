@@ -1,4 +1,4 @@
-# GenHuman Webman 框架 Dockerfile
+# GenHuman Webman 框架 Dockerfile - 緊急修復版本
 FROM php:8.1-cli
 
 # 設置工作目錄
@@ -22,22 +22,19 @@ RUN apt-get update && apt-get install -y \
 # 安裝 Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 複製所有應用代碼 (修改順序，先複製再安裝依賴)
+# 複製所有應用代碼
 COPY . .
 
 # 創建必要的目錄並設置權限
 RUN mkdir -p server/runtime/logs \
     && chmod -R 777 server/runtime
 
-# 安裝 PHP 依賴 (現在所有配置文件都已複製)
+# 安裝 PHP 依賴
 RUN cd server && composer install --no-dev --optimize-autoloader --no-interaction
 
-# 暴露端口 8080 (對應 Zeabur 配置)
+# 暴露端口 8080
 EXPOSE 8080
 
-# 啟動 Webman 服務 (Zeabur 兼容配置)
+# 簡化啟動命令 - 不使用守護進程模式
 WORKDIR /var/www/html/server
-# 設置環境變量避免pcntl衝突
-ENV WEBMAN_MODE=container
-# 使用適合容器的啟動方式
-CMD ["php", "start.php", "start", "-d"]
+CMD ["php", "start.php", "start"]
