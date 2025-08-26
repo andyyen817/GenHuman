@@ -64,16 +64,74 @@ class DatabaseController
             Db::query($createAdminTableSQL);
             $output .= "✅ yc_admin 表創建成功\n";
 
-            // 4. 檢查是否已有管理員
+            // 4. 創建yc_upload表
+            $output .= "🔍 步驟4：創建文件上傳表\n";
+            $createUploadTableSQL = "
+            CREATE TABLE IF NOT EXISTS `yc_upload` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `name` varchar(255) NOT NULL COMMENT '原文件名',
+                `filename` varchar(255) NOT NULL COMMENT '保存文件名',
+                `file_size` int(11) NOT NULL DEFAULT 0 COMMENT '文件大小',
+                `file_type` varchar(50) NOT NULL COMMENT '文件類型',
+                `path` varchar(500) NOT NULL COMMENT '文件路徑',
+                `url` varchar(500) NOT NULL COMMENT '訪問URL',
+                `create_time` datetime NOT NULL,
+                `update_time` datetime NOT NULL,
+                PRIMARY KEY (`id`)
+            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文件上傳記錄'";
+            
+            Db::query($createUploadTableSQL);
+            $output .= "✅ yc_upload 表創建成功\n";
+
+            // 5. 創建其他必要表
+            $output .= "🔍 步驟5：創建其他必要表\n";
+            
+            // 創建yc_menu表
+            $createMenuTableSQL = "
+            CREATE TABLE IF NOT EXISTS `yc_menu` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `pid` int(11) NOT NULL DEFAULT 0 COMMENT '父級ID',
+                `title` varchar(100) NOT NULL COMMENT '菜單名稱',
+                `name` varchar(100) NOT NULL COMMENT '路由名稱',
+                `path` varchar(255) NULL DEFAULT NULL COMMENT '路由路徑',
+                `component` varchar(255) NULL DEFAULT NULL COMMENT '組件路徑',
+                `icon` varchar(100) NULL DEFAULT NULL COMMENT '圖標',
+                `type` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1菜單 2按鈕',
+                `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1正常 2禁用',
+                `sort` int(11) NOT NULL DEFAULT 0 COMMENT '排序',
+                `create_time` datetime NOT NULL,
+                `update_time` datetime NOT NULL,
+                PRIMARY KEY (`id`)
+            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜單'";
+            
+            Db::query($createMenuTableSQL);
+            $output .= "✅ yc_menu 表創建成功\n";
+
+            // 創建yc_role表
+            $createRoleTableSQL = "
+            CREATE TABLE IF NOT EXISTS `yc_role` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `name` varchar(50) NOT NULL COMMENT '角色名稱',
+                `description` varchar(255) NULL DEFAULT NULL COMMENT '角色描述',
+                `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1正常 2禁用',
+                `create_time` datetime NOT NULL,
+                `update_time` datetime NOT NULL,
+                PRIMARY KEY (`id`)
+            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色'";
+            
+            Db::query($createRoleTableSQL);
+            $output .= "✅ yc_role 表創建成功\n";
+
+            // 6. 檢查是否已有管理員
             $existingAdmin = Db::query("SELECT id FROM yc_admin WHERE username = 'admin' LIMIT 1");
             if (empty($existingAdmin)) {
-                // 5. 插入默認管理員
-                $output .= "🔍 步驟4：創建默認管理員\n";
+                // 插入默認管理員
+                $output .= "🔍 步驟6：創建默認管理員\n";
                 $insertAdminSQL = "
                 INSERT INTO `yc_admin` 
                 (`avatar`, `username`, `nickname`, `password`, `status`, `role_id`, `description`, `is_system`, `create_time`, `update_time`) 
                 VALUES 
-                ('static/logo.png', 'admin', '超级管理员', '\$2y\$10\$FrmlLB/OjKq/OhTI0f55Ve.LO3FLg1/905x.gO0lZJt3gvgbU9SsS', 1, 2, '系統管理員', 1, NOW(), NOW())";
+                ('static/logo.png', 'admin', '超级管理員', '\$2y\$10\$FrmlLB/OjKq/OhTI0f55Ve.LO3FLg1/905x.gO0lZJt3gvgbU9SsS', 1, 1, '系統管理員', 1, NOW(), NOW())";
                 
                 Db::query($insertAdminSQL);
                 $output .= "✅ 默認管理員創建成功\n";
@@ -83,19 +141,35 @@ class DatabaseController
                 $output .= "ℹ️  管理員用戶已存在，跳過創建\n";
             }
 
-            // 6. 驗證創建結果
-            $output .= "\n🔍 步驟5：驗證創建結果\n";
-            $admin = Db::query("SELECT id, username, nickname FROM yc_admin WHERE username = 'admin' LIMIT 1");
-            if (!empty($admin)) {
-                $admin = $admin[0];
-                $output .= "✅ 管理員驗證成功\n";
-                $output .= "   ID: {$admin->id}\n";
-                $output .= "   用戶名: {$admin->username}\n";
-                $output .= "   昵稱: {$admin->nickname}\n";
+            // 7. 插入默認角色
+            $existingRole = Db::query("SELECT id FROM yc_role WHERE id = 1 LIMIT 1");
+            if (empty($existingRole)) {
+                $output .= "🔍 步驟7：創建默認角色\n";
+                $insertRoleSQL = "
+                INSERT INTO `yc_role` 
+                (`id`, `name`, `description`, `status`, `create_time`, `update_time`) 
+                VALUES 
+                (1, '超級管理員', '系統最高權限', 1, NOW(), NOW())";
+                
+                Db::query($insertRoleSQL);
+                $output .= "✅ 默認角色創建成功\n";
+            } else {
+                $output .= "ℹ️  默認角色已存在，跳過創建\n";
             }
 
-            // 7. 測試密碼驗證
-            $output .= "\n🔍 步驟6：測試密碼驗證\n";
+            // 8. 驗證創建結果
+            $output .= "\n🔍 步驟8：驗證創建結果\n";
+            $admin = Db::query("SELECT id, username, nickname FROM yc_admin WHERE username = 'admin' LIMIT 1");
+            if (!empty($admin)) {
+                $adminData = $admin[0];
+                $output .= "✅ 管理員驗證成功\n";
+                $output .= "   ID: {$adminData->id}\n";
+                $output .= "   用戶名: {$adminData->username}\n";
+                $output .= "   昵稱: {$adminData->nickname}\n";
+            }
+
+            // 9. 測試密碼驗證
+            $output .= "\n🔍 步驟9：測試密碼驗證\n";
             $adminWithPassword = Db::query("SELECT password FROM yc_admin WHERE username = 'admin' LIMIT 1");
             if (!empty($adminWithPassword)) {
                 $storedPassword = $adminWithPassword[0]->password;
@@ -106,12 +180,21 @@ class DatabaseController
                 }
             }
 
+            // 10. 檢查所有表
+            $output .= "\n🔍 步驟10：最終表檢查\n";
+            $finalTables = Db::query("SHOW TABLES");
+            $output .= "數據庫表總數: " . count($finalTables) . "\n";
+            foreach ($finalTables as $table) {
+                $tableName = array_values((array)$table)[0];
+                $output .= "✅ {$tableName}\n";
+            }
+
             $output .= "\n=== 數據庫初始化完成 ===\n";
             $output .= "完成時間：" . date('Y-m-d H:i:s') . "\n";
             $output .= "\n📋 下一步：\n";
             $output .= "1. 訪問管理後台：https://genhuman-digital-human.zeabur.app/admin#/login\n";
             $output .= "2. 使用 admin / 123456 登入\n";
-            $output .= "3. 如需要完整數據，請手動導入 digitalhuman.sql\n";
+            $output .= "3. 管理後台應該能正常加載\n";
 
         } catch (\Exception $e) {
             $output .= "❌ 數據庫初始化失敗: " . $e->getMessage() . "\n";
