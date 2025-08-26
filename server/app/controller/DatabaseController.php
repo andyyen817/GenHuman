@@ -64,19 +64,24 @@ class DatabaseController
             Db::query($createAdminTableSQL);
             $output .= "✅ yc_admin 表創建成功\n";
 
-            // 4. 創建yc_upload表
+            // 4. 創建yc_upload表（正確結構）
             $output .= "🔍 步驟4：創建文件上傳表\n";
             $createUploadTableSQL = "
             CREATE TABLE IF NOT EXISTS `yc_upload` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
-                `name` varchar(255) NOT NULL COMMENT '原文件名',
-                `filename` varchar(255) NOT NULL COMMENT '保存文件名',
-                `file_size` int(11) NOT NULL DEFAULT 0 COMMENT '文件大小',
-                `file_type` varchar(50) NOT NULL COMMENT '文件類型',
-                `path` varchar(500) NOT NULL COMMENT '文件路徑',
-                `url` varchar(500) NOT NULL COMMENT '訪問URL',
-                `create_time` datetime NOT NULL,
-                `update_time` datetime NOT NULL,
+                `title` varchar(100) NULL DEFAULT NULL COMMENT '文件名称',
+                `url` varchar(255) NULL DEFAULT NULL COMMENT '文件地址',
+                `size` varchar(50) NULL DEFAULT NULL COMMENT '文件大小',
+                `md5` varchar(50) NULL DEFAULT NULL COMMENT '文件唯一标识',
+                `ext` varchar(20) NULL DEFAULT NULL COMMENT '扩展名',
+                `type` tinyint(1) NULL DEFAULT 1 COMMENT '1 图片  2音频  3视频 4文档  5其他',
+                `adapter` varchar(50) NULL DEFAULT NULL COMMENT '储存器',
+                `mime_type` varchar(50) NULL DEFAULT NULL,
+                `uid` int(11) NULL DEFAULT 0 COMMENT '用户ID',
+                `admin_uid` int(11) NULL DEFAULT 0 COMMENT '管理员ID',
+                `hidden` tinyint(1) NULL DEFAULT 1 COMMENT '1 显示 2隐藏',
+                `create_time` datetime NULL DEFAULT NULL,
+                `update_time` datetime NULL DEFAULT NULL,
                 PRIMARY KEY (`id`)
             ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文件上傳記錄'";
             
