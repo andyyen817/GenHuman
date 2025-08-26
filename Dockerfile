@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg62-turbo-dev \
     libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql zip bcmath gd mbstring \
+    && docker-php-ext-install pdo_mysql zip bcmath gd mbstring pcntl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -35,6 +35,9 @@ RUN cd server && composer install --no-dev --optimize-autoloader --no-interactio
 # 暴露端口 8080 (對應 Zeabur 配置)
 EXPOSE 8080
 
-# 啟動 Webman 服務
+# 啟動 Webman 服務 (Zeabur 兼容配置)
 WORKDIR /var/www/html/server
-CMD ["php", "start.php", "start"]
+# 設置環境變量避免pcntl衝突
+ENV WEBMAN_MODE=container
+# 使用適合容器的啟動方式
+CMD ["php", "start.php", "start", "-d"]
