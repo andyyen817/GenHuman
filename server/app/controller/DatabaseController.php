@@ -13,6 +13,133 @@ use think\facade\Db;
 class DatabaseController
 {
     /**
+     * 修復yc_upload表結構
+     * 訪問路徑：/database/fix
+     */
+    public function fix(): Response
+    {
+        $output = "";
+        $output .= "=== GenHuman 表結構修復工具 v2.0 ===\n";
+        $output .= "開始時間：" . date('Y-m-d H:i:s') . "\n";
+        $output .= "目標：修復yc_upload表，添加adapter字段\n\n";
+
+        try {
+            // 1. 檢查數據庫連接
+            $output .= "🔍 步驟1：檢查數據庫連接\n";
+            $result = Db::query('SELECT 1 as test');
+            $output .= "✅ 數據庫連接成功\n\n";
+
+            // 2. 檢查yc_upload表是否存在
+            $output .= "🔍 步驟2：檢查yc_upload表\n";
+            try {
+                $columns = Db::query("SHOW COLUMNS FROM yc_upload");
+                $output .= "✅ yc_upload表存在\n";
+                $output .= "當前字段列表：\n";
+                
+                $hasAdapter = false;
+                foreach ($columns as $column) {
+                    $columnName = $column->Field;
+                    $output .= "  - {$columnName}\n";
+                    if ($columnName === 'adapter') {
+                        $hasAdapter = true;
+                    }
+                }
+                
+                if ($hasAdapter) {
+                    $output .= "✅ adapter字段已存在，無需修復\n";
+                } else {
+                    $output .= "\n❌ 缺少adapter字段，開始修復...\n";
+                    
+                    // 3. 添加缺失的字段
+                    $output .= "🔍 步驟3：添加缺失字段\n";
+                    
+                    $alterSqls = [
+                        "ALTER TABLE yc_upload ADD COLUMN `adapter` varchar(50) NULL DEFAULT NULL COMMENT '储存器'",
+                        "ALTER TABLE yc_upload ADD COLUMN `mime_type` varchar(50) NULL DEFAULT NULL",
+                        "ALTER TABLE yc_upload ADD COLUMN `uid` int(11) NULL DEFAULT 0 COMMENT '用户ID'",
+                        "ALTER TABLE yc_upload ADD COLUMN `admin_uid` int(11) NULL DEFAULT 0 COMMENT '管理员ID'",
+                        "ALTER TABLE yc_upload ADD COLUMN `hidden` tinyint(1) NULL DEFAULT 1 COMMENT '1 显示 2隐藏'"
+                    ];
+                    
+                    foreach ($alterSqls as $sql) {
+                        try {
+                            Db::query($sql);
+                            $field = explode('`', $sql)[1];
+                            $output .= "✅ 添加字段: {$field}\n";
+                        } catch (\Exception $e) {
+                            $field = explode('`', $sql)[1];
+                            if (strpos($e->getMessage(), 'Duplicate column name') !== false) {
+                                $output .= "ℹ️  字段已存在: {$field}\n";
+                            } else {
+                                $output .= "❌ 添加字段失敗: {$field} - {$e->getMessage()}\n";
+                            }
+                        }
+                    }
+                }
+                
+            } catch (\Exception $e) {
+                $output .= "❌ yc_upload表不存在，需要創建\n";
+                
+                // 4. 創建完整的yc_upload表
+                $output .= "🔍 步驟4：創建yc_upload表\n";
+                $createUploadTableSQL = "
+                CREATE TABLE `yc_upload` (
+                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                    `title` varchar(100) NULL DEFAULT NULL COMMENT '文件名称',
+                    `url` varchar(255) NULL DEFAULT NULL COMMENT '文件地址',
+                    `size` varchar(50) NULL DEFAULT NULL COMMENT '文件大小',
+                    `md5` varchar(50) NULL DEFAULT NULL COMMENT '文件唯一标识',
+                    `ext` varchar(20) NULL DEFAULT NULL COMMENT '扩展名',
+                    `type` tinyint(1) NULL DEFAULT 1 COMMENT '1 图片  2音频  3视频 4文档  5其他',
+                    `adapter` varchar(50) NULL DEFAULT NULL COMMENT '储存器',
+                    `mime_type` varchar(50) NULL DEFAULT NULL,
+                    `uid` int(11) NULL DEFAULT 0 COMMENT '用户ID',
+                    `admin_uid` int(11) NULL DEFAULT 0 COMMENT '管理员ID',
+                    `hidden` tinyint(1) NULL DEFAULT 1 COMMENT '1 显示 2隐藏',
+                    `create_time` datetime NULL DEFAULT NULL,
+                    `update_time` datetime NULL DEFAULT NULL,
+                    PRIMARY KEY (`id`)
+                ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文件上傳記錄'";
+                
+                Db::query($createUploadTableSQL);
+                $output .= "✅ yc_upload表創建成功\n";
+            }
+
+            // 5. 最終驗證
+            $output .= "\n🔍 步驟5：最終驗證\n";
+            $finalColumns = Db::query("SHOW COLUMNS FROM yc_upload");
+            $output .= "修復後的yc_upload表字段：\n";
+            $verifyAdapter = false;
+            foreach ($finalColumns as $column) {
+                $columnName = $column->Field;
+                $output .= "  ✅ {$columnName}\n";
+                if ($columnName === 'adapter') {
+                    $verifyAdapter = true;
+                }
+            }
+            
+            if ($verifyAdapter) {
+                $output .= "\n🎉 修復成功！adapter字段已存在\n";
+            } else {
+                $output .= "\n❌ 修復失敗！adapter字段仍然缺失\n";
+            }
+
+            $output .= "\n=== 表結構修復完成 ===\n";
+            $output .= "完成時間：" . date('Y-m-d H:i:s') . "\n";
+            $output .= "\n📋 下一步：\n";
+            $output .= "1. 測試管理後台：https://genhuman-digital-human.zeabur.app/admin#/login\n";
+            $output .= "2. 使用 admin / 123456 登入\n";
+            $output .= "3. 檢查是否能正常跳轉到後台\n";
+
+        } catch (\Exception $e) {
+            $output .= "❌ 表結構修復失敗: " . $e->getMessage() . "\n";
+            $output .= "錯誤詳情: " . $e->getTraceAsString() . "\n";
+        }
+
+        return $this->textResponse($output);
+    }
+
+    /**
      * 數據庫初始化工具
      * 訪問路徑：/database/init
      */
@@ -64,74 +191,11 @@ class DatabaseController
             Db::query($createAdminTableSQL);
             $output .= "✅ yc_admin 表創建成功\n";
 
-            // 4. 創建yc_upload表（正確結構）
-            $output .= "🔍 步驟4：創建文件上傳表\n";
-            $createUploadTableSQL = "
-            CREATE TABLE IF NOT EXISTS `yc_upload` (
-                `id` int(11) NOT NULL AUTO_INCREMENT,
-                `title` varchar(100) NULL DEFAULT NULL COMMENT '文件名称',
-                `url` varchar(255) NULL DEFAULT NULL COMMENT '文件地址',
-                `size` varchar(50) NULL DEFAULT NULL COMMENT '文件大小',
-                `md5` varchar(50) NULL DEFAULT NULL COMMENT '文件唯一标识',
-                `ext` varchar(20) NULL DEFAULT NULL COMMENT '扩展名',
-                `type` tinyint(1) NULL DEFAULT 1 COMMENT '1 图片  2音频  3视频 4文档  5其他',
-                `adapter` varchar(50) NULL DEFAULT NULL COMMENT '储存器',
-                `mime_type` varchar(50) NULL DEFAULT NULL,
-                `uid` int(11) NULL DEFAULT 0 COMMENT '用户ID',
-                `admin_uid` int(11) NULL DEFAULT 0 COMMENT '管理员ID',
-                `hidden` tinyint(1) NULL DEFAULT 1 COMMENT '1 显示 2隐藏',
-                `create_time` datetime NULL DEFAULT NULL,
-                `update_time` datetime NULL DEFAULT NULL,
-                PRIMARY KEY (`id`)
-            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文件上傳記錄'";
-            
-            Db::query($createUploadTableSQL);
-            $output .= "✅ yc_upload 表創建成功\n";
-
-            // 5. 創建其他必要表
-            $output .= "🔍 步驟5：創建其他必要表\n";
-            
-            // 創建yc_menu表
-            $createMenuTableSQL = "
-            CREATE TABLE IF NOT EXISTS `yc_menu` (
-                `id` int(11) NOT NULL AUTO_INCREMENT,
-                `pid` int(11) NOT NULL DEFAULT 0 COMMENT '父級ID',
-                `title` varchar(100) NOT NULL COMMENT '菜單名稱',
-                `name` varchar(100) NOT NULL COMMENT '路由名稱',
-                `path` varchar(255) NULL DEFAULT NULL COMMENT '路由路徑',
-                `component` varchar(255) NULL DEFAULT NULL COMMENT '組件路徑',
-                `icon` varchar(100) NULL DEFAULT NULL COMMENT '圖標',
-                `type` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1菜單 2按鈕',
-                `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1正常 2禁用',
-                `sort` int(11) NOT NULL DEFAULT 0 COMMENT '排序',
-                `create_time` datetime NOT NULL,
-                `update_time` datetime NOT NULL,
-                PRIMARY KEY (`id`)
-            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜單'";
-            
-            Db::query($createMenuTableSQL);
-            $output .= "✅ yc_menu 表創建成功\n";
-
-            // 創建yc_role表
-            $createRoleTableSQL = "
-            CREATE TABLE IF NOT EXISTS `yc_role` (
-                `id` int(11) NOT NULL AUTO_INCREMENT,
-                `name` varchar(50) NOT NULL COMMENT '角色名稱',
-                `description` varchar(255) NULL DEFAULT NULL COMMENT '角色描述',
-                `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1正常 2禁用',
-                `create_time` datetime NOT NULL,
-                `update_time` datetime NOT NULL,
-                PRIMARY KEY (`id`)
-            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色'";
-            
-            Db::query($createRoleTableSQL);
-            $output .= "✅ yc_role 表創建成功\n";
-
-            // 6. 檢查是否已有管理員
+            // 4. 檢查是否已有管理員
             $existingAdmin = Db::query("SELECT id FROM yc_admin WHERE username = 'admin' LIMIT 1");
             if (empty($existingAdmin)) {
                 // 插入默認管理員
-                $output .= "🔍 步驟6：創建默認管理員\n";
+                $output .= "🔍 步驟4：創建默認管理員\n";
                 $insertAdminSQL = "
                 INSERT INTO `yc_admin` 
                 (`avatar`, `username`, `nickname`, `password`, `status`, `role_id`, `description`, `is_system`, `create_time`, `update_time`) 
@@ -146,149 +210,14 @@ class DatabaseController
                 $output .= "ℹ️  管理員用戶已存在，跳過創建\n";
             }
 
-            // 7. 插入默認角色
-            $existingRole = Db::query("SELECT id FROM yc_role WHERE id = 1 LIMIT 1");
-            if (empty($existingRole)) {
-                $output .= "🔍 步驟7：創建默認角色\n";
-                $insertRoleSQL = "
-                INSERT INTO `yc_role` 
-                (`id`, `name`, `description`, `status`, `create_time`, `update_time`) 
-                VALUES 
-                (1, '超級管理員', '系統最高權限', 1, NOW(), NOW())";
-                
-                Db::query($insertRoleSQL);
-                $output .= "✅ 默認角色創建成功\n";
-            } else {
-                $output .= "ℹ️  默認角色已存在，跳過創建\n";
-            }
-
-            // 8. 驗證創建結果
-            $output .= "\n🔍 步驟8：驗證創建結果\n";
-            $admin = Db::query("SELECT id, username, nickname FROM yc_admin WHERE username = 'admin' LIMIT 1");
-            if (!empty($admin)) {
-                $adminData = $admin[0];
-                $output .= "✅ 管理員驗證成功\n";
-                $output .= "   ID: {$adminData->id}\n";
-                $output .= "   用戶名: {$adminData->username}\n";
-                $output .= "   昵稱: {$adminData->nickname}\n";
-            }
-
-            // 9. 測試密碼驗證
-            $output .= "\n🔍 步驟9：測試密碼驗證\n";
-            $adminWithPassword = Db::query("SELECT password FROM yc_admin WHERE username = 'admin' LIMIT 1");
-            if (!empty($adminWithPassword)) {
-                $storedPassword = $adminWithPassword[0]->password;
-                if (password_verify('123456', $storedPassword)) {
-                    $output .= "✅ 密碼驗證成功\n";
-                } else {
-                    $output .= "❌ 密碼驗證失敗\n";
-                }
-            }
-
-            // 10. 檢查所有表
-            $output .= "\n🔍 步驟10：最終表檢查\n";
-            $finalTables = Db::query("SHOW TABLES");
-            $output .= "數據庫表總數: " . count($finalTables) . "\n";
-            foreach ($finalTables as $table) {
-                $tableName = array_values((array)$table)[0];
-                $output .= "✅ {$tableName}\n";
-            }
-
             $output .= "\n=== 數據庫初始化完成 ===\n";
             $output .= "完成時間：" . date('Y-m-d H:i:s') . "\n";
             $output .= "\n📋 下一步：\n";
-            $output .= "1. 訪問管理後台：https://genhuman-digital-human.zeabur.app/admin#/login\n";
-            $output .= "2. 使用 admin / 123456 登入\n";
-            $output .= "3. 管理後台應該能正常加載\n";
+            $output .= "1. 使用修復工具：https://genhuman-digital-human.zeabur.app/database/fix\n";
+            $output .= "2. 測試管理後台登入\n";
 
         } catch (\Exception $e) {
             $output .= "❌ 數據庫初始化失敗: " . $e->getMessage() . "\n";
-            $output .= "錯誤詳情: " . $e->getTraceAsString() . "\n";
-        }
-
-        return $this->textResponse($output);
-    }
-
-    /**
-     * 清理錯誤的表結構
-     * 訪問路徑：/database/clean
-     */
-    public function clean(): Response
-    {
-        $output = "";
-        $output .= "=== GenHuman 數據庫清理工具 v2.0 ===\n";
-        $output .= "開始時間：" . date('Y-m-d H:i:s') . "\n";
-        $output .= "⚠️  此操作將刪除錯誤的表結構，請謹慎操作！\n\n";
-
-        try {
-            // 1. 檢查數據庫連接
-            $output .= "🔍 步驟1：檢查數據庫連接\n";
-            $result = Db::query('SELECT 1 as test');
-            $output .= "✅ 數據庫連接成功\n\n";
-
-            // 2. 檢查當前表
-            $output .= "🔍 步驟2：檢查當前表結構\n";
-            $tables = Db::query("SHOW TABLES");
-            $output .= "當前數據庫表數量: " . count($tables) . "\n";
-            
-            foreach ($tables as $table) {
-                $tableName = array_values((array)$table)[0];
-                $output .= "  - {$tableName}\n";
-            }
-
-            // 3. 檢查yc_upload表結構
-            $output .= "\n🔍 步驟3：檢查yc_upload表結構\n";
-            try {
-                $columns = Db::query("SHOW COLUMNS FROM yc_upload");
-                $hasAdapter = false;
-                $output .= "yc_upload表字段：\n";
-                foreach ($columns as $column) {
-                    $columnName = $column->Field;
-                    $output .= "  - {$columnName}\n";
-                    if ($columnName === 'adapter') {
-                        $hasAdapter = true;
-                    }
-                }
-                
-                if ($hasAdapter) {
-                    $output .= "✅ yc_upload表結構正確，包含adapter字段\n";
-                } else {
-                    $output .= "❌ yc_upload表結構錯誤，缺少adapter字段\n";
-                    
-                    // 4. 刪除錯誤的表
-                    $output .= "\n🔍 步驟4：刪除錯誤的yc_upload表\n";
-                    Db::query("DROP TABLE IF EXISTS yc_upload");
-                    $output .= "✅ 錯誤的yc_upload表已刪除\n";
-                }
-            } catch (\Exception $e) {
-                $output .= "ℹ️  yc_upload表不存在，跳過檢查\n";
-            }
-
-            // 5. 檢查其他可能有問題的表
-            $output .= "\n🔍 步驟5：檢查其他表\n";
-            $problemTables = [];
-            
-            // 檢查一些常見的問題表
-            $checkTables = ['yc_menu', 'yc_role', 'yc_config'];
-            foreach ($checkTables as $tableName) {
-                try {
-                    $result = Db::query("SELECT COUNT(*) as count FROM {$tableName}");
-                    $output .= "✅ {$tableName} 表存在\n";
-                } catch (\Exception $e) {
-                    $output .= "ℹ️  {$tableName} 表不存在\n";
-                    $problemTables[] = $tableName;
-                }
-            }
-
-            $output .= "\n=== 數據庫清理完成 ===\n";
-            $output .= "完成時間：" . date('Y-m-d H:i:s') . "\n";
-            $output .= "\n📋 下一步：\n";
-            $output .= "1. 訪問初始化工具：https://genhuman-digital-human.zeabur.app/database/init\n";
-            $output .= "2. 重新創建正確的表結構\n";
-            $output .= "3. 測試管理後台登入\n";
-
-        } catch (\Exception $e) {
-            $output .= "❌ 數據庫清理失敗: " . $e->getMessage() . "\n";
             $output .= "錯誤詳情: " . $e->getTraceAsString() . "\n";
         }
 
