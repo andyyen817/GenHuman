@@ -42,7 +42,7 @@ class DebugController
             $output .= "  前綴: {$config['prefix']}\n";
             
             // 測試數據庫連接
-            $result = Db::select('SELECT 1 as test');
+            $result = Db::query('SELECT 1 as test');
             $output .= "✅ 數據庫連接成功\n\n";
         } catch (\Exception $e) {
             $output .= "❌ 數據庫連接失敗: " . $e->getMessage() . "\n";
@@ -54,7 +54,7 @@ class DebugController
         $output .= "🔍 步驟2：檢查管理員用戶\n";
         try {
             // 檢查表是否存在
-            $tables = Db::select("SHOW TABLES LIKE 'yc_admin'");
+            $tables = Db::query("SHOW TABLES LIKE 'yc_admin'");
             if (empty($tables)) {
                 $output .= "❌ yc_admin 表不存在\n";
                 return $this->textResponse($output);
@@ -62,7 +62,7 @@ class DebugController
             $output .= "✅ yc_admin 表存在\n";
             
             // 檢查管理員用戶
-            $admin = Db::select("SELECT id, username, password, create_time FROM yc_admin WHERE username = 'admin' LIMIT 1");
+            $admin = Db::query("SELECT id, username, password, create_time FROM yc_admin WHERE username = 'admin' LIMIT 1");
             
             if (!empty($admin)) {
                 $admin = $admin[0];
@@ -106,12 +106,12 @@ class DebugController
                 $output .= "❌ 管理員用戶不存在\n";
                 
                 // 檢查是否有其他用戶
-                $count = Db::select("SELECT COUNT(*) as count FROM yc_admin");
+                $count = Db::query("SELECT COUNT(*) as count FROM yc_admin");
                 $userCount = $count[0]->count ?? 0;
                 $output .= "  yc_admin表中共有 {$userCount} 個用戶\n";
                 
                 if ($userCount > 0) {
-                    $users = Db::select("SELECT username FROM yc_admin LIMIT 5");
+                    $users = Db::query("SELECT username FROM yc_admin LIMIT 5");
                     $output .= "  現有用戶名：";
                     foreach ($users as $user) {
                         $output .= $user->username . " ";
