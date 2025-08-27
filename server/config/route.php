@@ -72,6 +72,9 @@ Route::group('/mobile', function () {
 // 新的數位人應用 - 完全繞過原有H5
 Route::get('/app', [app\controller\AppController::class, 'main']);
 
+// GenHuman v3.0 用戶API控制台 - 全新獨立架構
+Route::get('/user-api/dashboard', [app\controller\UserApiController::class, 'dashboard']);
+
 // Admin管理後台主頁面路由
 Route::get('/admin', function () {
     $filePath = base_path() . '/public/admin/index.html';
