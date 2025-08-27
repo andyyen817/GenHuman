@@ -72,6 +72,14 @@ Route::group('/mobile', function () {
 // 新的數位人應用 - 完全繞過原有H5
 Route::get('/app', [app\controller\AppController::class, 'main']);
 
+// API配置管理路由
+Route::group('/api-config', function () {
+    Route::get('/', [app\controller\ApiConfigController::class, 'index']);
+    Route::post('/save', [app\controller\ApiConfigController::class, 'saveConfig']);
+    Route::post('/test-connection', [app\controller\ApiConfigController::class, 'testConnection']);
+    Route::post('/test-api/{type}', [app\controller\ApiConfigController::class, 'testApi']);
+});
+
 // 主頁面路由 - 智能登入檢測
 Route::get('/', [app\controller\IndexController::class, 'index']);
 

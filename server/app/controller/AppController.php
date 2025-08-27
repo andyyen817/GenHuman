@@ -198,6 +198,12 @@ class AppController
                 <h3>模板庫</h3>
                 <p>豐富的預設模板和場景，快速上手，輕鬆創作</p>
             </div>
+            
+            <div class="feature-card" onclick="openApiConfig()">
+                <div class="feature-icon">⚙️</div>
+                <h3>API配置</h3>
+                <p>管理數位人API接口，配置易定開放平台服務</p>
+            </div>
         </div>
     </div>
     
@@ -244,6 +250,11 @@ class AppController
             };
             
             alert(`${features[feature]}功能開發中！\\n\\n當前版本重點解決登入問題，\\n所有創作功能將在下個版本推出。`);
+        }
+        
+        // 打開API配置
+        function openApiConfig() {
+            window.open("/api-config", "_blank");
         }
         
         // 登出
