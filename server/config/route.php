@@ -72,23 +72,13 @@ Route::group('/mobile', function () {
 // 主頁面路由 - 智能登入檢測
 Route::get('/', [app\controller\IndexController::class, 'index']);
 
-// 手動靜態文件路由 - 替代自動靜態文件處理
-Route::get('/h5/{filename}', function ($filename) {
-    $filePath = base_path() . '/public/h5/' . $filename;
-    if (file_exists($filePath) && is_file($filePath)) {
-        return response()->file($filePath);
-    }
-    return response('File not found', 404);
-});
+// H5靜態資源路由 - 使用專用控制器
+Route::get('/h5/assets/{path:.+}', [app\controller\StaticController::class, 'assets']);
+Route::get('/h5/static/{path:.+}', [app\controller\StaticController::class, 'static']);
+Route::get('/h5/{filename}', [app\controller\StaticController::class, 'file']);
 
-// H5應用入口（重命名後的原始文件）
-Route::get('/h5', function () {
-    $filePath = base_path() . '/public/h5/_original_index.html';
-    if (file_exists($filePath)) {
-        return response()->file($filePath);
-    }
-    return response('H5 App not found', 404);
-});
+// H5應用主入口
+Route::get('/h5', [app\controller\StaticController::class, 'index']);
 
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
