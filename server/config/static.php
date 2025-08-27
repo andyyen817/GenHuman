@@ -16,7 +16,7 @@
  * Static file settings
  */
 return [
-    'enable' => true,
+    'enable' => false,  // 關閉自動靜態文件處理，讓自定義路由優先
     'middleware' => [     // Static file Middleware
         //app\middleware\StaticFile::class,
     ],

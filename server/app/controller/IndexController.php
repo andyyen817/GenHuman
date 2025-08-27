@@ -161,7 +161,7 @@ class IndexController
                     showLoggedIn(user);
                     // 3秒後跳轉到原來的H5應用
                     setTimeout(() => {
-                        window.location.href = "/h5/_original_index.html";
+                        window.location.href = "/h5";
                     }, 3000);
                     return;
                 } catch (e) {
@@ -231,7 +231,7 @@ class IndexController
                     
                     // 2秒後跳轉
                     setTimeout(() => {
-                        window.location.href = "/h5/_original_index.html";
+                        window.location.href = "/h5";
                     }, 2000);
                 } else {
                     updateStatus("遊客登入失敗，請重試");
