@@ -69,6 +69,9 @@ Route::group('/mobile', function () {
     Route::get('/register', [app\controller\MobileLoginController::class, 'register']);
 });
 
+// 新的數位人應用 - 完全繞過原有H5
+Route::get('/app', [app\controller\AppController::class, 'main']);
+
 // 主頁面路由 - 智能登入檢測
 Route::get('/', [app\controller\IndexController::class, 'index']);
 

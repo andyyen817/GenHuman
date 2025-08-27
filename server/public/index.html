@@ -135,9 +135,9 @@
                 try {
                     const user = JSON.parse(userInfo);
                     showLoggedIn(user);
-                    // 3秒後跳轉到原來的H5應用
+                    // 3秒後跳轉到新的應用
                     setTimeout(() => {
-                        window.location.href = "/h5";
+                        window.location.href = "/app";
                     }, 3000);
                     return;
                 } catch (e) {
@@ -207,7 +207,7 @@
                     
                     // 2秒後跳轉
                     setTimeout(() => {
-                        window.location.href = "/h5";
+                        window.location.href = "/app";
                     }, 2000);
                 } else {
                     updateStatus("遊客登入失敗，請重試");
