@@ -95,6 +95,44 @@ Route::group('/api-config', function () {
 // 主頁面路由 - 智能登入檢測
 Route::get('/', [app\controller\IndexController::class, 'index']);
 
+// 通用靜態資源路由（修復logo.svg 404問題）
+Route::get('/static/{path:.+}', function ($request, $path) {
+    // 嘗試多個可能的靜態文件位置
+    $possiblePaths = [
+        base_path() . '/public/static/' . $path,
+        base_path() . '/public/admin/static/' . $path,
+        base_path() . '/public/' . $path
+    ];
+    
+    foreach ($possiblePaths as $filePath) {
+        if (file_exists($filePath)) {
+            $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+            $contentTypes = [
+                'css' => 'text/css; charset=utf-8',
+                'js' => 'application/javascript; charset=utf-8', 
+                'png' => 'image/png',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                'ico' => 'image/x-icon',
+                'woff' => 'font/woff',
+                'woff2' => 'font/woff2',
+                'ttf' => 'font/ttf',
+                'otf' => 'font/otf',
+                'mp3' => 'audio/mpeg'
+            ];
+            $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+            
+            return response()->file($filePath, 200, [
+                'Content-Type' => $contentType,
+                'Cache-Control' => 'public, max-age=31536000'
+            ]);
+        }
+    }
+    return response('Static file not found: ' . $path, 404);
+});
+
 // Admin管理後台靜態資源路由
 Route::get('/admin/static/{path:.+}', function ($request, $path) {
     $filePath = base_path() . '/public/admin/static/' . $path;
