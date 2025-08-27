@@ -1,28 +1,4 @@
-<?php
-/**
- * 主頁面控制器
- * 智能檢測用戶登入狀態，自動跳轉到適當頁面
- */
-
-namespace app\controller;
-
-use support\Request;
-use support\Response;
-
-class IndexController
-{
-    /**
-     * 主頁面訪問控制
-     * 檢測登入狀態，智能跳轉
-     */
-    public function index(Request $request): Response
-    {
-        // 檢查是否有登入token
-        $userAgent = $request->header('user-agent', '');
-        $referer = $request->header('referer', '');
-        
-        // 創建智能跳轉頁面
-        $html = '<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -248,11 +224,4 @@ class IndexController
         });
     </script>
 </body>
-</html>';
-
-        return new Response(200, [
-            'Content-Type' => 'text/html; charset=utf-8'
-        ], $html);
-    }
-}
-?>
+</html>
