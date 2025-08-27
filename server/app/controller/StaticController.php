@@ -156,12 +156,30 @@ class StaticController
             return new Response(404, [], 'H5 App not found');
         }
         
+        $htmlContent = file_get_contents($filePath);
+        
+        // 注入登入修復腳本
+        $loginFixScript = '<script src="/h5/login-fix.js"></script>';
+        
+        // 在</head>標籤前注入腳本
+        if (strpos($htmlContent, '</head>') !== false) {
+            $htmlContent = str_replace('</head>', $loginFixScript . "\n</head>", $htmlContent);
+        } else {
+            // 如果沒有</head>標籤，在<body>標籤後注入
+            if (strpos($htmlContent, '<body>') !== false) {
+                $htmlContent = str_replace('<body>', '<body>' . "\n" . $loginFixScript, $htmlContent);
+            } else {
+                // 如果都沒有，直接添加到開頭
+                $htmlContent = $loginFixScript . "\n" . $htmlContent;
+            }
+        }
+        
         return new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
             'Expires' => '0'
-        ], file_get_contents($filePath));
+        ], $htmlContent);
     }
 }
 ?>

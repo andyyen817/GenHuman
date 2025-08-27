@@ -75,6 +75,16 @@ Route::get('/', [app\controller\IndexController::class, 'index']);
 // H5靜態資源路由 - 使用專用控制器
 Route::get('/h5/assets/{path:.+}', [app\controller\StaticController::class, 'assets']);
 Route::get('/h5/static/{path:.+}', [app\controller\StaticController::class, 'static']);
+Route::get('/h5/login-fix.js', function () {
+    $filePath = base_path() . '/public/h5/login-fix.js';
+    if (file_exists($filePath)) {
+        return response()->file($filePath, 200, [
+            'Content-Type' => 'application/javascript; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Login fix script not found', 404);
+});
 Route::get('/h5/{filename}', [app\controller\StaticController::class, 'file']);
 
 // H5應用主入口
