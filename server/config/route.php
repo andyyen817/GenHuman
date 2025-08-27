@@ -72,6 +72,18 @@ Route::group('/mobile', function () {
 // 新的數位人應用 - 完全繞過原有H5
 Route::get('/app', [app\controller\AppController::class, 'main']);
 
+// Admin管理後台主頁面路由
+Route::get('/admin', function () {
+    $filePath = base_path() . '/public/admin/index.html';
+    if (file_exists($filePath)) {
+        return response()->file($filePath, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Admin page not found', 404);
+});
+
 // API配置管理路由
 Route::group('/api-config', function () {
     Route::get('/', [app\controller\ApiConfigController::class, 'index']);
@@ -82,6 +94,36 @@ Route::group('/api-config', function () {
 
 // 主頁面路由 - 智能登入檢測
 Route::get('/', [app\controller\IndexController::class, 'index']);
+
+// Admin管理後台靜態資源路由
+Route::get('/admin/static/{path:.+}', function ($request, $path) {
+    $filePath = base_path() . '/public/admin/static/' . $path;
+    if (file_exists($filePath)) {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $contentTypes = [
+            'css' => 'text/css; charset=utf-8',
+            'js' => 'application/javascript; charset=utf-8', 
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'ico' => 'image/x-icon',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'otf' => 'font/otf',
+            'mp3' => 'audio/mpeg'
+        ];
+        $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+        
+        return response()->file($filePath, 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=31536000' // 1年緩存
+        ]);
+    }
+    return response('Static file not found: ' . $path, 404);
+});
 
 // H5靜態資源路由 - 使用專用控制器
 Route::get('/h5/assets/{path:.+}', [app\controller\StaticController::class, 'assets']);
