@@ -1,0 +1,130 @@
+{
+  "app": {
+    "name": "Vidspark",
+    "tagline": "点映 - AI 视频创作平台"
+  },
+  "common": {
+    "submit": "提交",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "save": "保存",
+    "loading": "加载中...",
+    "success": "成功",
+    "error": "错误",
+    "warning": "警告",
+    "info": "信息",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "finish": "完成",
+    "retry": "重试",
+    "upload": "上传",
+    "download": "下载",
+    "preview": "预览",
+    "share": "分享"
+  },
+  "navigation": {
+    "dashboard": "控制台",
+    "create_video": "创建视频",
+    "my_videos": "我的视频",
+    "templates": "模板库",
+    "voice_clone": "声音克隆",
+    "digital_human": "数字人",
+    "settings": "设置",
+    "help": "帮助",
+    "logout": "退出"
+  },
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "还没有账户？",
+    "hasAccount": "已有账户？",
+    "loginSuccess": "登录成功",
+    "registerSuccess": "注册成功",
+    "emailRequired": "请输入邮箱",
+    "passwordRequired": "请输入密码",
+    "passwordMismatch": "密码不一致",
+    "invalidEmail": "邮箱格式不正确"
+  },
+  "dashboard": {
+    "welcome": "欢迎回来",
+    "quickStart": "快速开始",
+    "recentProjects": "最近项目",
+    "statistics": "统计数据",
+    "totalVideos": "总视频数",
+    "remainingQuota": "剩余额度",
+    "thisMonth": "本月"
+  },
+  "video": {
+    "createNew": "创建新视频",
+    "freeDigitalHuman": "免费数字人",
+    "textToVideo": "文字转视频",
+    "voiceClone": "声音克隆",
+    "template": "模板创作",
+    "title": "视频标题",
+    "description": "视频描述",
+    "script": "视频脚本",
+    "selectAvatar": "选择数字人",
+    "selectVoice": "选择声音",
+    "selectBackground": "选择背景",
+    "generating": "正在生成视频...",
+    "generated": "视频生成完成",
+    "failed": "视频生成失败"
+  },
+  "voice": {
+    "cloneVoice": "克隆声音",
+    "recordAudio": "录制音频",
+    "uploadAudio": "上传音频",
+    "voiceName": "声音名称",
+    "recordingTime": "录制时长",
+    "audioQuality": "音频质量",
+    "cloning": "正在克隆声音...",
+    "cloneSuccess": "声音克隆成功",
+    "cloneFailed": "声音克隆失败",
+    "instructions": "请在安静环境中录制60秒清晰语音"
+  },
+  "avatar": {
+    "selectAvatar": "选择数字人",
+    "freeAvatars": "免费数字人",
+    "premiumAvatars": "高级数字人",
+    "customAvatar": "自定义数字人",
+    "maleAvatars": "男性数字人",
+    "femaleAvatars": "女性数字人",
+    "professionalStyle": "专业风格",
+    "casualStyle": "休闲风格",
+    "createCustom": "创建自定义数字人"
+  },
+  "quota": {
+    "remaining": "剩余",
+    "used": "已使用",
+    "total": "总计",
+    "daily": "每日",
+    "monthly": "每月",
+    "unlimited": "无限制",
+    "upgrade": "升级方案",
+    "quotaExceeded": "额度已用完",
+    "freeQuota": "免费额度"
+  },
+  "settings": {
+    "profile": "个人资料",
+    "account": "账户设置",
+    "billing": "账单设置",
+    "notifications": "通知设置",
+    "language": "语言设置",
+    "theme": "主题设置",
+    "privacy": "隐私设置",
+    "security": "安全设置"
+  },
+  "language": {
+    "selectLanguage": "选择语言",
+    "currentLanguage": "当前语言",
+    "switchLanguage": "切换语言"
+  }
+}

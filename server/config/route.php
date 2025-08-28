@@ -196,6 +196,88 @@ Route::get('/vidspark-i18n-test.html', function () {
     return response('Vidspark test page not found', 404);
 });
 
+// Vidspark前端應用路由
+Route::get('/vidspark', function () {
+    $filePath = base_path() . '/public/vidspark/index.html';
+    if (file_exists($filePath)) {
+        return response()->file($filePath, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Vidspark app not found', 404);
+});
+
+// Vidspark管理後台路由
+Route::get('/vidspark-admin', function () {
+    $filePath = base_path() . '/public/vidspark-admin/index.html';
+    if (file_exists($filePath)) {
+        return response()->file($filePath, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Vidspark admin not found', 404);
+});
+
+// Vidspark靜態資源路由
+Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
+    $filePath = base_path() . '/public/vidspark/assets/' . $path;
+    if (file_exists($filePath)) {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $contentTypes = [
+            'css' => 'text/css; charset=utf-8',
+            'js' => 'application/javascript; charset=utf-8', 
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'ico' => 'image/x-icon',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'otf' => 'font/otf'
+        ];
+        $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+        
+        return response()->file($filePath, 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=31536000'
+        ]);
+    }
+    return response('Vidspark asset not found: ' . $path, 404);
+});
+
+// Vidspark管理後台靜態資源路由
+Route::get('/vidspark-admin/assets/{path:.+}', function ($request, $path) {
+    $filePath = base_path() . '/public/vidspark-admin/assets/' . $path;
+    if (file_exists($filePath)) {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $contentTypes = [
+            'css' => 'text/css; charset=utf-8',
+            'js' => 'application/javascript; charset=utf-8', 
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'ico' => 'image/x-icon',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'otf' => 'font/otf'
+        ];
+        $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+        
+        return response()->file($filePath, 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=31536000'
+        ]);
+    }
+    return response('Vidspark admin asset not found: ' . $path, 404);
+});
+
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
     return response('API endpoint not found', 404);
