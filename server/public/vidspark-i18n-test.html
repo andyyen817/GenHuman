@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark 語言切換測試</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #5D5FEF;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .language-switcher {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .language-label {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .language-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .lang-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        
+        .lang-btn:hover {
+            border-color: #5D5FEF;
+            transform: translateY(-2px);
+        }
+        
+        .lang-btn.active {
+            border-color: #5D5FEF;
+            background: #5D5FEF;
+            color: white;
+        }
+        
+        .translation-demo {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .demo-section {
+            margin-bottom: 20px;
+        }
+        
+        .demo-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .demo-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            border-bottom: 2px solid #5D5FEF;
+            padding-bottom: 5px;
+        }
+        
+        .demo-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .demo-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #5D5FEF;
+        }
+        
+        .demo-key {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        
+        .demo-value {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        
+        .info-text {
+            color: #424242;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Vidspark</div>
+            <div class="subtitle" id="subtitle">點映 - AI 影片創作平台</div>
+        </div>
+        
+        <div class="language-switcher">
+            <div class="language-label" id="langLabel">選擇語言 / Select Language / 选择语言</div>
+            <div class="language-buttons">
+                <button class="lang-btn active" onclick="switchLanguage('zh-TW')" id="btn-zh-TW">
+                    🇹🇼 繁體中文
+                </button>
+                <button class="lang-btn" onclick="switchLanguage('zh-CN')" id="btn-zh-CN">
+                    🇨🇳 简体中文
+                </button>
+                <button class="lang-btn" onclick="switchLanguage('en')" id="btn-en">
+                    🇺🇸 English
+                </button>
+            </div>
+        </div>
+        
+        <div class="translation-demo">
+            <div class="demo-section">
+                <div class="demo-title" id="commonTitle">通用功能</div>
+                <div class="demo-content">
+                    <div class="demo-item">
+                        <div class="demo-key">common.submit</div>
+                        <div class="demo-value" id="common-submit">提交</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">common.cancel</div>
+                        <div class="demo-value" id="common-cancel">取消</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">common.loading</div>
+                        <div class="demo-value" id="common-loading">載入中...</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">common.success</div>
+                        <div class="demo-value" id="common-success">成功</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <div class="demo-title" id="navTitle">導航功能</div>
+                <div class="demo-content">
+                    <div class="demo-item">
+                        <div class="demo-key">navigation.dashboard</div>
+                        <div class="demo-value" id="nav-dashboard">控制台</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">navigation.create_video</div>
+                        <div class="demo-value" id="nav-create">創建影片</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">navigation.voice_clone</div>
+                        <div class="demo-value" id="nav-voice">聲音克隆</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">navigation.digital_human</div>
+                        <div class="demo-value" id="nav-avatar">數字人</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <div class="demo-title" id="videoTitle">影片功能</div>
+                <div class="demo-content">
+                    <div class="demo-item">
+                        <div class="demo-key">avatar.free_avatar</div>
+                        <div class="demo-value" id="avatar-free">免費數字人</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">voice.voice_clone</div>
+                        <div class="demo-value" id="voice-clone">聲音克隆</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">quota.remaining_quota</div>
+                        <div class="demo-value" id="quota-remaining">剩餘：5</div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-key">quota.upgrade_plan</div>
+                        <div class="demo-value" id="quota-upgrade">升級方案</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-title" id="infoTitle">測試說明</div>
+            <div class="info-text" id="infoText">
+                這是 Vidspark 多語言系統的測試頁面。點擊上方的語言按鈕可以切換界面語言。
+                所有文字都會根據選擇的語言動態變化，語言偏好會保存在瀏覽器中。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 語言包數據
+        const translations = {
+            'zh-TW': {
+                subtitle: '點映 - AI 影片創作平台',
+                langLabel: '選擇語言',
+                commonTitle: '通用功能',
+                navTitle: '導航功能', 
+                videoTitle: '影片功能',
+                infoTitle: '測試說明',
+                infoText: '這是 Vidspark 多語言系統的測試頁面。點擊上方的語言按鈕可以切換界面語言。所有文字都會根據選擇的語言動態變化，語言偏好會保存在瀏覽器中。',
+                'common-submit': '提交',
+                'common-cancel': '取消',
+                'common-loading': '載入中...',
+                'common-success': '成功',
+                'nav-dashboard': '控制台',
+                'nav-create': '創建影片',
+                'nav-voice': '聲音克隆',
+                'nav-avatar': '數字人',
+                'avatar-free': '免費數字人',
+                'voice-clone': '聲音克隆',
+                'quota-remaining': '剩餘：5',
+                'quota-upgrade': '升級方案'
+            },
+            'zh-CN': {
+                subtitle: '点映 - AI 视频创作平台',
+                langLabel: '选择语言',
+                commonTitle: '通用功能',
+                navTitle: '导航功能',
+                videoTitle: '视频功能', 
+                infoTitle: '测试说明',
+                infoText: '这是 Vidspark 多语言系统的测试页面。点击上方的语言按钮可以切换界面语言。所有文字都会根据选择的语言动态变化，语言偏好会保存在浏览器中。',
+                'common-submit': '提交',
+                'common-cancel': '取消',
+                'common-loading': '加载中...',
+                'common-success': '成功',
+                'nav-dashboard': '控制台',
+                'nav-create': '创建视频',
+                'nav-voice': '声音克隆',
+                'nav-avatar': '数字人',
+                'avatar-free': '免费数字人',
+                'voice-clone': '声音克隆',
+                'quota-remaining': '剩余：5',
+                'quota-upgrade': '升级方案'
+            },
+            'en': {
+                subtitle: 'Vidspark - AI Video Creation Platform',
+                langLabel: 'Select Language',
+                commonTitle: 'Common Functions',
+                navTitle: 'Navigation Functions',
+                videoTitle: 'Video Functions',
+                infoTitle: 'Test Instructions',
+                infoText: 'This is the test page for Vidspark multilingual system. Click the language buttons above to switch interface language. All text will change dynamically based on the selected language, and language preference will be saved in the browser.',
+                'common-submit': 'Submit',
+                'common-cancel': 'Cancel',
+                'common-loading': 'Loading...',
+                'common-success': 'Success',
+                'nav-dashboard': 'Dashboard',
+                'nav-create': 'Create Video',
+                'nav-voice': 'Voice Clone',
+                'nav-avatar': 'Digital Human',
+                'avatar-free': 'Free Digital Human',
+                'voice-clone': 'Voice Clone',
+                'quota-remaining': 'Remaining: 5',
+                'quota-upgrade': 'Upgrade Plan'
+            }
+        };
+        
+        // 當前語言
+        let currentLanguage = localStorage.getItem('vidspark_language') || 'zh-TW';
+        
+        // 切換語言函數
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('vidspark_language', lang);
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + lang).classList.add('active');
+            
+            // 更新所有翻譯文字
+            const langData = translations[lang];
+            Object.keys(langData).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = langData[key];
+                }
+            });
+            
+            console.log('Language switched to:', lang);
+        }
+        
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            switchLanguage(currentLanguage);
+        });
+    </script>
+</body>
+</html>
