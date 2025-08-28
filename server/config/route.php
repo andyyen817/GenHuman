@@ -184,6 +184,18 @@ Route::get('/h5/{filename}', [app\controller\StaticController::class, 'file']);
 // H5應用主入口
 Route::get('/h5', [app\controller\StaticController::class, 'index']);
 
+// Vidspark語言切換測試頁面路由
+Route::get('/vidspark-i18n-test.html', function () {
+    $filePath = base_path() . '/public/vidspark-i18n-test.html';
+    if (file_exists($filePath)) {
+        return response()->file($filePath, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Vidspark test page not found', 404);
+});
+
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
     return response('API endpoint not found', 404);
