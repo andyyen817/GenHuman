@@ -208,8 +208,32 @@ Route::get('/vidspark', function () {
     return response('Vidspark app not found', 404);
 });
 
+// Vidspark前端應用路由（帶斜槓）
+Route::get('/vidspark/', function () {
+    $filePath = base_path() . '/public/vidspark/index.html';
+    if (file_exists($filePath)) {
+        return response()->file($filePath, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Vidspark app not found', 404);
+});
+
 // Vidspark管理後台路由
 Route::get('/vidspark-admin', function () {
+    $filePath = base_path() . '/public/vidspark-admin/index.html';
+    if (file_exists($filePath)) {
+        return response()->file($filePath, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Vidspark admin not found', 404);
+});
+
+// Vidspark管理後台路由（帶斜槓）
+Route::get('/vidspark-admin/', function () {
     $filePath = base_path() . '/public/vidspark-admin/index.html';
     if (file_exists($filePath)) {
         return response()->file($filePath, 200, [
