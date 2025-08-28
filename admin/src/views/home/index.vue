@@ -1,5 +1,10 @@
 <template>
   <div id="home" class="gi_page home">
+    <!-- 臨時語言切換器測試 -->
+    <div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: white; padding: 8px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <LanguageSwitcher />
+    </div>
+    
     <WorkCard></WorkCard>
 
     <!-- <a-row class="home__content">
@@ -37,6 +42,7 @@ import MessageCard from './components/MessageCard.vue'
 import FastCard from './components/FastCard.vue'
 import ImageCard from './components/ImageCard.vue'
 import AdvCard from './components/AdvCard.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 defineOptions({ name: 'Home' })
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <a-card title="工作台" :bordered="false" size="medium" class="card">
+  <a-card :title="$t('navigation.dashboard')" :bordered="false" size="medium" class="card">
     <template #extra>
       <NowTime></NowTime>
     </template>
