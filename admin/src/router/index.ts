@@ -61,6 +61,17 @@ const homeRoute: RouteRecordRaw = {
         hidden: false,
         breadcrumb: false
       }
+    },
+    {
+      path: '/test-i18n',
+      component: () => import('@/views/test-i18n.vue'),
+      name: 'TestI18n',
+      meta: {
+        title: '多語言測試',
+        icon: 'icon-language',
+        hidden: false,
+        breadcrumb: true
+      }
     }
   ]
 }

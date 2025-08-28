@@ -29,6 +29,9 @@ import '@wangeditor/editor/dist/css/style.css'
 // 状态管理
 import pinia from '@/stores'
 
+// i18n 國際化
+import { setupI18n } from '@/i18n'
+
 // 对特定组件进行默认配置
 Card.props.bordered = false
 
@@ -41,5 +44,8 @@ app.use(pinia)
 app.use(ArcoVue)
 app.use(ArcoVueIcon)
 app.use(directives)
+
+// 設置 i18n
+setupI18n(app)
 
 app.mount('#app')

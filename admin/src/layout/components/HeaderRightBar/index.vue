@@ -5,6 +5,9 @@
 <template>
   <a-row justify="end" align="center">
     <a-space size="medium">
+      <!-- 語言切換器 -->
+      <LanguageSwitcher />
+      
       <!-- 项目配置按钮 -->
       <a-tooltip content="项目配置" position="bl">
         <a-button size="mini" class="gi_hover_btn" @click="handleOpenSettings">
@@ -71,6 +74,7 @@
 import { Message, Modal } from '@arco-design/web-vue'
 import { useFullscreen } from '@vueuse/core'
 import SettingDrawer from './SettingDrawer.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { useUserStore } from '@/stores'
 import { useBreakpoint } from '@/hooks'
 

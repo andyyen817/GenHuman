@@ -1,0 +1,96 @@
+{
+  "common": {
+    "submit": "提交",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "loading": "加载中...",
+    "success": "成功",
+    "error": "错误",
+    "confirm": "确认",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "search": "搜索",
+    "filter": "筛选",
+    "reset": "重置",
+    "refresh": "刷新",
+    "export": "导出",
+    "import": "导入"
+  },
+  "navigation": {
+    "dashboard": "控制台",
+    "create_video": "创建视频",
+    "my_projects": "我的项目",
+    "voice_clone": "声音克隆",
+    "digital_human": "数字人",
+    "settings": "设置",
+    "profile": "个人资料",
+    "logout": "登出",
+    "home": "首页",
+    "about": "关于",
+    "help": "帮助"
+  },
+  "avatar": {
+    "free_avatar": "免费数字人",
+    "premium_avatar": "付费数字人",
+    "custom_avatar": "自定义头像",
+    "select_avatar": "选择头像",
+    "avatar_preview": "头像预览",
+    "avatar_library": "头像库",
+    "create_avatar": "创建头像",
+    "upload_avatar": "上传头像"
+  },
+  "voice": {
+    "voice_clone": "声音克隆",
+    "record_voice": "录制声音",
+    "upload_audio": "上传音频",
+    "voice_preview": "声音预览",
+    "clone_processing": "克隆进行中...",
+    "voice_library": "声音库",
+    "my_voices": "我的声音",
+    "voice_settings": "声音设置"
+  },
+  "video": {
+    "create_video": "创建视频",
+    "video_title": "视频标题",
+    "video_script": "视频脚本",
+    "generate_video": "生成视频",
+    "download_video": "下载视频",
+    "video_preview": "视频预览",
+    "video_library": "视频库",
+    "video_settings": "视频设置"
+  },
+  "user": {
+    "register": "注册",
+    "login": "登录",
+    "logout": "登出",
+    "profile": "个人资料",
+    "email": "电子邮件",
+    "password": "密码",
+    "confirm_password": "确认密码",
+    "username": "用户名",
+    "phone": "电话",
+    "address": "地址"
+  },
+  "quota": {
+    "free_quota": "免费配额",
+    "daily_limit": "每日限制",
+    "remaining_quota": "剩余：{count}",
+    "upgrade_plan": "升级方案",
+    "quota_exceeded": "配额已用完",
+    "quota_info": "配额信息",
+    "usage_history": "使用记录"
+  },
+  "language": {
+    "select_language": "选择语言",
+    "english": "English",
+    "traditional_chinese": "繁體中文",
+    "simplified_chinese": "简体中文",
+    "language_management": "语言管理",
+    "export_translations": "导出翻译",
+    "import_translations": "导入翻译"
+  }
+}

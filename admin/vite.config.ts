@@ -6,6 +6,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd()) as ImportMetaEnv
 
@@ -64,6 +65,10 @@ export default defineConfig(({ mode }) => {
         iconDirs: [path.resolve(process.cwd(), 'src/icons')],
         // 指定symbolId格式
         symbolId: 'icon-[dir]-[name]'
+      }),
+      VueI18nPlugin({
+        // i18n 配置
+        include: [path.resolve(__dirname, 'src/i18n/locales/**')]
       })
     ],
     // 构建

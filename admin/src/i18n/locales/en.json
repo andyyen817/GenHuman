@@ -1,0 +1,96 @@
+{
+  "common": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "refresh": "Refresh",
+    "export": "Export",
+    "import": "Import"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "create_video": "Create Video",
+    "my_projects": "My Projects",
+    "voice_clone": "Voice Clone",
+    "digital_human": "Digital Human",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "home": "Home",
+    "about": "About",
+    "help": "Help"
+  },
+  "avatar": {
+    "free_avatar": "Free Digital Human",
+    "premium_avatar": "Premium Digital Human",
+    "custom_avatar": "Custom Avatar",
+    "select_avatar": "Select Avatar",
+    "avatar_preview": "Avatar Preview",
+    "avatar_library": "Avatar Library",
+    "create_avatar": "Create Avatar",
+    "upload_avatar": "Upload Avatar"
+  },
+  "voice": {
+    "voice_clone": "Voice Clone",
+    "record_voice": "Record Voice",
+    "upload_audio": "Upload Audio",
+    "voice_preview": "Voice Preview",
+    "clone_processing": "Cloning in Progress...",
+    "voice_library": "Voice Library",
+    "my_voices": "My Voices",
+    "voice_settings": "Voice Settings"
+  },
+  "video": {
+    "create_video": "Create Video",
+    "video_title": "Video Title",
+    "video_script": "Video Script",
+    "generate_video": "Generate Video",
+    "download_video": "Download Video",
+    "video_preview": "Video Preview",
+    "video_library": "Video Library",
+    "video_settings": "Video Settings"
+  },
+  "user": {
+    "register": "Register",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "username": "Username",
+    "phone": "Phone",
+    "address": "Address"
+  },
+  "quota": {
+    "free_quota": "Free Quota",
+    "daily_limit": "Daily Limit",
+    "remaining_quota": "Remaining: {count}",
+    "upgrade_plan": "Upgrade Plan",
+    "quota_exceeded": "Quota Exceeded",
+    "quota_info": "Quota Information",
+    "usage_history": "Usage History"
+  },
+  "language": {
+    "select_language": "Select Language",
+    "english": "English",
+    "traditional_chinese": "繁體中文",
+    "simplified_chinese": "简体中文",
+    "language_management": "Language Management",
+    "export_translations": "Export Translations",
+    "import_translations": "Import Translations"
+  }
+}
