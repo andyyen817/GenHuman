@@ -196,6 +196,23 @@ Route::get('/vidspark-i18n-test.html', function () {
     return response('Vidspark test page not found', 404);
 });
 
+// Vidspark數據庫初始化腳本路由
+Route::get('/vidspark-database-init.php', function () {
+    $filePath = base_path() . '/public/vidspark-database-init.php';
+    if (file_exists($filePath)) {
+        // 執行PHP腳本並返回結果
+        ob_start();
+        include $filePath;
+        $output = ob_get_clean();
+        
+        return response($output, 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Vidspark database init script not found', 404);
+});
+
 // Vidspark前端應用路由
 Route::get('/vidspark', function () {
     $filePath = base_path() . '/public/vidspark/index.html';
