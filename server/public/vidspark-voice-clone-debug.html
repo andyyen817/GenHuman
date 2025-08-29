@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark 聲音克隆 Debug</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: #ccc;
+            transform: none;
+            cursor: not-allowed;
+        }
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .result-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .debug-info {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .step h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.pending { background: #ffc107; color: #000; }
+        .status.processing { background: #17a2b8; color: white; }
+        .status.success { background: #28a745; color: white; }
+        .status.error { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Vidspark 聲音克隆 Debug</h1>
+            <p>專門用於診斷聲音克隆API問題</p>
+        </div>
+
+        <div class="form-group">
+            <label for="api-token">GenHuman API Token:</label>
+            <input type="text" id="api-token" placeholder="輸入您的API Token" />
+        </div>
+
+        <div class="form-group">
+            <label for="audio-url">音頻URL:</label>
+            <input type="url" id="audio-url" placeholder="https://example.com/audio.mp3" />
+        </div>
+
+        <div class="form-group">
+            <label for="voice-name">聲音名稱:</label>
+            <input type="text" id="voice-name" value="Debug測試聲音" />
+        </div>
+
+        <div class="form-group">
+            <label for="voice-description">聲音描述:</label>
+            <input type="text" id="voice-description" value="Vidspark聲音克隆Debug測試" />
+        </div>
+
+        <button class="btn" onclick="debugCloneVoice()" id="debug-btn">🔬 開始DEBUG測試</button>
+
+        <div id="debug-results" style="display: none;">
+            <div class="result-section">
+                <h3>📊 調試結果</h3>
+                
+                <div class="step">
+                    <h4>步驟1：參數驗證 <span class="status pending" id="status-1">等待中</span></h4>
+                    <div id="result-1">尚未開始...</div>
+                </div>
+
+                <div class="step">
+                    <h4>步驟2：API調用 <span class="status pending" id="status-2">等待中</span></h4>
+                    <div id="result-2">尚未開始...</div>
+                </div>
+
+                <div class="step">
+                    <h4>步驟3：響應分析 <span class="status pending" id="status-3">等待中</span></h4>
+                    <div id="result-3">尚未開始...</div>
+                </div>
+
+                <div class="step">
+                    <h4>完整調試信息</h4>
+                    <div class="debug-info" id="debug-info">等待調試開始...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function debugCloneVoice() {
+            const token = document.getElementById('api-token').value.trim();
+            const audioUrl = document.getElementById('audio-url').value.trim();
+            const name = document.getElementById('voice-name').value.trim();
+            const description = document.getElementById('voice-description').value.trim();
+
+            document.getElementById('debug-results').style.display = 'block';
+            document.getElementById('debug-btn').disabled = true;
+
+            // 重置狀態
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`status-${i}`).className = 'status pending';
+                document.getElementById(`status-${i}`).textContent = '等待中';
+                document.getElementById(`result-${i}`).textContent = '尚未開始...';
+            }
+
+            try {
+                // 步驟1：參數驗證
+                updateStatus(1, 'processing', '檢查中');
+                updateResult(1, '🔍 檢查輸入參數...');
+
+                const debugInfo = {
+                    timestamp: new Date().toISOString(),
+                    input_validation: {}
+                };
+
+                if (!token) {
+                    updateStatus(1, 'error', '失敗');
+                    updateResult(1, '❌ Token不能為空');
+                    updateDebugInfo(debugInfo);
+                    return;
+                }
+
+                if (!audioUrl) {
+                    updateStatus(1, 'error', '失敗');
+                    updateResult(1, '❌ 音頻URL不能為空');
+                    updateDebugInfo(debugInfo);
+                    return;
+                }
+
+                // 檢查URL格式
+                try {
+                    new URL(audioUrl);
+                    debugInfo.input_validation.url_format = 'valid';
+                } catch (e) {
+                    debugInfo.input_validation.url_format = 'invalid';
+                    updateStatus(1, 'error', '失敗');
+                    updateResult(1, '❌ 音頻URL格式不正確');
+                    updateDebugInfo(debugInfo);
+                    return;
+                }
+
+                debugInfo.input_validation = {
+                    token_length: token.length,
+                    audio_url: audioUrl,
+                    name: name,
+                    description: description,
+                    url_format: 'valid'
+                };
+
+                updateStatus(1, 'success', '完成');
+                updateResult(1, '✅ 參數驗證通過');
+
+                // 步驟2：API調用
+                updateStatus(2, 'processing', '調用中');
+                updateResult(2, '📡 正在調用GenHuman API...');
+
+                const requestData = {
+                    token: token,
+                    name: name,
+                    audio_url: audioUrl,
+                    description: description
+                };
+
+                debugInfo.api_request = {
+                    endpoint: '/vidspark-api-proxy/clone-voice',
+                    method: 'POST',
+                    timestamp: new Date().toISOString(),
+                    request_data: requestData
+                };
+
+                const response = await fetch('/vidspark-api-proxy/clone-voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                debugInfo.api_response = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+
+                const result = await response.json();
+                debugInfo.api_response.body = result;
+
+                updateStatus(2, 'success', '完成');
+                updateResult(2, `✅ API調用完成 (HTTP ${response.status})`);
+
+                // 步驟3：響應分析
+                updateStatus(3, 'processing', '分析中');
+                updateResult(3, '🔬 分析API響應...');
+
+                debugInfo.response_analysis = {
+                    has_success_field: 'success' in result,
+                    has_code_field: 'code' in result,
+                    has_data_field: 'data' in result,
+                    has_msg_field: 'msg' in result
+                };
+
+                if (result.code === 200) {
+                    updateStatus(3, 'success', '成功');
+                    updateResult(3, `✅ 聲音克隆成功！\n🎤 聲音ID: ${result.data?.voice_id || '未知'}\n📋 任務ID: ${result.data?.task_id || '未知'}`);
+                    debugInfo.response_analysis.result = 'success';
+                } else {
+                    updateStatus(3, 'error', '失敗');
+                    updateResult(3, `❌ 聲音克隆失敗\n錯誤代碼: ${result.code}\n錯誤信息: ${result.msg}`);
+                    debugInfo.response_analysis.result = 'failed';
+                    debugInfo.response_analysis.error_code = result.code;
+                    debugInfo.response_analysis.error_message = result.msg;
+                }
+
+                updateDebugInfo(debugInfo);
+
+            } catch (error) {
+                updateStatus(2, 'error', '錯誤');
+                updateResult(2, `❌ 網絡錯誤: ${error.message}`);
+                
+                const errorInfo = {
+                    timestamp: new Date().toISOString(),
+                    error: {
+                        message: error.message,
+                        name: error.name,
+                        stack: error.stack
+                    }
+                };
+                updateDebugInfo(errorInfo);
+            } finally {
+                document.getElementById('debug-btn').disabled = false;
+            }
+        }
+
+        function updateStatus(step, status, text) {
+            const element = document.getElementById(`status-${step}`);
+            element.className = `status ${status}`;
+            element.textContent = text;
+        }
+
+        function updateResult(step, text) {
+            document.getElementById(`result-${step}`).textContent = text;
+        }
+
+        function updateDebugInfo(data) {
+            document.getElementById('debug-info').textContent = JSON.stringify(data, null, 2);
+        }
+
+        // 頁面加載完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 從localStorage載入保存的Token
+            const savedToken = localStorage.getItem('vidspark_genhuman_token');
+            if (savedToken) {
+                document.getElementById('api-token').value = savedToken;
+            }
+
+            // 監聽Token輸入變化，自動保存
+            document.getElementById('api-token').addEventListener('change', function() {
+                const token = this.value.trim();
+                if (token) {
+                    localStorage.setItem('vidspark_genhuman_token', token);
+                }
+            });
+
+            // 設置一個測試音頻URL
+            document.getElementById('audio-url').value = 'https://genhuman-digital-human.zeabur.app/vidspark/storage/audio/audio_20250829_124147_test.mp3';
+        });
+    </script>
+</body>
+</html>

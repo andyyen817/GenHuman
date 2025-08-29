@@ -387,6 +387,13 @@ Route::get('/vidspark-admin/assets/{path:.+}', function ($request, $path) {
     return response('Vidspark admin asset not found: ' . $path, 404);
 });
 
+// Vidspark聲音克隆Debug頁面
+Route::get('/vidspark-voice-clone-debug', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/vidspark-voice-clone-debug.html'));
+});
+
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
     return response('API endpoint not found', 404);

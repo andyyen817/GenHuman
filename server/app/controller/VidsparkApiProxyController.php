@@ -159,8 +159,23 @@ class VidsparkApiProxyController
             throw new Exception("cURL錯誤: $error");
         }
         
+        // 詳細記錄HTTP響應信息用於診斷
+        $debugInfo = [
+            'http_code' => $httpCode,
+            'raw_response' => $response,
+            'curl_error' => $error,
+            'url' => $url,
+            'request_data' => $data
+        ];
+        
         if ($httpCode !== 200) {
-            throw new Exception("HTTP錯誤 $httpCode: $response");
+            // 增強錯誤診斷信息
+            $errorMessage = "HTTP錯誤 $httpCode";
+            if ($response) {
+                $errorMessage .= " - 響應: " . substr($response, 0, 500);
+            }
+            $errorMessage .= " - 詳細: " . json_encode($debugInfo);
+            throw new Exception($errorMessage);
         }
         
         $result = json_decode($response, true);
@@ -198,8 +213,29 @@ class VidsparkApiProxyController
             $audioUrl = $input['audio_url'] ?? '';
             $description = $input['description'] ?? 'Vidspark聲音克隆';
             
-            if (empty($token) || empty($audioUrl)) {
-                throw new Exception('Token和音頻地址不能為空');
+            // 詳細記錄輸入參數
+            $requestLog = [
+                'method' => 'cloneVoice',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'name' => $name,
+                    'audio_url' => $audioUrl,
+                    'description' => $description
+                ]
+            ];
+            
+            if (empty($token)) {
+                throw new Exception('Token不能為空');
+            }
+            
+            if (empty($audioUrl)) {
+                throw new Exception('音頻地址不能為空');
+            }
+            
+            // 檢查音頻URL是否可訪問
+            if (!filter_var($audioUrl, FILTER_VALIDATE_URL)) {
+                throw new Exception('音頻URL格式不正確: ' . $audioUrl);
             }
             
             $result = $this->callGenHumanAPI('/app/human/human/Voice/clone', [
@@ -207,6 +243,9 @@ class VidsparkApiProxyController
                 'audio_url' => $audioUrl,
                 'description' => $description
             ], $token);
+            
+            // 記錄成功結果
+            $result['_request_log'] = $requestLog;
             
             return new Response(200, [
                 'Content-Type' => 'application/json; charset=utf-8'
@@ -219,6 +258,7 @@ class VidsparkApiProxyController
                 'success' => false,
                 'code' => 500,
                 'msg' => $e->getMessage(),
+                'debug_info' => $requestLog ?? null,
                 'test_time' => date('Y-m-d H:i:s')
             ], JSON_UNESCAPED_UNICODE));
         }
