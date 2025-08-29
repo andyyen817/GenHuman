@@ -129,7 +129,7 @@ class VidsparkApiProxyController
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => [
-                'Authorization: Bearer ' . $token,
+                'Authorization: ' . $this->formatAuthHeader($token),
                 'Content-Type: application/json',
                 'Accept: application/json',
                 'User-Agent: Vidspark-Proxy/1.0'
@@ -198,7 +198,30 @@ class VidsparkApiProxyController
         if (!$token || strlen($token) < 10) {
             return 'invalid';
         }
+        
+        // 如果Token包含Bearer前綴，只掩碼實際Token部分
+        $cleanToken = trim($token);
+        if (stripos($cleanToken, 'Bearer ') === 0) {
+            $actualToken = trim(substr($cleanToken, 7));
+            return 'Bearer ' . substr($actualToken, 0, 8) . '...' . substr($actualToken, -4);
+        }
+        
         return substr($token, 0, 8) . '...' . substr($token, -4);
+    }
+    
+    /**
+     * 格式化授權Header，避免重複Bearer前綴
+     */
+    private function formatAuthHeader($token)
+    {
+        // 移除可能存在的Bearer前綴
+        $cleanToken = trim($token);
+        if (stripos($cleanToken, 'Bearer ') === 0) {
+            $cleanToken = trim(substr($cleanToken, 7));
+        }
+        
+        // 返回正確格式的授權header
+        return 'Bearer ' . $cleanToken;
     }
     
     /**
