@@ -157,15 +157,13 @@ class VidsparkApiTestController
      */
     private function callGenHumanFreeAvatarAPI()
     {
+        // 先測試最簡單的Token驗證
         $url = 'https://api.yidevs.com/app/human/human/Index/created';
         $token = '08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3';
         
+        // 使用最基本的參數測試
         $data = [
-            'text' => '這是Vidspark生產環境測試，測試免費數字人生成功能。',
-            'avatar_id' => 1,
-            'voice_id' => 1,
-            'callback_url' => 'https://genhuman-digital-human.zeabur.app/vidspark-admin/api/callback',
-            'production_test' => true
+            'text' => '測試文本'
         ];
         
         $ch = curl_init();
@@ -177,35 +175,53 @@ class VidsparkApiTestController
             CURLOPT_HTTPHEADER => [
                 'Authorization: Bearer ' . $token,
                 'Content-Type: application/json',
-                'User-Agent: Vidspark-Production-Test/1.0'
+                'Accept: application/json'
             ],
             CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 10
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false
         ]);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
+        $info = curl_getinfo($ch);
         curl_close($ch);
         
+        // 詳細錯誤檢查
         if ($error) {
             throw new Exception("cURL錯誤: $error");
         }
         
+        // 記錄原始響應用於調試
+        $rawResponse = $response;
+        
         if ($httpCode !== 200) {
-            throw new Exception("HTTP錯誤: $httpCode");
+            throw new Exception("HTTP錯誤 $httpCode: $rawResponse");
         }
         
         $result = json_decode($response, true);
-        if (!$result) {
-            throw new Exception("JSON解析失敗: $response");
+        if ($result === null) {
+            throw new Exception("JSON解析失敗，原始響應: $rawResponse");
         }
         
         return [
             'http_code' => $httpCode,
             'response' => $result,
+            'raw_response' => $rawResponse,
             'api_endpoint' => $url,
-            'request_data' => $data
+            'request_data' => $data,
+            'request_headers' => [
+                'Authorization: Bearer ' . substr($token, 0, 10) . '...' . substr($token, -5),
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ],
+            'curl_info' => [
+                'total_time' => $info['total_time'],
+                'connect_time' => $info['connect_time'],
+                'content_type' => $info['content_type']
+            ]
         ];
     }
     
@@ -214,14 +230,13 @@ class VidsparkApiTestController
      */
     private function callGenHumanVoiceCloneAPI()
     {
+        // 簡化測試聲音克隆API
         $url = 'https://api.yidevs.com/app/human/human/Voice/clone';
         $token = '08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3';
         
+        // 最基本的測試參數
         $data = [
-            'audio_url' => 'https://genhuman-digital-human.zeabur.app/vidspark/test/sample.mp3',
-            'voice_name' => 'Vidspark測試聲音',
-            'callback_url' => 'https://genhuman-digital-human.zeabur.app/vidspark-admin/api/callback',
-            'production_test' => true
+            'audio_url' => 'https://example.com/test.mp3'
         ];
         
         $ch = curl_init();
@@ -233,35 +248,53 @@ class VidsparkApiTestController
             CURLOPT_HTTPHEADER => [
                 'Authorization: Bearer ' . $token,
                 'Content-Type: application/json',
-                'User-Agent: Vidspark-Production-Test/1.0'
+                'Accept: application/json'
             ],
             CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 10
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false
         ]);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
+        $info = curl_getinfo($ch);
         curl_close($ch);
         
+        // 詳細錯誤檢查
         if ($error) {
             throw new Exception("cURL錯誤: $error");
         }
         
+        // 記錄原始響應用於調試
+        $rawResponse = $response;
+        
         if ($httpCode !== 200) {
-            throw new Exception("HTTP錯誤: $httpCode");
+            throw new Exception("HTTP錯誤 $httpCode: $rawResponse");
         }
         
         $result = json_decode($response, true);
-        if (!$result) {
-            throw new Exception("JSON解析失敗: $response");
+        if ($result === null) {
+            throw new Exception("JSON解析失敗，原始響應: $rawResponse");
         }
         
         return [
             'http_code' => $httpCode,
             'response' => $result,
+            'raw_response' => $rawResponse,
             'api_endpoint' => $url,
-            'request_data' => $data
+            'request_data' => $data,
+            'request_headers' => [
+                'Authorization: Bearer ' . substr($token, 0, 10) . '...' . substr($token, -5),
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ],
+            'curl_info' => [
+                'total_time' => $info['total_time'],
+                'connect_time' => $info['connect_time'],
+                'content_type' => $info['content_type']
+            ]
         ];
     }
     
@@ -270,12 +303,12 @@ class VidsparkApiTestController
      */
     private function callGenHumanTaskStatusAPI($taskId)
     {
+        // 簡化測試任務狀態查詢
         $url = 'https://api.yidevs.com/app/human/human/Musetalk/task';
         $token = '08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3';
         
         $data = [
-            'task_id' => $taskId,
-            'production_test' => true
+            'task_id' => $taskId
         ];
         
         $ch = curl_init();
@@ -284,35 +317,52 @@ class VidsparkApiTestController
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => [
                 'Authorization: Bearer ' . $token,
-                'User-Agent: Vidspark-Production-Test/1.0'
+                'Accept: application/json'
             ],
             CURLOPT_TIMEOUT => 15,
-            CURLOPT_CONNECTTIMEOUT => 5
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false
         ]);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
+        $info = curl_getinfo($ch);
         curl_close($ch);
         
+        // 詳細錯誤檢查
         if ($error) {
             throw new Exception("cURL錯誤: $error");
         }
         
+        // 記錄原始響應用於調試
+        $rawResponse = $response;
+        
         if ($httpCode !== 200) {
-            throw new Exception("HTTP錯誤: $httpCode");
+            throw new Exception("HTTP錯誤 $httpCode: $rawResponse");
         }
         
         $result = json_decode($response, true);
-        if (!$result) {
-            throw new Exception("JSON解析失敗: $response");
+        if ($result === null) {
+            throw new Exception("JSON解析失敗，原始響應: $rawResponse");
         }
         
         return [
             'http_code' => $httpCode,
             'response' => $result,
+            'raw_response' => $rawResponse,
             'api_endpoint' => $url,
-            'query_params' => $data
+            'query_params' => $data,
+            'request_headers' => [
+                'Authorization: Bearer ' . substr($token, 0, 10) . '...' . substr($token, -5),
+                'Accept: application/json'
+            ],
+            'curl_info' => [
+                'total_time' => $info['total_time'],
+                'connect_time' => $info['connect_time'],
+                'content_type' => $info['content_type']
+            ]
         ];
     }
     
