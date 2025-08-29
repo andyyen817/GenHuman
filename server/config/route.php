@@ -211,9 +211,28 @@ Route::get('/vidspark-token-test', function () {
     return response('Token test page not found', 404);
 });
 
+// Vidspark完整數字人生成流程頁面
+Route::get('/vidspark-digital-human-complete', function () {
+    $filePath = base_path() . '/public/vidspark-digital-human-complete.html';
+    if (file_exists($filePath)) {
+        return response(file_get_contents($filePath), 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Complete workflow page not found', 404);
+});
+
 // Vidspark API代理路由（解決CORS問題）
 Route::post('/vidspark-api-proxy/validate-token', [app\controller\VidsparkApiProxyController::class, 'validateToken']);
 Route::post('/vidspark-api-proxy/test-free-avatar', [app\controller\VidsparkApiProxyController::class, 'testFreeAvatar']);
+
+// Vidspark完整數字人生成流程API代理
+Route::post('/vidspark-api-proxy/clone-voice', [app\controller\VidsparkApiProxyController::class, 'cloneVoice']);
+Route::post('/vidspark-api-proxy/synthesize-voice', [app\controller\VidsparkApiProxyController::class, 'synthesizeWithClonedVoice']);
+Route::post('/vidspark-api-proxy/create-scene', [app\controller\VidsparkApiProxyController::class, 'createScene']);
+Route::post('/vidspark-api-proxy/synthesize-avatar', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatar']);
+
 Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyController::class, 'getProxyStatus']);
 
 // Vidspark生產環境API測試路由（暫時移除，避免系統崩潰）

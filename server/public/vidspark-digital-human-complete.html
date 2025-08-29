@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark完整數字人生成流程測試</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .workflow {
+            padding: 30px;
+        }
+        
+        .step {
+            margin-bottom: 40px;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .step.completed {
+            border-color: #28a745;
+            background-color: #f8fff9;
+        }
+        
+        .step-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .step.active .step-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .step.completed .step-header {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .step.completed .step-number {
+            background: white;
+            color: #28a745;
+        }
+        
+        .step-content {
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            background-color: #f8f9ff;
+            border-color: #5a67d8;
+        }
+        
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-box.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        
+        .result-box.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            background: #e1e8ed;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 30px 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .workflow-status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .status-item.completed {
+            border-left-color: #28a745;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Vidspark 數字人生成流程</h1>
+            <p>完整的4步驟數字人製作流程 - 基於GenHuman免費API</p>
+        </div>
+        
+        <div class="workflow">
+            <!-- Token 輸入 -->
+            <div class="form-group" style="margin-bottom: 30px;">
+                <label for="api-token">🔑 GenHuman API Token:</label>
+                <input type="text" id="api-token" placeholder="輸入您的API Token (支持Bearer前綴)" style="font-size: 14px;">
+            </div>
+            
+            <!-- 工作流程狀態 -->
+            <div class="workflow-status">
+                <h3>📊 流程狀態</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="status-grid">
+                    <div class="status-item" id="status-step1">
+                        <strong>步驟1：聲音克隆</strong>
+                        <div>狀態: <span id="status1-text">等待中</span></div>
+                    </div>
+                    <div class="status-item" id="status-step2">
+                        <strong>步驟2：語音合成</strong>
+                        <div>狀態: <span id="status2-text">等待中</span></div>
+                    </div>
+                    <div class="status-item" id="status-step3">
+                        <strong>步驟3：場景創建</strong>
+                        <div>狀態: <span id="status3-text">等待中</span></div>
+                    </div>
+                    <div class="status-item" id="status-step4">
+                        <strong>步驟4：數字人合成</strong>
+                        <div>狀態: <span id="status4-text">等待中</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 步驟1：聲音克隆 -->
+            <div class="step active" id="step1">
+                <div class="step-header">
+                    <div class="step-title">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h3>🎤 聲音克隆</h3>
+                            <p>上傳您的聲音文件，系統將克隆您的聲音</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="form-group">
+                        <label for="voice-name">聲音名稱:</label>
+                        <input type="text" id="voice-name" placeholder="給您的聲音起個名字" value="我的聲音">
+                    </div>
+                    <div class="form-group">
+                        <label for="voice-description">聲音描述:</label>
+                        <input type="text" id="voice-description" placeholder="描述這個聲音的特點" value="Vidspark用戶聲音">
+                    </div>
+                    <div class="form-group">
+                        <label>上傳聲音文件:</label>
+                        <div class="file-upload" onclick="document.getElementById('voice-file').click()">
+                            <input type="file" id="voice-file" accept="audio/*">
+                            <div>📁 點擊選擇音頻文件 (.mp3, .wav, .m4a)</div>
+                            <div style="margin-top: 10px; color: #666;">或者輸入音頻URL</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="voice-url">或者輸入音頻URL:</label>
+                        <input type="url" id="voice-url" placeholder="https://example.com/audio.mp3">
+                    </div>
+                    <button class="btn" onclick="startVoiceCloning()">🚀 開始聲音克隆</button>
+                    <div class="loading" id="loading1">
+                        <div class="spinner"></div>
+                        <div>正在克隆聲音...</div>
+                    </div>
+                    <div class="result-box hidden" id="result1"></div>
+                </div>
+            </div>
+            
+            <!-- 步驟2：語音合成 -->
+            <div class="step" id="step2">
+                <div class="step-header">
+                    <div class="step-title">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h3>🗣️ 語音合成</h3>
+                            <p>使用克隆的聲音來讀出您想要的文字</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="form-group">
+                        <label for="speech-text">要合成的文字:</label>
+                        <textarea id="speech-text" rows="4" placeholder="輸入您想要數字人說的話...">歡迎來到Vidspark！這是一個使用AI技術創建的數字人影片。</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>克隆的聲音ID:</label>
+                        <input type="text" id="cloned-voice-id" readonly placeholder="等待步驟1完成...">
+                    </div>
+                    <button class="btn" onclick="synthesizeSpeech()" disabled id="btn-step2">🎵 合成語音</button>
+                    <div class="loading" id="loading2">
+                        <div class="spinner"></div>
+                        <div>正在合成語音...</div>
+                    </div>
+                    <div class="result-box hidden" id="result2"></div>
+                </div>
+            </div>
+            
+            <!-- 步驟3：場景創建 -->
+            <div class="step" id="step3">
+                <div class="step-header">
+                    <div class="step-title">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h3>🎬 場景創建</h3>
+                            <p>上傳您想要合成口型的影片</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="form-group">
+                        <label for="scene-name">場景名稱:</label>
+                        <input type="text" id="scene-name" placeholder="給場景起個名字" value="我的數字人場景">
+                    </div>
+                    <div class="form-group">
+                        <label>上傳影片文件:</label>
+                        <div class="file-upload" onclick="document.getElementById('video-file').click()">
+                            <input type="file" id="video-file" accept="video/*">
+                            <div>🎥 點擊選擇影片文件 (.mp4, .mov, .avi)</div>
+                            <div style="margin-top: 10px; color: #666;">或者輸入影片URL</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="video-url">或者輸入影片URL:</label>
+                        <input type="url" id="video-url" placeholder="https://example.com/video.mp4">
+                    </div>
+                    <button class="btn" onclick="createScene()" disabled id="btn-step3">🏗️ 創建場景</button>
+                    <div class="loading" id="loading3">
+                        <div class="spinner"></div>
+                        <div>正在創建場景...</div>
+                    </div>
+                    <div class="result-box hidden" id="result3"></div>
+                </div>
+            </div>
+            
+            <!-- 步驟4：數字人合成 -->
+            <div class="step" id="step4">
+                <div class="step-header">
+                    <div class="step-title">
+                        <div class="step-number">4</div>
+                        <div>
+                            <h3>🤖 數字人合成</h3>
+                            <p>結合聲音和影片，生成最終的數字人影片</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="form-group">
+                        <label>場景ID:</label>
+                        <input type="text" id="scene-task-id" readonly placeholder="等待步驟3完成...">
+                    </div>
+                    <div class="form-group">
+                        <label>音頻URL:</label>
+                        <input type="url" id="audio-url" readonly placeholder="等待步驟2完成...">
+                    </div>
+                    <button class="btn" onclick="synthesizeAvatar()" disabled id="btn-step4">🎯 合成數字人</button>
+                    <div class="loading" id="loading4">
+                        <div class="spinner"></div>
+                        <div>正在合成數字人影片...</div>
+                    </div>
+                    <div class="result-box hidden" id="result4"></div>
+                </div>
+            </div>
+            
+            <!-- 最終結果 -->
+            <div class="step hidden" id="final-result">
+                <div class="step-header">
+                    <div class="step-title">
+                        <div class="step-number">✓</div>
+                        <div>
+                            <h3>🎉 完成！</h3>
+                            <p>您的數字人影片已經生成完成</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="result-box success">
+                        <h4>🎊 恭喜！數字人生成成功！</h4>
+                        <div id="final-video-info"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局變量存儲流程數據
+        let workflowData = {
+            token: '',
+            voiceId: '',
+            audioUrl: '',
+            sceneTaskId: '',
+            videoTaskId: ''
+        };
+
+        // 更新進度條
+        function updateProgress(step) {
+            const progress = (step / 4) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+        }
+
+        // 更新步驟狀態
+        function updateStepStatus(step, status, message) {
+            const statusElement = document.getElementById(`status${step}-text`);
+            const statusItem = document.getElementById(`status-step${step}`);
+            
+            statusElement.textContent = message;
+            
+            if (status === 'completed') {
+                statusItem.classList.add('completed');
+            }
+        }
+
+        // 顯示結果
+        function showResult(step, content, type = 'info') {
+            const resultElement = document.getElementById(`result${step}`);
+            resultElement.className = `result-box ${type}`;
+            resultElement.innerHTML = content;
+            resultElement.classList.remove('hidden');
+        }
+
+        // 顯示加載
+        function showLoading(step, show = true) {
+            const loadingElement = document.getElementById(`loading${step}`);
+            loadingElement.style.display = show ? 'block' : 'none';
+        }
+
+        // 步驟1：聲音克隆
+        async function startVoiceCloning() {
+            const token = document.getElementById('api-token').value.trim();
+            if (!token) {
+                showResult(1, '❌ 請先輸入API Token', 'error');
+                return;
+            }
+
+            // 處理Bearer前綴
+            workflowData.token = token.startsWith('Bearer ') ? token.substring(7) : token;
+
+            const name = document.getElementById('voice-name').value.trim();
+            const description = document.getElementById('voice-description').value.trim();
+            const audioUrl = document.getElementById('voice-url').value.trim();
+
+            if (!audioUrl) {
+                showResult(1, '❌ 請提供音頻URL', 'error');
+                return;
+            }
+
+            showLoading(1, true);
+            updateStepStatus(1, 'processing', '處理中...');
+
+            try {
+                const response = await fetch('/vidspark-api-proxy/clone-voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: workflowData.token,
+                        name: name,
+                        audio_url: audioUrl,
+                        description: description
+                    })
+                });
+
+                const result = await response.json();
+                showLoading(1, false);
+
+                if (result.code === 200 && result.data && result.data.voice_id) {
+                    workflowData.voiceId = result.data.voice_id;
+                    document.getElementById('cloned-voice-id').value = workflowData.voiceId;
+                    
+                    showResult(1, `
+                        <h4>✅ 聲音克隆成功！</h4>
+                        <p><strong>聲音ID:</strong> ${result.data.voice_id}</p>
+                        <p><strong>任務ID:</strong> ${result.data.task_id}</p>
+                        <p>現在可以進行下一步語音合成。</p>
+                    `, 'success');
+
+                    updateStepStatus(1, 'completed', '已完成');
+                    updateProgress(1);
+                    
+                    // 啟用步驟2
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step1').classList.add('completed');
+                    document.getElementById('step2').classList.add('active');
+                    document.getElementById('btn-step2').disabled = false;
+                } else {
+                    showResult(1, `
+                        <h4>❌ 聲音克隆失敗</h4>
+                        <p><strong>錯誤代碼:</strong> ${result.code}</p>
+                        <p><strong>錯誤信息:</strong> ${result.msg}</p>
+                    `, 'error');
+                    updateStepStatus(1, 'error', '失敗');
+                }
+            } catch (error) {
+                showLoading(1, false);
+                showResult(1, `❌ 網絡錯誤: ${error.message}`, 'error');
+                updateStepStatus(1, 'error', '網絡錯誤');
+            }
+        }
+
+        // 步驟2：語音合成
+        async function synthesizeSpeech() {
+            const text = document.getElementById('speech-text').value.trim();
+            if (!text) {
+                showResult(2, '❌ 請輸入要合成的文字', 'error');
+                return;
+            }
+
+            showLoading(2, true);
+            updateStepStatus(2, 'processing', '處理中...');
+
+            try {
+                const response = await fetch('/vidspark-api-proxy/synthesize-voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: workflowData.token,
+                        text: text,
+                        voice_id: workflowData.voiceId
+                    })
+                });
+
+                const result = await response.json();
+                showLoading(2, false);
+
+                if (result.code === 200 && result.data && result.data.audio_url) {
+                    workflowData.audioUrl = result.data.audio_url;
+                    document.getElementById('audio-url').value = workflowData.audioUrl;
+                    
+                    showResult(2, `
+                        <h4>✅ 語音合成成功！</h4>
+                        <p><strong>音頻URL:</strong> <a href="${result.data.audio_url}" target="_blank">播放音頻</a></p>
+                        <p>現在可以進行下一步場景創建。</p>
+                    `, 'success');
+
+                    updateStepStatus(2, 'completed', '已完成');
+                    updateProgress(2);
+                    
+                    // 啟用步驟3
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step2').classList.add('completed');
+                    document.getElementById('step3').classList.add('active');
+                    document.getElementById('btn-step3').disabled = false;
+                } else {
+                    showResult(2, `
+                        <h4>❌ 語音合成失敗</h4>
+                        <p><strong>錯誤代碼:</strong> ${result.code}</p>
+                        <p><strong>錯誤信息:</strong> ${result.msg}</p>
+                    `, 'error');
+                    updateStepStatus(2, 'error', '失敗');
+                }
+            } catch (error) {
+                showLoading(2, false);
+                showResult(2, `❌ 網絡錯誤: ${error.message}`, 'error');
+                updateStepStatus(2, 'error', '網絡錯誤');
+            }
+        }
+
+        // 步驟3：場景創建
+        async function createScene() {
+            const sceneName = document.getElementById('scene-name').value.trim();
+            const videoUrl = document.getElementById('video-url').value.trim();
+
+            if (!videoUrl) {
+                showResult(3, '❌ 請提供影片URL', 'error');
+                return;
+            }
+
+            showLoading(3, true);
+            updateStepStatus(3, 'processing', '處理中...');
+
+            try {
+                const response = await fetch('/vidspark-api-proxy/create-scene', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: workflowData.token,
+                        video_name: sceneName,
+                        video_url: videoUrl
+                    })
+                });
+
+                const result = await response.json();
+                showLoading(3, false);
+
+                if (result.code === 200 && result.data && result.data.scene_task_id) {
+                    workflowData.sceneTaskId = result.data.scene_task_id;
+                    document.getElementById('scene-task-id').value = workflowData.sceneTaskId;
+                    
+                    showResult(3, `
+                        <h4>✅ 場景創建成功！</h4>
+                        <p><strong>場景ID:</strong> ${result.data.scene_task_id}</p>
+                        <p>現在可以進行最後一步數字人合成。</p>
+                    `, 'success');
+
+                    updateStepStatus(3, 'completed', '已完成');
+                    updateProgress(3);
+                    
+                    // 啟用步驟4
+                    document.getElementById('step3').classList.remove('active');
+                    document.getElementById('step3').classList.add('completed');
+                    document.getElementById('step4').classList.add('active');
+                    document.getElementById('btn-step4').disabled = false;
+                } else {
+                    showResult(3, `
+                        <h4>❌ 場景創建失敗</h4>
+                        <p><strong>錯誤代碼:</strong> ${result.code}</p>
+                        <p><strong>錯誤信息:</strong> ${result.msg}</p>
+                    `, 'error');
+                    updateStepStatus(3, 'error', '失敗');
+                }
+            } catch (error) {
+                showLoading(3, false);
+                showResult(3, `❌ 網絡錯誤: ${error.message}`, 'error');
+                updateStepStatus(3, 'error', '網絡錯誤');
+            }
+        }
+
+        // 步驟4：數字人合成
+        async function synthesizeAvatar() {
+            showLoading(4, true);
+            updateStepStatus(4, 'processing', '處理中...');
+
+            try {
+                const response = await fetch('/vidspark-api-proxy/synthesize-avatar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: workflowData.token,
+                        scene_task_id: workflowData.sceneTaskId,
+                        audio_url: workflowData.audioUrl
+                    })
+                });
+
+                const result = await response.json();
+                showLoading(4, false);
+
+                if (result.code === 200 && result.data) {
+                    workflowData.videoTaskId = result.data.video_task_id;
+                    
+                    showResult(4, `
+                        <h4>🎉 數字人合成成功提交！</h4>
+                        <p><strong>影片任務ID:</strong> ${result.data.video_task_id}</p>
+                        <p><strong>計費ID:</strong> ${result.data.bill_id}</p>
+                        <p>系統正在後台處理您的數字人影片，請耐心等待...</p>
+                        <p><em>註：實際的影片生成需要通過回調URL接收結果</em></p>
+                    `, 'success');
+
+                    updateStepStatus(4, 'completed', '已完成');
+                    updateProgress(4);
+                    
+                    // 顯示最終結果
+                    document.getElementById('step4').classList.remove('active');
+                    document.getElementById('step4').classList.add('completed');
+                    document.getElementById('final-result').classList.remove('hidden');
+                    document.getElementById('final-video-info').innerHTML = `
+                        <p><strong>影片任務ID:</strong> ${result.data.video_task_id}</p>
+                        <p><strong>計費ID:</strong> ${result.data.bill_id}</p>
+                        <p>完整的數字人生成流程已經全部完成！</p>
+                    `;
+                } else {
+                    showResult(4, `
+                        <h4>❌ 數字人合成失敗</h4>
+                        <p><strong>錯誤代碼:</strong> ${result.code}</p>
+                        <p><strong>錯誤信息:</strong> ${result.msg}</p>
+                    `, 'error');
+                    updateStepStatus(4, 'error', '失敗');
+                }
+            } catch (error) {
+                showLoading(4, false);
+                showResult(4, `❌ 網絡錯誤: ${error.message}`, 'error');
+                updateStepStatus(4, 'error', '網絡錯誤');
+            }
+        }
+
+        // 頁面加載完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Vidspark完整數字人生成流程頁面已載入');
+            
+            // 檢查localStorage中是否有保存的token
+            const savedToken = localStorage.getItem('vidspark_genhuman_token');
+            if (savedToken) {
+                document.getElementById('api-token').value = savedToken;
+                console.log('已從localStorage載入Token');
+            }
+            
+            // 監聽Token輸入變化，自動保存
+            document.getElementById('api-token').addEventListener('change', function() {
+                const token = this.value.trim();
+                if (token) {
+                    localStorage.setItem('vidspark_genhuman_token', token);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
