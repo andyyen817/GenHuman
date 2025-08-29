@@ -5,6 +5,7 @@
  */
 
 use Webman\Route;
+use support\Response;
 
 // 前端API路由
 Route::group('/api/v1', function () {
