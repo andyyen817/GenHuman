@@ -360,6 +360,36 @@ Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
     return response('Vidspark asset not found: ' . $path, 404);
 });
 
+// 🚨 關鍵修復：Vidspark存儲文件路由
+Route::get('/vidspark/storage/{path:.+}', function ($request, $path) {
+    $filePath = base_path() . '/public/vidspark/storage/' . $path;
+    if (file_exists($filePath)) {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $contentTypes = [
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'm4a' => 'audio/mp4',
+            'mp4' => 'video/mp4',
+            'mov' => 'video/quicktime',
+            'avi' => 'video/x-msvideo',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif'
+        ];
+        $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+        
+        return response()->file($filePath, 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=86400', // 1天緩存
+            'Access-Control-Allow-Origin' => '*', // 允許跨域訪問
+            'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Headers' => 'Content-Type'
+        ]);
+    }
+    return response('Vidspark storage file not found: ' . $path, 404);
+});
+
 // Vidspark管理後台靜態資源路由
 Route::get('/vidspark-admin/assets/{path:.+}', function ($request, $path) {
     $filePath = base_path() . '/public/vidspark-admin/assets/' . $path;
@@ -408,6 +438,16 @@ Route::get('/vidspark-audio-diagnosis', function() {
     return new Response(200, [
         'Content-Type' => 'text/html; charset=utf-8'
     ], file_get_contents(runtime_path() . '/../public/vidspark-audio-diagnosis.html'));
+});
+
+// Vidspark存儲目錄初始化
+Route::get('/vidspark-storage-init', function() {
+    ob_start();
+    include runtime_path() . '/../public/vidspark-storage-init.php';
+    $output = ob_get_clean();
+    return new Response(200, [
+        'Content-Type' => 'application/json; charset=utf-8'
+    ], $output);
 });
 
 // 靜態文件處理（如果需要）
