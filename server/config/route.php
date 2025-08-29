@@ -265,6 +265,7 @@ Route::post('/vidspark-api-proxy/create-scene', [app\controller\VidsparkApiProxy
 Route::post('/vidspark-api-proxy/synthesize-avatar', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatar']);
 
 Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyController::class, 'getProxyStatus']);
+Route::post('/vidspark-api-proxy/get-voice-roles', [app\controller\VidsparkApiProxyController::class, 'getVoiceRoles']);
 
 // Vidspark文件上傳路由（生產環境文件處理）
 Route::get('/vidspark-upload/test', [app\controller\VidsparkFileUploadController::class, 'testUpload']);

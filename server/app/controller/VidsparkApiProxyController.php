@@ -118,16 +118,14 @@ class VidsparkApiProxyController
     /**
      * 調用GenHuman API的核心方法
      */
-    private function callGenHumanAPI($endpoint, $data, $token)
+    private function callGenHumanAPI($endpoint, $data, $token, $method = 'POST')
     {
         $url = 'https://api.yidevs.com' . $endpoint;
         
         $ch = curl_init();
-        curl_setopt_array($ch, [
+        $curlOptions = [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => [
                 'Authorization: ' . $this->formatAuthHeader($token),
                 'Content-Type: application/json',
@@ -138,7 +136,16 @@ class VidsparkApiProxyController
             CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false
-        ]);
+        ];
+        
+        if (strtoupper($method) === 'POST') {
+            $curlOptions[CURLOPT_POST] = true;
+            $curlOptions[CURLOPT_POSTFIELDS] = json_encode($data);
+        } else {
+            $curlOptions[CURLOPT_HTTPGET] = true;
+        }
+        
+        curl_setopt_array($ch, $curlOptions);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -282,6 +289,38 @@ class VidsparkApiProxyController
                 'code' => 500,
                 'msg' => $e->getMessage(),
                 'debug_info' => $requestLog ?? null,
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 獲取音色列表（查詢聲音克隆狀態）
+     */
+    public function getVoiceRoles(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            
+            if (empty($token)) {
+                throw new Exception('Token不能為空');
+            }
+            
+            // 調用GenHuman音色獲取API
+            $result = $this->callGenHumanAPI('/app/human/human/Voice/role', [], $token, 'GET');
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
                 'test_time' => date('Y-m-d H:i:s')
             ], JSON_UNESCAPED_UNICODE));
         }

@@ -123,8 +123,15 @@
         </div>
 
         <div class="form-group">
-            <label for="audio-url">音頻URL:</label>
+            <label for="audio-upload">📁 上傳本地音頻文件:</label>
+            <input type="file" id="audio-upload" accept="audio/*" />
+            <small style="color: #666; font-size: 14px;">支持 MP3, WAV, M4A 等格式，建議文件大小 < 10MB</small>
+        </div>
+
+        <div class="form-group">
+            <label for="audio-url">或者輸入音頻URL:</label>
             <input type="url" id="audio-url" placeholder="https://example.com/audio.mp3" />
+            <small style="color: #666; font-size: 14px;">將優先使用上傳的文件，如無上傳則使用URL</small>
         </div>
 
         <div class="form-group">
@@ -169,7 +176,8 @@
     <script>
         async function debugCloneVoice() {
             const token = document.getElementById('api-token').value.trim();
-            const audioUrl = document.getElementById('audio-url').value.trim();
+            const audioFile = document.getElementById('audio-upload').files[0];
+            let audioUrl = document.getElementById('audio-url').value.trim();
             const name = document.getElementById('voice-name').value.trim();
             const description = document.getElementById('voice-description').value.trim();
 
@@ -184,13 +192,14 @@
             }
 
             try {
-                // 步驟1：參數驗證
+                // 步驟1：參數驗證和文件上傳
                 updateStatus(1, 'processing', '檢查中');
                 updateResult(1, '🔍 檢查輸入參數...');
 
                 const debugInfo = {
                     timestamp: new Date().toISOString(),
-                    input_validation: {}
+                    input_validation: {},
+                    file_upload: null
                 };
 
                 if (!token) {
@@ -200,9 +209,65 @@
                     return;
                 }
 
-                if (!audioUrl) {
+                // 處理文件上傳
+                if (audioFile) {
+                    updateResult(1, '📤 正在上傳音頻文件...');
+                    
+                    // 檢查文件大小 (10MB limit)
+                    if (audioFile.size > 10 * 1024 * 1024) {
+                        updateStatus(1, 'error', '失敗');
+                        updateResult(1, '❌ 文件太大，請選擇小於10MB的音頻文件');
+                        return;
+                    }
+
+                    try {
+                        // 使用Base64上傳
+                        const fileData = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result.split(',')[1]);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(audioFile);
+                        });
+                        
+                        const uploadResponse = await fetch('/vidspark-upload/audio-base64', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                fileName: audioFile.name,
+                                fileData: fileData,
+                                fileSize: audioFile.size
+                            })
+                        });
+                        
+                        const uploadResult = await uploadResponse.json();
+                        
+                        if (!uploadResult.success) {
+                            throw new Error('Base64上傳失敗: ' + uploadResult.message);
+                        }
+                        
+                        audioUrl = uploadResult.data.file_url;
+                        debugInfo.file_upload = {
+                            original_name: audioFile.name,
+                            file_size: audioFile.size,
+                            upload_method: 'base64',
+                            final_url: audioUrl
+                        };
+                        
+                        updateResult(1, `📤 文件上傳成功: ${audioFile.name} (${(audioFile.size/1024).toFixed(1)}KB)`);
+                        
+                    } catch (uploadError) {
+                        debugInfo.file_upload = {
+                            error: uploadError.message,
+                            upload_method: 'base64_failed'
+                        };
+                        updateStatus(1, 'error', '失敗');
+                        updateResult(1, `❌ 文件上傳失敗: ${uploadError.message}`);
+                        updateDebugInfo(debugInfo);
+                        return;
+                    }
+                } else if (!audioUrl) {
                     updateStatus(1, 'error', '失敗');
-                    updateResult(1, '❌ 音頻URL不能為空');
+                    updateResult(1, '❌ 請上傳音頻文件或輸入音頻URL');
                     updateDebugInfo(debugInfo);
                     return;
                 }
@@ -224,11 +289,12 @@
                     audio_url: audioUrl,
                     name: name,
                     description: description,
-                    url_format: 'valid'
+                    url_format: 'valid',
+                    audio_source: audioFile ? 'uploaded_file' : 'manual_url'
                 };
 
                 updateStatus(1, 'success', '完成');
-                updateResult(1, '✅ 參數驗證通過');
+                updateResult(1, '✅ 參數驗證和文件處理完成');
 
                 // 步驟2：API調用
                 updateStatus(2, 'processing', '調用中');
@@ -278,9 +344,14 @@
                 };
 
                 if (result.code === 200) {
-                    updateStatus(3, 'success', '成功');
-                    updateResult(3, `✅ 聲音克隆成功！\n🎤 聲音ID: ${result.data?.voice_id || '未知'}\n📋 任務ID: ${result.data?.task_id || '未知'}`);
-                    debugInfo.response_analysis.result = 'success';
+                    updateStatus(3, 'success', '克隆提交成功');
+                    updateResult(3, `✅ 聲音克隆請求已提交！\n🎤 聲音ID: ${result.data?.voice_id || '未知'}\n📋 任務ID: ${result.data?.task_id || '未知'}\n\n🔍 正在查詢音色生成狀態...`);
+                    debugInfo.response_analysis.result = 'submitted';
+                    debugInfo.clone_response = result.data;
+                    
+                    // 查詢音色狀態
+                    await checkVoiceStatus(token, debugInfo);
+                    
                 } else {
                     updateStatus(3, 'error', '失敗');
                     updateResult(3, `❌ 聲音克隆失敗\n錯誤代碼: ${result.code}\n錯誤信息: ${result.msg}`);
@@ -309,6 +380,49 @@
             }
         }
 
+        // 音色狀態查詢功能
+        async function checkVoiceStatus(token, debugInfo) {
+            try {
+                updateResult(3, updateResult(3).textContent + '\n\n🔍 查詢音色生成狀態...');
+                
+                const statusResponse = await fetch('/vidspark-api-proxy/get-voice-roles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+
+                const statusResult = await statusResponse.json();
+                debugInfo.voice_status_check = statusResult;
+                
+                if (statusResult.code === 200 && statusResult.data) {
+                    // 查找我們剛才克隆的聲音
+                    const voiceId = debugInfo.clone_response?.voice_id;
+                    const foundVoice = statusResult.data.find(voice => voice.voice_id === voiceId);
+                    
+                    if (foundVoice) {
+                        updateStatus(3, 'success', '完全成功');
+                        updateResult(3, `✅ 聲音克隆完全成功！
+🎤 聲音ID: ${foundVoice.voice_id}
+📋 聲音名稱: ${foundVoice.name || '未知'}
+📝 描述: ${foundVoice.description || '未知'}
+🕐 創建時間: ${foundVoice.created_at || '未知'}
+✨ 狀態: 已可用於語音合成`);
+                    } else {
+                        updateResult(3, updateResult(3).textContent + '\n\n⏳ 聲音還在處理中，稍後可再次查詢');
+                    }
+                } else {
+                    updateResult(3, updateResult(3).textContent + `\n\n⚠️ 音色狀態查詢失敗: ${statusResult.msg || '未知錯誤'}`);
+                }
+                
+                updateDebugInfo(debugInfo);
+                
+            } catch (error) {
+                updateResult(3, updateResult(3).textContent + `\n\n❌ 音色狀態查詢錯誤: ${error.message}`);
+                debugInfo.voice_status_error = error.message;
+                updateDebugInfo(debugInfo);
+            }
+        }
+
         function updateStatus(step, status, text) {
             const element = document.getElementById(`status-${step}`);
             element.className = `status ${status}`;
@@ -316,6 +430,9 @@
         }
 
         function updateResult(step, text) {
+            if (typeof text === 'undefined') {
+                return document.getElementById(`result-${step}`).textContent;
+            }
             document.getElementById(`result-${step}`).textContent = text;
         }
 
