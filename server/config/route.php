@@ -201,6 +201,7 @@ Route::get('/vidspark-database-init.php', [app\controller\VidsparkController::cl
 
 // Vidspark生產環境API測試路由
 Route::get('/vidspark-api-test', [app\controller\VidsparkApiTestController::class, 'index']);
+Route::post('/vidspark-api-test/validate-token', [app\controller\VidsparkApiTestController::class, 'validateToken']);
 Route::post('/vidspark-api-test/free-avatar', [app\controller\VidsparkApiTestController::class, 'testFreeAvatar']);
 Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
 Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);

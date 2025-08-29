@@ -26,12 +26,50 @@ class VidsparkApiTestController
     }
     
     /**
+     * 驗證Token有效性
+     */
+    public function validateToken(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            
+            if (empty($token)) {
+                throw new Exception('Token不能為空');
+            }
+            
+            $result = $this->testTokenValidity($token);
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => true,
+                'message' => 'Token驗證成功',
+                'api_response' => $result,
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+    
+    /**
      * 測試免費數字人API
      */
     public function testFreeAvatar(Request $request): Response
     {
         try {
-            $result = $this->callGenHumanFreeAvatarAPI();
+            $input = json_decode($request->rawBody(), true);
+            $customToken = $input['token'] ?? '';
+            
+            $result = $this->callGenHumanFreeAvatarAPI($customToken);
             
             return new Response(200, [
                 'Content-Type' => 'application/json; charset=utf-8'
@@ -153,13 +191,64 @@ class VidsparkApiTestController
     }
     
     /**
+     * 測試Token有效性
+     */
+    private function testTokenValidity($token)
+    {
+        // 使用最簡單的API來測試Token
+        $url = 'https://api.yidevs.com/app/human/human/Index/created';
+        
+        $data = [
+            'text' => '測試'
+        ];
+        
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $token,
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ],
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($error) {
+            throw new Exception("cURL錯誤: $error");
+        }
+        
+        $result = json_decode($response, true);
+        if ($result === null) {
+            throw new Exception("JSON解析失敗，原始響應: $response");
+        }
+        
+        // 檢查API響應中的Token狀態
+        if (isset($result['code']) && $result['code'] == 401) {
+            throw new Exception("Token無效: " . ($result['msg'] ?? 'Token認證失敗'));
+        }
+        
+        return $result;
+    }
+    
+    /**
      * 調用GenHuman免費數字人API
      */
-    private function callGenHumanFreeAvatarAPI()
+    private function callGenHumanFreeAvatarAPI($customToken = '')
     {
         // 先測試最簡單的Token驗證
         $url = 'https://api.yidevs.com/app/human/human/Index/created';
-        $token = '08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3';
+        $token = !empty($customToken) ? $customToken : '08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3';
         
         // 使用最基本的參數測試
         $data = [
@@ -510,6 +599,25 @@ class VidsparkApiTestController
         </div>
         
         <div class='test-section'>
+            <h2>🔑 Token配置</h2>
+            <div style='background: #FFF3CD; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>
+                <h4>⚠️ Token問題診斷</h4>
+                <p><strong>當前狀態</strong>: GenHuman API返回 "Token不存在"</p>
+                <p><strong>問題原因</strong>: 需要在GenHuman控制台創建有效的Token</p>
+                <p><strong>解決方案</strong>: 請從GenHuman控制台獲取新Token並在下方測試</p>
+            </div>
+            
+            <div style='margin-bottom: 20px;'>
+                <label for='custom-token'><strong>🔑 輸入GenHuman API Token:</strong></label>
+                <input type='text' id='custom-token' placeholder='請輸入從GenHuman控制台獲取的Token' 
+                       style='width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px;'
+                       value='08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3'>
+                <button class='btn btn-warning' onclick='validateToken()'>驗證Token有效性</button>
+            </div>
+            <div id='token-validation-result' class='result' style='display:none;'></div>
+        </div>
+        
+        <div class='test-section'>
             <h2>📋 API功能測試</h2>
             
             <h3>1. 免費數字人API測試</h3>
@@ -588,13 +696,59 @@ class VidsparkApiTestController
             showResult(elementId, '<p>⏳ ' + message + '</p>', 'loading');
         }
         
+        async function validateToken() {
+            const token = document.getElementById('custom-token').value.trim();
+            if (!token) {
+                showResult('token-validation-result', 
+                    '<h4>❌ Token驗證失敗</h4><p>請先輸入Token</p>', 
+                    'error'
+                );
+                return;
+            }
+            
+            showLoading('token-validation-result', '正在驗證Token有效性...');
+            
+            try {
+                const response = await fetch('/vidspark-api-test/validate-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('token-validation-result', 
+                        '<h4>✅ Token驗證成功</h4>' +
+                        '<p><strong>Token狀態</strong>: 有效</p>' +
+                        '<p><strong>API響應</strong>: ' + JSON.stringify(data.api_response) + '</p>',
+                        'success'
+                    );
+                } else {
+                    showResult('token-validation-result',
+                        '<h4>❌ Token驗證失敗</h4>' +
+                        '<p><strong>錯誤信息</strong>: ' + data.error + '</p>' +
+                        '<p><strong>建議</strong>: 請檢查Token是否正確，或從GenHuman控制台重新獲取</p>',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('token-validation-result',
+                    '<h4>❌ 網絡錯誤</h4><p>' + error.message + '</p>',
+                    'error'
+                );
+            }
+        }
+        
         async function testFreeAvatar() {
+            const token = document.getElementById('custom-token').value.trim();
             showLoading('free-avatar-result', '正在測試GenHuman免費數字人API...');
             
             try {
                 const response = await fetch('/vidspark-api-test/free-avatar', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
                 });
                 
                 const data = await response.json();
