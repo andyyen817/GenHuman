@@ -199,6 +199,18 @@ Route::get('/vidspark-i18n-test.html', function () {
 // Vidspark數據庫初始化腳本路由（使用專用控制器）
 Route::get('/vidspark-database-init.php', [app\controller\VidsparkController::class, 'databaseInit']);
 
+// Vidspark Token測試頁面（簡單安全版本）
+Route::get('/vidspark-token-test', function () {
+    $filePath = base_path() . '/public/vidspark-token-test.html';
+    if (file_exists($filePath)) {
+        return response(file_get_contents($filePath), 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Token test page not found', 404);
+});
+
 // Vidspark生產環境API測試路由（暫時移除，避免系統崩潰）
 // Route::get('/vidspark-api-test', [app\controller\VidsparkApiTestController::class, 'index']);
 // Route::post('/vidspark-api-test/validate-token', [app\controller\VidsparkApiTestController::class, 'validateToken']);

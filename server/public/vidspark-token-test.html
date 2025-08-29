@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark Token 測試工具</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            background-color: #f5f5f5; 
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .form-group { 
+            margin: 20px 0; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+        }
+        input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 14px; 
+        }
+        .btn { 
+            background: #3498DB; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin: 5px; 
+        }
+        .btn:hover { background: #2980B9; }
+        .btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+        .btn-success { background: #27AE60; }
+        .btn-danger { background: #E74C3C; }
+        .btn-warning { background: #F39C12; }
+        .result { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 5px; 
+            display: none; 
+        }
+        .success { background: #D4EDDA; color: #155724; border: 1px solid #C3E6CB; }
+        .error { background: #F8D7DA; color: #721C24; border: 1px solid #F5C6CB; }
+        .info { background: #D1ECF1; color: #0C5460; border: 1px solid #BEE5EB; }
+        .loading { background: #FFF3CD; color: #856404; border: 1px solid #FFEAA7; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+            white-space: pre-wrap; 
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .token-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .status-card {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498DB;
+            background: #f8f9fa;
+        }
+        .instructions {
+            background: #E8F5E8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #27AE60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Vidspark Token 測試工具</h1>
+        <p><strong>目的</strong>：測試GenHuman API Token的有效性</p>
+        <p><strong>版本</strong>：v1.0 | <strong>日期</strong>：2025-08-29</p>
+        
+        <div class="instructions">
+            <h3>📋 使用說明</h3>
+            <ol>
+                <li>在下方輸入您的GenHuman API Token</li>
+                <li>點擊"驗證Token"按鈕進行測試</li>
+                <li>系統會告訴您Token是否有效及具體問題</li>
+                <li>如果Token有效，可以繼續測試API功能</li>
+            </ol>
+            <p><strong>📌 Token格式</strong>：應該是類似 "08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3" 的格式</p>
+        </div>
+
+        <div class="form-group">
+            <label for="api-token">🔑 GenHuman API Token:</label>
+            <input type="text" id="api-token" placeholder="請輸入您的GenHuman API Token" 
+                   value="08D7EE7F91D258F27B44DDF59CDDDEDE.1E95F76130BA23D3">
+        </div>
+
+        <div class="form-group">
+            <button class="btn" onclick="validateToken()" id="validate-btn">🔍 驗證Token</button>
+            <button class="btn btn-success" onclick="testFreeAvatar()" id="test-avatar-btn" disabled>🎭 測試免費數字人</button>
+            <button class="btn btn-warning" onclick="clearResults()">🧹 清除結果</button>
+        </div>
+
+        <div id="result" class="result"></div>
+
+        <div class="token-status">
+            <div class="status-card">
+                <h4>🌐 API端點</h4>
+                <p><strong>基礎地址</strong>: https://api.yidevs.com</p>
+                <p><strong>測試端點</strong>: /app/human/human/Index/created</p>
+            </div>
+            
+            <div class="status-card">
+                <h4>📊 當前狀態</h4>
+                <p id="token-status">未測試</p>
+                <p id="last-test-time">-</p>
+            </div>
+        </div>
+
+        <hr>
+        <p style="text-align: center; color: #666; margin-top: 30px;">
+            <strong>Vidspark Token測試工具 v1.0</strong><br>
+            <a href="https://genhuman-digital-human.zeabur.app/" target="_blank">返回主站</a> | 
+            <a href="/vidspark-database-init.php" target="_blank">數據庫管理</a> |
+            <a href="/vidspark/" target="_blank">Vidspark前端</a>
+        </p>
+    </div>
+
+    <script>
+        // 全局變量
+        let currentToken = '';
+        let tokenValid = false;
+
+        function showResult(content, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result ' + type;
+            resultDiv.innerHTML = content;
+        }
+
+        function showLoading(message) {
+            showResult('<p>⏳ ' + message + '</p>', 'loading');
+        }
+
+        function updateTokenStatus(status, time = null) {
+            document.getElementById('token-status').textContent = status;
+            document.getElementById('last-test-time').textContent = time || new Date().toLocaleString();
+        }
+
+        function updateButtons(valid) {
+            tokenValid = valid;
+            document.getElementById('test-avatar-btn').disabled = !valid;
+        }
+
+        function clearResults() {
+            document.getElementById('result').style.display = 'none';
+            updateTokenStatus('未測試', '-');
+            updateButtons(false);
+        }
+
+        async function validateToken() {
+            const token = document.getElementById('api-token').value.trim();
+            
+            if (!token) {
+                showResult('<h4>❌ Token驗證失敗</h4><p>請先輸入Token</p>', 'error');
+                return;
+            }
+
+            // Token格式驗證
+            if (token.length < 20) {
+                showResult('<h4>❌ Token格式錯誤</h4><p>Token長度不足，應該至少20個字符</p>', 'error');
+                updateTokenStatus('格式錯誤');
+                updateButtons(false);
+                return;
+            }
+
+            if (!/^[A-F0-9.]+$/i.test(token)) {
+                showResult('<h4>❌ Token格式錯誤</h4><p>Token只能包含字母、數字和點號</p>', 'error');
+                updateTokenStatus('格式錯誤');
+                updateButtons(false);
+                return;
+            }
+
+            currentToken = token;
+            showLoading('正在驗證Token有效性...');
+            updateTokenStatus('驗證中...');
+            
+            try {
+                const response = await fetch('https://api.yidevs.com/app/human/human/Index/created', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: '測試Token有效性'
+                    })
+                });
+
+                const data = await response.json();
+                
+                console.log('API響應:', data);
+
+                if (response.ok && data.code === 200) {
+                    // Token有效且API調用成功
+                    showResult(
+                        '<h4>✅ Token驗證成功！</h4>' +
+                        '<p><strong>狀態</strong>: Token有效，API調用成功</p>' +
+                        '<p><strong>響應碼</strong>: ' + data.code + '</p>' +
+                        '<p><strong>消息</strong>: ' + (data.msg || '成功') + '</p>' +
+                        '<p><strong>Token掩碼</strong>: ' + maskToken(token) + '</p>' +
+                        '<details><summary>查看完整響應</summary><pre>' + JSON.stringify(data, null, 2) + '</pre></details>',
+                        'success'
+                    );
+                    updateTokenStatus('✅ 有效');
+                    updateButtons(true);
+                    
+                } else if (response.ok && data.code === 401) {
+                    // Token無效
+                    showResult(
+                        '<h4>❌ Token無效</h4>' +
+                        '<p><strong>錯誤碼</strong>: ' + data.code + '</p>' +
+                        '<p><strong>錯誤信息</strong>: ' + (data.msg || 'Token不存在或已過期') + '</p>' +
+                        '<p><strong>建議</strong>: 請檢查Token是否正確，或從GenHuman控制台重新獲取</p>' +
+                        '<details><summary>查看完整響應</summary><pre>' + JSON.stringify(data, null, 2) + '</pre></details>',
+                        'error'
+                    );
+                    updateTokenStatus('❌ 無效');
+                    updateButtons(false);
+                    
+                } else {
+                    // 其他API錯誤
+                    showResult(
+                        '<h4>⚠️ API調用異常</h4>' +
+                        '<p><strong>HTTP狀態</strong>: ' + response.status + '</p>' +
+                        '<p><strong>響應碼</strong>: ' + (data.code || 'unknown') + '</p>' +
+                        '<p><strong>錯誤信息</strong>: ' + (data.msg || data.message || '未知錯誤') + '</p>' +
+                        '<details><summary>查看完整響應</summary><pre>' + JSON.stringify(data, null, 2) + '</pre></details>',
+                        'error'
+                    );
+                    updateTokenStatus('⚠️ 異常');
+                    updateButtons(false);
+                }
+
+            } catch (error) {
+                showResult(
+                    '<h4>❌ 網絡錯誤</h4>' +
+                    '<p><strong>錯誤類型</strong>: 網絡連接失敗</p>' +
+                    '<p><strong>錯誤信息</strong>: ' + error.message + '</p>' +
+                    '<p><strong>可能原因</strong>:</p>' +
+                    '<ul>' +
+                    '<li>網絡連接問題</li>' +
+                    '<li>GenHuman API服務不可用</li>' +
+                    '<li>CORS跨域限制</li>' +
+                    '</ul>',
+                    'error'
+                );
+                updateTokenStatus('❌ 網絡錯誤');
+                updateButtons(false);
+            }
+        }
+
+        async function testFreeAvatar() {
+            if (!tokenValid || !currentToken) {
+                showResult('<h4>❌ 無法測試</h4><p>請先驗證Token有效性</p>', 'error');
+                return;
+            }
+
+            showLoading('正在測試免費數字人API...');
+            
+            try {
+                const response = await fetch('https://api.yidevs.com/app/human/human/Index/created', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + currentToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: '這是Vidspark的測試，測試免費數字人生成功能。',
+                        avatar_id: 1,
+                        voice_id: 1
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.code === 200) {
+                    showResult(
+                        '<h4>🎉 免費數字人API測試成功！</h4>' +
+                        '<p><strong>任務狀態</strong>: 已提交</p>' +
+                        '<p><strong>任務ID</strong>: ' + (data.data?.task_id || '未返回') + '</p>' +
+                        '<p><strong>預計時間</strong>: 2-5分鐘</p>' +
+                        '<p><strong>響應信息</strong>: ' + (data.msg || '成功') + '</p>' +
+                        '<details><summary>查看完整響應</summary><pre>' + JSON.stringify(data, null, 2) + '</pre></details>',
+                        'success'
+                    );
+                } else {
+                    showResult(
+                        '<h4>❌ 免費數字人API測試失敗</h4>' +
+                        '<p><strong>錯誤碼</strong>: ' + (data.code || response.status) + '</p>' +
+                        '<p><strong>錯誤信息</strong>: ' + (data.msg || data.message || '未知錯誤') + '</p>' +
+                        '<details><summary>查看完整響應</summary><pre>' + JSON.stringify(data, null, 2) + '</pre></details>',
+                        'error'
+                    );
+                }
+
+            } catch (error) {
+                showResult(
+                    '<h4>❌ 網絡錯誤</h4>' +
+                    '<p><strong>錯誤信息</strong>: ' + error.message + '</p>',
+                    'error'
+                );
+            }
+        }
+
+        function maskToken(token) {
+            if (!token || token.length < 10) return 'invalid';
+            return token.substring(0, 8) + '...' + token.substring(token.length - 4);
+        }
+
+        // 頁面加載時自動檢查localStorage中的token
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedToken = localStorage.getItem('vidspark_api_token');
+            if (savedToken) {
+                document.getElementById('api-token').value = savedToken;
+                console.log('已從localStorage加載Token');
+            }
+        });
+
+        // 保存Token到localStorage
+        document.getElementById('api-token').addEventListener('change', function() {
+            const token = this.value.trim();
+            if (token) {
+                localStorage.setItem('vidspark_api_token', token);
+            }
+        });
+    </script>
+</body>
+</html>
