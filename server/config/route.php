@@ -440,15 +440,9 @@ Route::get('/vidspark-audio-diagnosis', function() {
     ], file_get_contents(runtime_path() . '/../public/vidspark-audio-diagnosis.html'));
 });
 
-// Vidspark存儲目錄初始化
-Route::get('/vidspark-storage-init', function() {
-    ob_start();
-    include runtime_path() . '/../public/vidspark-storage-init.php';
-    $output = ob_get_clean();
-    return new Response(200, [
-        'Content-Type' => 'application/json; charset=utf-8'
-    ], $output);
-});
+// Vidspark存儲管理路由
+Route::get('/vidspark-storage-init', [app\controller\VidsparkStorageController::class, 'init']);
+Route::get('/vidspark-storage-status', [app\controller\VidsparkStorageController::class, 'status']);
 
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
