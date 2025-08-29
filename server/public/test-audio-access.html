@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>音頻文件訪問測試</title>
+</head>
+<body>
+    <h1>測試音頻文件是否可被外部訪問</h1>
+    <audio controls>
+        <source src="https://genhuman-digital-human.zeabur.app/vidspark/storage/audio/2025/08/vidspark_audio_20250829_233931_68b1c9b3e2513.m4a" type="audio/mp4">
+        您的瀏覽器不支持音頻播放
+    </audio>
+    <br><br>
+    <a href="https://genhuman-digital-human.zeabur.app/vidspark/storage/audio/2025/08/vidspark_audio_20250829_233931_68b1c9b3e2513.m4a" target="_blank">
+        直接下載測試
+    </a>
+    
+    <script>
+        // 測試文件是否可訪問
+        fetch('https://genhuman-digital-human.zeabur.app/vidspark/storage/audio/2025/08/vidspark_audio_20250829_233931_68b1c9b3e2513.m4a', {
+            method: 'HEAD'
+        })
+        .then(response => {
+            console.log('文件訪問測試結果:', response.status, response.statusText);
+            document.body.innerHTML += `<p>文件訪問測試: ${response.status} ${response.statusText}</p>`;
+        })
+        .catch(error => {
+            console.error('文件無法訪問:', error);
+            document.body.innerHTML += `<p>❌ 文件無法訪問: ${error.message}</p>`;
+        });
+    </script>
+</body>
+</html>

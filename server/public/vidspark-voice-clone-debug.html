@@ -124,8 +124,11 @@
 
         <div class="form-group">
             <label for="audio-upload">📁 上傳本地音頻文件:</label>
-            <input type="file" id="audio-upload" accept="audio/*" />
-            <small style="color: #666; font-size: 14px;">支持 MP3, WAV, M4A 等格式，建議文件大小 < 10MB</small>
+            <input type="file" id="audio-upload" accept="audio/mp3,audio/wav,audio/mpeg" />
+            <small style="color: #666; font-size: 14px;">
+                <strong>🎵 建議格式：MP3</strong> | 支持 MP3, WAV | 建議文件大小 < 10MB<br>
+                <strong>⚠️ 重要：</strong>GenHuman API可能不支持M4A格式，建議使用MP3格式以確保成功率
+            </small>
         </div>
 
         <div class="form-group">
@@ -345,13 +348,32 @@
 
                 if (result.code === 200) {
                     updateStatus(3, 'success', '克隆提交成功');
-                    updateResult(3, `✅ 聲音克隆請求已提交！\n🎤 聲音ID: ${result.data?.voice_id || '未知'}\n📋 任務ID: ${result.data?.task_id || '未知'}\n\n🔍 正在查詢音色生成狀態...`);
+                    updateResult(3, `✅ 聲音克隆請求已提交！\n🎤 聲音ID: ${result.data?.voice_id || '未知'}\n📋 任務ID: ${result.data?.task_id || '未知'}\n\n🔍 開始異步輪詢查詢狀態...`);
                     debugInfo.response_analysis.result = 'submitted';
                     debugInfo.clone_response = result.data;
                     
-                    // 查詢音色狀態
-                    await checkVoiceStatus(token, debugInfo);
+                    // 開始異步輪詢
+                    await startPollingVoiceStatus(token, debugInfo);
                     
+                } else if (result.code === 404 && result.msg === '音频创建失败') {
+                    updateStatus(3, 'error', '音頻問題');
+                    updateResult(3, `❌ 聲音克隆失敗 - 音頻文件問題
+🔍 錯誤代碼: ${result.code}
+📝 錯誤信息: ${result.msg}
+
+🎵 可能原因：
+1. 音頻格式不支持（建議使用MP3格式）
+2. 音頻文件無法被GenHuman API訪問
+3. 音頻文件損壞或時長過短
+
+💡 建議解決方案：
+1. 轉換為MP3格式重新上傳
+2. 確保音頻時長至少5-10秒
+3. 檢查音頻文件是否可以正常播放`);
+                    debugInfo.response_analysis.result = 'failed';
+                    debugInfo.response_analysis.error_code = result.code;
+                    debugInfo.response_analysis.error_message = result.msg;
+                    debugInfo.response_analysis.error_type = 'audio_issue';
                 } else {
                     updateStatus(3, 'error', '失敗');
                     updateResult(3, `❌ 聲音克隆失敗\n錯誤代碼: ${result.code}\n錯誤信息: ${result.msg}`);
@@ -380,11 +402,104 @@
             }
         }
 
-        // 音色狀態查詢功能
+        // 異步輪詢聲音克隆狀態
+        async function startPollingVoiceStatus(token, debugInfo) {
+            const maxAttempts = 20;  // 最多檢查20次
+            const intervalMs = 15000; // 每15秒檢查一次
+            let attempts = 0;
+            
+            debugInfo.polling = {
+                start_time: new Date().toISOString(),
+                max_attempts: maxAttempts,
+                interval_ms: intervalMs,
+                attempts: []
+            };
+            
+            updateResult(3, updateResult(3).textContent + `\n\n⏰ 開始輪詢檢查（每${intervalMs/1000}秒檢查一次，最多${maxAttempts}次）`);
+            
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                const attemptTime = new Date().toISOString();
+                
+                try {
+                    updateResult(3, updateResult(3).textContent + `\n🔍 第${attempts}次檢查 (${new Date().toLocaleTimeString()})...`);
+                    
+                    const statusResponse = await fetch('/vidspark-api-proxy/get-voice-roles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: token })
+                    });
+
+                    const statusResult = await statusResponse.json();
+                    
+                    debugInfo.polling.attempts.push({
+                        attempt: attempts,
+                        time: attemptTime,
+                        response: statusResult
+                    });
+                    
+                    if (statusResult.code === 200 && statusResult.data) {
+                        // 查找我們剛才克隆的聲音
+                        const voiceId = debugInfo.clone_response?.voice_id;
+                        const foundVoice = statusResult.data.find(voice => voice.voice_id === voiceId);
+                        
+                        if (foundVoice) {
+                            // 成功找到克隆的聲音
+                            clearInterval(pollInterval);
+                            updateStatus(3, 'success', '克隆完成');
+                            updateResult(3, `✅ 聲音克隆完全成功！
+🎤 聲音ID: ${foundVoice.voice_id}
+📋 聲音名稱: ${foundVoice.name || '未知'}
+📝 描述: ${foundVoice.description || '未知'}
+🕐 創建時間: ${foundVoice.created_at || '未知'}
+✨ 狀態: 已可用於語音合成
+⏱️ 總用時: ${attempts * intervalMs / 1000}秒（${attempts}次檢查）`);
+                            
+                            debugInfo.polling.success = true;
+                            debugInfo.polling.final_voice = foundVoice;
+                            updateDebugInfo(debugInfo);
+                            return;
+                        } else {
+                            updateResult(3, updateResult(3).textContent + ` ⏳ 還在處理中...`);
+                        }
+                    } else {
+                        updateResult(3, updateResult(3).textContent + ` ⚠️ 查詢失敗: ${statusResult.msg || '未知錯誤'}`);
+                    }
+                    
+                    // 檢查是否達到最大嘗試次數
+                    if (attempts >= maxAttempts) {
+                        clearInterval(pollInterval);
+                        updateStatus(3, 'error', '超時');
+                        updateResult(3, updateResult(3).textContent + `\n\n⏰ 輪詢超時！已檢查${maxAttempts}次，聲音可能仍在處理中。\n建議稍後手動查詢音色列表。`);
+                        
+                        debugInfo.polling.timeout = true;
+                        updateDebugInfo(debugInfo);
+                    }
+                    
+                } catch (error) {
+                    updateResult(3, updateResult(3).textContent + ` ❌ 檢查錯誤: ${error.message}`);
+                    debugInfo.polling.attempts.push({
+                        attempt: attempts,
+                        time: attemptTime,
+                        error: error.message
+                    });
+                    
+                    if (attempts >= maxAttempts) {
+                        clearInterval(pollInterval);
+                        updateStatus(3, 'error', '錯誤');
+                        debugInfo.polling.failed = true;
+                        updateDebugInfo(debugInfo);
+                    }
+                }
+                
+                updateDebugInfo(debugInfo);
+                
+            }, intervalMs);
+        }
+
+        // 單次音色狀態查詢功能（保留供其他地方使用）
         async function checkVoiceStatus(token, debugInfo) {
             try {
-                updateResult(3, updateResult(3).textContent + '\n\n🔍 查詢音色生成狀態...');
-                
                 const statusResponse = await fetch('/vidspark-api-proxy/get-voice-roles', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -395,31 +510,16 @@
                 debugInfo.voice_status_check = statusResult;
                 
                 if (statusResult.code === 200 && statusResult.data) {
-                    // 查找我們剛才克隆的聲音
                     const voiceId = debugInfo.clone_response?.voice_id;
                     const foundVoice = statusResult.data.find(voice => voice.voice_id === voiceId);
-                    
-                    if (foundVoice) {
-                        updateStatus(3, 'success', '完全成功');
-                        updateResult(3, `✅ 聲音克隆完全成功！
-🎤 聲音ID: ${foundVoice.voice_id}
-📋 聲音名稱: ${foundVoice.name || '未知'}
-📝 描述: ${foundVoice.description || '未知'}
-🕐 創建時間: ${foundVoice.created_at || '未知'}
-✨ 狀態: 已可用於語音合成`);
-                    } else {
-                        updateResult(3, updateResult(3).textContent + '\n\n⏳ 聲音還在處理中，稍後可再次查詢');
-                    }
-                } else {
-                    updateResult(3, updateResult(3).textContent + `\n\n⚠️ 音色狀態查詢失敗: ${statusResult.msg || '未知錯誤'}`);
+                    return foundVoice;
                 }
                 
-                updateDebugInfo(debugInfo);
+                return null;
                 
             } catch (error) {
-                updateResult(3, updateResult(3).textContent + `\n\n❌ 音色狀態查詢錯誤: ${error.message}`);
                 debugInfo.voice_status_error = error.message;
-                updateDebugInfo(debugInfo);
+                return null;
             }
         }
 
