@@ -241,6 +241,18 @@ Route::get('/vidspark-php-config-info', function () {
     return response('PHP config info page not found', 404);
 });
 
+// Zeabur配置解決方案指南
+Route::get('/zeabur-config-guide', function () {
+    $filePath = base_path() . '/public/zeabur-config-guide.html';
+    if (file_exists($filePath)) {
+        return response(file_get_contents($filePath), 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('Zeabur config guide not found', 404);
+});
+
 // Vidspark API代理路由（解決CORS問題）
 Route::post('/vidspark-api-proxy/validate-token', [app\controller\VidsparkApiProxyController::class, 'validateToken']);
 Route::post('/vidspark-api-proxy/test-free-avatar', [app\controller\VidsparkApiProxyController::class, 'testFreeAvatar']);
@@ -256,6 +268,7 @@ Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyControl
 // Vidspark文件上傳路由（生產環境文件處理）
 Route::get('/vidspark-upload/test', [app\controller\VidsparkFileUploadController::class, 'testUpload']);
 Route::post('/vidspark-upload/audio', [app\controller\VidsparkFileUploadController::class, 'uploadAudio']);
+Route::post('/vidspark-upload/audio-base64', [app\controller\VidsparkFileUploadController::class, 'uploadAudioBase64']);
 Route::post('/vidspark-upload/video', [app\controller\VidsparkFileUploadController::class, 'uploadVideo']);
 Route::post('/vidspark-upload/save-generated-video', [app\controller\VidsparkFileUploadController::class, 'saveGeneratedVideo']);
 Route::get('/vidspark-upload/files', [app\controller\VidsparkFileUploadController::class, 'getFileList']);

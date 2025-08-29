@@ -532,22 +532,64 @@
                 if (audioFile) {
                     showResult(1, '📤 正在上傳音頻文件...', 'info');
                     
-                    const formData = new FormData();
-                    formData.append('audio', audioFile);
+                    let uploadResult;
                     
-                    const uploadResponse = await fetch('/vidspark-upload/audio', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const uploadResult = await uploadResponse.json();
-                    
-                    if (!uploadResult.success) {
-                        throw new Error('文件上傳失敗: ' + uploadResult.message);
+                    // 嘗試Base64上傳方式（繞過PHP上傳限制）
+                    try {
+                        showResult(1, '📤 使用Base64方式上傳...', 'info');
+                        
+                        // 將文件轉換為Base64
+                        const fileData = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const base64 = reader.result.split(',')[1]; // 移除data:audio/...;base64,前綴
+                                resolve(base64);
+                            };
+                            reader.onerror = reject;
+                            reader.readAsDataURL(audioFile);
+                        });
+                        
+                        const uploadResponse = await fetch('/vidspark-upload/audio-base64', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                fileName: audioFile.name,
+                                fileData: fileData,
+                                fileSize: audioFile.size
+                            })
+                        });
+                        
+                        uploadResult = await uploadResponse.json();
+                        
+                        if (!uploadResult.success) {
+                            throw new Error('Base64上傳失敗: ' + uploadResult.message);
+                        }
+                        
+                        audioUrl = uploadResult.data.file_url;
+                        showResult(1, `📤 文件上傳成功 (Base64): ${uploadResult.data.original_name}`, 'success');
+                        
+                    } catch (base64Error) {
+                        console.warn('Base64上傳失敗，嘗試標準上傳:', base64Error);
+                        showResult(1, '📤 嘗試標準文件上傳...', 'info');
+                        
+                        // 回退到標準上傳方式
+                        const formData = new FormData();
+                        formData.append('audio', audioFile);
+                        
+                        const uploadResponse = await fetch('/vidspark-upload/audio', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        uploadResult = await uploadResponse.json();
+                        
+                        if (!uploadResult.success) {
+                            throw new Error('文件上傳失敗: ' + uploadResult.message);
+                        }
+                        
+                        audioUrl = uploadResult.data.file_url;
+                        showResult(1, `📤 文件上傳成功: ${uploadResult.data.original_name}`, 'success');
                     }
-                    
-                    audioUrl = uploadResult.data.file_url;
-                    showResult(1, `📤 文件上傳成功: ${uploadResult.data.original_name}`, 'success');
                 }
 
                 // 使用audioUrl進行聲音克隆

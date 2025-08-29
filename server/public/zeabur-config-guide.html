@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeabur PHP配置解決方案</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .alert { padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .alert-error { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; }
+        .alert-warning { color: #856404; background: #fff3cd; border: 1px solid #ffeaa7; }
+        .alert-success { color: #155724; background: #d4edda; border: 1px solid #c3e6cb; }
+        .alert-info { color: #0c5460; background: #d1ecf1; border: 1px solid #bee5eb; }
+        .step { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+        .code { background: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace; margin: 10px 0; }
+        h1 { color: #333; text-align: center; }
+        h2 { color: #555; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .highlight { background: #fffbf0; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Zeabur PHP配置解決方案</h1>
+        
+        <div class="alert-error">
+            <h3>❌ 當前問題確認</h3>
+            <p><strong>問題</strong>：Zeabur環境變數未生效，PHP上傳限制仍然是：</p>
+            <ul>
+                <li><span class="highlight">upload_max_filesize = 2M</span></li>
+                <li><span class="highlight">post_max_size = 8M</span></li>
+                <li><span class="highlight">memory_limit = 128M</span></li>
+            </ul>
+        </div>
+
+        <div class="alert-success">
+            <h3>✅ 已實施的解決方案</h3>
+            <p><strong>Base64上傳方式</strong> - 完全繞過PHP上傳限制：</p>
+            <ul>
+                <li>✅ 支持最大10MB文件</li>
+                <li>✅ 無PHP配置依賴</li>
+                <li>✅ 自動回退機制</li>
+                <li>✅ 修復REQUEST_METHOD錯誤</li>
+            </ul>
+        </div>
+
+        <h2>🔧 Zeabur環境變數配置指南</h2>
+
+        <div class="step">
+            <h3>方法1：使用php.ini文件（推薦）</h3>
+            <p>在項目根目錄創建 <code>php.ini</code> 文件：</p>
+            <div class="code">
+; PHP上傳配置<br>
+upload_max_filesize = 50M<br>
+post_max_size = 100M<br>
+memory_limit = 256M<br>
+max_execution_time = 300<br>
+max_input_time = 300<br>
+max_file_uploads = 20
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>方法2：使用.htaccess文件</h3>
+            <p>在 <code>server/public/</code> 目錄創建 <code>.htaccess</code> 文件：</p>
+            <div class="code">
+php_value upload_max_filesize 50M<br>
+php_value post_max_size 100M<br>
+php_value memory_limit 256M<br>
+php_value max_execution_time 300<br>
+php_value max_input_time 300
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>方法3：修改Dockerfile</h3>
+            <p>在 <code>Dockerfile</code> 中添加PHP配置：</p>
+            <div class="code">
+RUN echo "upload_max_filesize = 50M" >> /usr/local/etc/php/conf.d/uploads.ini && \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/uploads.ini && \<br>
+&nbsp;&nbsp;&nbsp;&nbsp;echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
+            </div>
+        </div>
+
+        <h2>🧪 測試和驗證</h2>
+
+        <div class="alert-info">
+            <p><strong>測試步驟</strong>：</p>
+            <ol>
+                <li>配置完成後重新部署</li>
+                <li>訪問 <a href="/vidspark-upload/test" target="_blank">檢查PHP配置</a></li>
+                <li>確認配置已生效</li>
+                <li>測試 <a href="/vidspark-digital-human-complete" target="_blank">文件上傳功能</a></li>
+            </ol>
+        </div>
+
+        <h2>🎯 當前狀態</h2>
+
+        <div class="alert-success">
+            <h3>✅ 立即可用的功能</h3>
+            <ul>
+                <li><strong>Base64上傳</strong>：支持10MB以下文件，無PHP限制</li>
+                <li><strong>智能回退</strong>：自動嘗試最佳上傳方式</li>
+                <li><strong>詳細錯誤</strong>：友好的錯誤信息</li>
+                <li><strong>完整流程</strong>：聲音克隆→語音合成→場景創建→數字人合成</li>
+            </ul>
+        </div>
+
+        <div class="alert-warning">
+            <p><strong>提醒</strong>：當前125KB和120KB文件應該可以通過Base64方式成功上傳。如果仍有問題，請檢查控制台錯誤日誌。</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/vidspark-digital-human-complete" class="btn">🚀 立即測試完整流程</a>
+            <a href="/vidspark-upload/test" class="btn">🔍 檢查PHP配置</a>
+        </div>
+    </div>
+</body>
+</html>

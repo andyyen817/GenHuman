@@ -35,7 +35,8 @@ class VidsparkFileUploadController
             error_log('[VidsparkUpload] post_max_size: ' . ini_get('post_max_size') . ' (' . $postMaxSize . ' bytes)');
             
             // 檢查是否因為POST大小限制導致沒有接收到文件
-            if (empty($_FILES) && empty($_POST) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $requestMethod = $_SERVER['REQUEST_METHOD'] ?? $request->getMethod();
+            if (empty($_FILES) && empty($_POST) && $requestMethod === 'POST') {
                 $contentLength = $_SERVER['CONTENT_LENGTH'] ?? 0;
                 error_log('[VidsparkUpload] 檢測到空POST，Content-Length: ' . $contentLength);
                 
@@ -374,6 +375,91 @@ class VidsparkFileUploadController
         }
         
         return $size;
+    }
+
+    /**
+     * Base64文件上傳 - 繞過PHP上傳限制
+     */
+    public function uploadAudioBase64(Request $request): Response
+    {
+        try {
+            error_log('[VidsparkUpload] 開始處理Base64音頻上傳');
+            
+            $input = json_decode($request->rawBody(), true);
+            $fileName = $input['fileName'] ?? 'audio.mp3';
+            $fileData = $input['fileData'] ?? ''; // base64編碼的文件數據
+            $fileSize = $input['fileSize'] ?? 0;
+            
+            if (empty($fileData)) {
+                throw new Exception('沒有文件數據');
+            }
+            
+            // 檢查文件大小
+            if ($fileSize > 10 * 1024 * 1024) { // 10MB限制
+                throw new Exception('文件太大，最大支持10MB');
+            }
+            
+            // 解碼base64數據
+            $binaryData = base64_decode($fileData);
+            if ($binaryData === false) {
+                throw new Exception('文件數據解碼失敗');
+            }
+            
+            // 驗證解碼後的大小
+            $actualSize = strlen($binaryData);
+            error_log('[VidsparkUpload] 文件大小: ' . $actualSize . ' bytes');
+            
+            // 生成安全的文件名
+            $extension = $this->getFileExtension($fileName);
+            $safeFileName = 'vidspark_audio_' . date('Ymd_His') . '_' . uniqid() . '.' . $extension;
+            $relativePath = 'vidspark/storage/audio/' . date('Y/m') . '/' . $safeFileName;
+            $fullPath = base_path() . '/public/' . $relativePath;
+            
+            // 確保目錄存在
+            $directory = dirname($fullPath);
+            if (!is_dir($directory)) {
+                if (!mkdir($directory, 0755, true)) {
+                    throw new Exception('無法創建存儲目錄');
+                }
+            }
+            
+            // 保存文件
+            if (file_put_contents($fullPath, $binaryData) === false) {
+                throw new Exception('文件保存失敗');
+            }
+            
+            error_log('[VidsparkUpload] Base64文件保存成功: ' . $fullPath);
+            
+            // 生成可訪問的URL
+            $fileUrl = 'https://genhuman-digital-human.zeabur.app/' . $relativePath;
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => true,
+                'message' => '音頻文件上傳成功 (Base64方式)',
+                'data' => [
+                    'file_id' => 'base64_' . uniqid(),
+                    'file_url' => $fileUrl,
+                    'original_name' => $fileName,
+                    'file_size' => $this->formatFileSize($actualSize),
+                    'upload_method' => 'base64',
+                    'upload_time' => date('Y-m-d H:i:s')
+                ]
+            ], JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            error_log('[VidsparkUpload] Base64上傳異常: ' . $e->getMessage());
+            
+            return new Response(500, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'upload_method' => 'base64',
+                'upload_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
     }
 
     /**
