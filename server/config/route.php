@@ -12,18 +12,19 @@ Route::group('/api/v1', function () {
     Route::group('/user', function () {
         Route::post('/login', [app\api\controller\UserController::class, 'login']);
         Route::post('/register', [app\api\controller\UserController::class, 'login']); // 註冊和登入使用同一邏輯
-        Route::get('/info', [app\api\controller\UserController::class, 'info']);
-        Route::get('/test', [app\api\controller\UserController::class, 'test']);
+        Route::get('/statistics', [app\api\controller\UserController::class, 'getUserStatistics']);
+        Route::post('/edit', [app\api\controller\UserController::class, 'editUser']);
     });
 
     // 應用相關API
     Route::group('/app', function () {
-        Route::get('/list', [app\api\controller\AppController::class, 'list']);
+        Route::get('/list', [app\api\controller\AppController::class, 'getList']);
+        Route::get('/detail', [app\api\controller\AppController::class, 'getDetail']);
     });
 
     // 場景相關API
     Route::group('/scene', function () {
-        Route::get('/list', [app\api\controller\AppController::class, 'list']); // 暫時使用應用列表
+        Route::get('/list', [app\api\controller\AppController::class, 'getList']); // 暫時使用應用列表
     });
 });
 
@@ -51,7 +52,7 @@ Route::group('/debug', function () {
 // 數據庫工具路由
 Route::group('/database', function () {
     Route::get('/init', [app\controller\DatabaseController::class, 'init']);
-    Route::get('/clean', [app\controller\DatabaseController::class, 'clean']);
+    Route::get('/fix', [app\controller\DatabaseController::class, 'fix']);
 });
 
 // 路由測試工具路由
@@ -241,6 +242,7 @@ Route::post('/vidspark-api-proxy/synthesize-avatar', [app\controller\VidsparkApi
 Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyController::class, 'getProxyStatus']);
 
 // Vidspark文件上傳路由（生產環境文件處理）
+Route::get('/vidspark-upload/test', [app\controller\VidsparkFileUploadController::class, 'testUpload']);
 Route::post('/vidspark-upload/audio', [app\controller\VidsparkFileUploadController::class, 'uploadAudio']);
 Route::post('/vidspark-upload/video', [app\controller\VidsparkFileUploadController::class, 'uploadVideo']);
 Route::post('/vidspark-upload/save-generated-video', [app\controller\VidsparkFileUploadController::class, 'saveGeneratedVideo']);
