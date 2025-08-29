@@ -199,13 +199,13 @@ Route::get('/vidspark-i18n-test.html', function () {
 // Vidspark數據庫初始化腳本路由（使用專用控制器）
 Route::get('/vidspark-database-init.php', [app\controller\VidsparkController::class, 'databaseInit']);
 
-// Vidspark生產環境API測試路由
-Route::get('/vidspark-api-test', [app\controller\VidsparkApiTestController::class, 'index']);
-Route::post('/vidspark-api-test/validate-token', [app\controller\VidsparkApiTestController::class, 'validateToken']);
-Route::post('/vidspark-api-test/free-avatar', [app\controller\VidsparkApiTestController::class, 'testFreeAvatar']);
-Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
-Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);
-Route::post('/vidspark-api-test/eight-steps-workflow', [app\controller\VidsparkApiTestController::class, 'testEightStepsWorkflow']);
+// Vidspark生產環境API測試路由（暫時移除，避免系統崩潰）
+// Route::get('/vidspark-api-test', [app\controller\VidsparkApiTestController::class, 'index']);
+// Route::post('/vidspark-api-test/validate-token', [app\controller\VidsparkApiTestController::class, 'validateToken']);
+// Route::post('/vidspark-api-test/free-avatar', [app\controller\VidsparkApiTestController::class, 'testFreeAvatar']);
+// Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
+// Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);
+// Route::post('/vidspark-api-test/eight-steps-workflow', [app\controller\VidsparkApiTestController::class, 'testEightStepsWorkflow']);
 
 // Vidspark前端應用路由
 Route::get('/vidspark', function () {
