@@ -12,8 +12,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// 設置中文UTF-8編碼
-header('Content-Type: text/html; charset=UTF-8');
+// 注意：header設置已由Webman框架處理，無需手動設置
 
 echo "<!DOCTYPE html>
 <html lang='zh-TW'>
