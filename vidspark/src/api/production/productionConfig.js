@@ -142,8 +142,8 @@ export class VidsparkProductionConfig {
     if (!token || typeof token !== 'string') return false
     if (token.length < 20) return false
     
-    // GenHuman Token格式：字母數字和點號
-    const tokenPattern = /^[A-F0-9.]+$/i
+    // GenHuman Token格式：所有字母、數字和點號
+    const tokenPattern = /^[A-Z0-9.]+$/i
     return tokenPattern.test(token)
   }
   

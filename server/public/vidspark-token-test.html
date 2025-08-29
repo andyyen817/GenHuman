@@ -190,7 +190,7 @@
                 return;
             }
 
-            if (!/^[A-F0-9.]+$/i.test(token)) {
+            if (!/^[A-Z0-9.]+$/i.test(token)) {
                 showResult('<h4>❌ Token格式錯誤</h4><p>Token只能包含字母、數字和點號</p>', 'error');
                 updateTokenStatus('格式錯誤');
                 updateButtons(false);
