@@ -26,10 +26,44 @@ class VidsparkFileUploadController
             // 詳細錯誤日誌
             error_log('[VidsparkUpload] 開始處理音頻上傳請求');
             
+            // 檢查PHP上傳配置
+            $uploadMaxFilesize = $this->parseSize(ini_get('upload_max_filesize'));
+            $postMaxSize = $this->parseSize(ini_get('post_max_size'));
+            
+            error_log('[VidsparkUpload] PHP配置檢查:');
+            error_log('[VidsparkUpload] upload_max_filesize: ' . ini_get('upload_max_filesize') . ' (' . $uploadMaxFilesize . ' bytes)');
+            error_log('[VidsparkUpload] post_max_size: ' . ini_get('post_max_size') . ' (' . $postMaxSize . ' bytes)');
+            
+            // 檢查是否因為POST大小限制導致沒有接收到文件
+            if (empty($_FILES) && empty($_POST) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+                $contentLength = $_SERVER['CONTENT_LENGTH'] ?? 0;
+                error_log('[VidsparkUpload] 檢測到空POST，Content-Length: ' . $contentLength);
+                
+                if ($contentLength > $postMaxSize) {
+                    throw new Exception("上傳文件太大，超過伺服器限制 " . ini_get('post_max_size') . "，請選擇更小的文件");
+                }
+                
+                throw new Exception("文件上傳失敗，可能超過伺服器限制，當前限制: " . ini_get('upload_max_filesize'));
+            }
+            
             $file = $request->file('audio');
             if (!$file || !$file->isValid()) {
-                error_log('[VidsparkUpload] 文件驗證失敗: ' . ($file ? $file->getError() : '無文件'));
-                throw new Exception('沒有上傳文件或文件無效');
+                $errorCode = $file ? $file->getError() : 'UPLOAD_ERR_NO_FILE';
+                error_log('[VidsparkUpload] 文件驗證失敗: ' . $errorCode);
+                
+                // 根據PHP錯誤代碼提供友好錯誤信息
+                $errorMessages = [
+                    UPLOAD_ERR_INI_SIZE => "文件太大，超過伺服器限制 " . ini_get('upload_max_filesize'),
+                    UPLOAD_ERR_FORM_SIZE => "文件太大，超過表單限制",
+                    UPLOAD_ERR_PARTIAL => "文件只上傳了一部分",
+                    UPLOAD_ERR_NO_FILE => "沒有選擇文件",
+                    UPLOAD_ERR_NO_TMP_DIR => "伺服器臨時目錄不存在",
+                    UPLOAD_ERR_CANT_WRITE => "文件寫入失敗",
+                    UPLOAD_ERR_EXTENSION => "文件上傳被PHP擴展阻止"
+                ];
+                
+                $errorMsg = isset($errorMessages[$errorCode]) ? $errorMessages[$errorCode] : '文件上傳失敗，錯誤代碼: ' . $errorCode;
+                throw new Exception($errorMsg);
             }
 
             error_log('[VidsparkUpload] 文件接收成功: ' . $file->getClientOriginalName());
@@ -42,10 +76,20 @@ class VidsparkFileUploadController
                 throw new Exception('不支持的音頻格式，僅支持MP3、WAV、M4A');
             }
 
-            // 驗證文件大小 (最大50MB)
-            if ($file->getSize() > 50 * 1024 * 1024) {
-                error_log('[VidsparkUpload] 文件太大: ' . $file->getSize());
-                throw new Exception('文件太大，最大支持50MB');
+            // 檢查文件大小是否超過PHP限制
+            $fileSize = $file->getSize();
+            error_log('[VidsparkUpload] 文件大小: ' . $fileSize . ' bytes (' . $this->formatFileSize($fileSize) . ')');
+            
+            if ($fileSize > $uploadMaxFilesize) {
+                error_log('[VidsparkUpload] 文件超過PHP upload_max_filesize限制');
+                throw new Exception("文件太大，超過伺服器限制 " . ini_get('upload_max_filesize') . "，請選擇更小的文件");
+            }
+            
+            // 我們的應用限制（取較小值）
+            $ourLimit = min(50 * 1024 * 1024, $uploadMaxFilesize); // 50MB或PHP限制
+            if ($fileSize > $ourLimit) {
+                error_log('[VidsparkUpload] 文件超過應用限制: ' . $ourLimit);
+                throw new Exception('文件太大，最大支持' . $this->formatFileSize($ourLimit));
             }
 
             // 生成安全的文件名
@@ -306,6 +350,30 @@ class VidsparkFileUploadController
             return 'invalid';
         }
         return substr($token, 0, 8) . '...' . substr($token, -4);
+    }
+
+    /**
+     * 解析PHP ini配置的文件大小
+     */
+    private function parseSize($size)
+    {
+        $size = trim($size);
+        $last = strtolower($size[strlen($size) - 1]);
+        $size = (int)$size;
+        
+        switch ($last) {
+            case 'g':
+                $size *= 1024 * 1024 * 1024;
+                break;
+            case 'm':
+                $size *= 1024 * 1024;
+                break;
+            case 'k':
+                $size *= 1024;
+                break;
+        }
+        
+        return $size;
     }
 
     /**

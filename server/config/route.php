@@ -229,6 +229,18 @@ Route::get('/vidspark-digital-human-completet', function () {
     return response('', 301, ['Location' => '/vidspark-digital-human-complete']);
 });
 
+// Vidspark PHP配置問題診斷頁面
+Route::get('/vidspark-php-config-info', function () {
+    $filePath = base_path() . '/public/vidspark-php-config-info.html';
+    if (file_exists($filePath)) {
+        return response(file_get_contents($filePath), 200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]);
+    }
+    return response('PHP config info page not found', 404);
+});
+
 // Vidspark API代理路由（解決CORS問題）
 Route::post('/vidspark-api-proxy/validate-token', [app\controller\VidsparkApiProxyController::class, 'validateToken']);
 Route::post('/vidspark-api-proxy/test-free-avatar', [app\controller\VidsparkApiProxyController::class, 'testFreeAvatar']);

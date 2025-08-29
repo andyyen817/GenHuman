@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark PHP配置問題診斷</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .error { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .warning { color: #f57c00; background: #fff3e0; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .success { color: #388e3c; background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .info { color: #1976d2; background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        h1 { color: #333; }
+        h2 { color: #555; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .highlight { background: yellow; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Vidspark PHP配置問題診斷</h1>
+        
+        <div class="error">
+            <h3>❌ 發現問題：PHP文件上傳限制太小</h3>
+            <p><strong>當前配置</strong>：</p>
+            <ul>
+                <li><span class="highlight">upload_max_filesize = 2M</span> (僅2MB！)</li>
+                <li><span class="highlight">post_max_size = 8M</span> (僅8MB！)</li>
+                <li>memory_limit = 128M (正常)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎯 問題分析</h2>
+            <div class="info">
+                <p><strong>為什麼125KB文件上傳失敗？</strong></p>
+                <ul>
+                    <li>文件本身125KB很小</li>
+                    <li>但multipart/form-data編碼會增加額外數據</li>
+                    <li>表單數據 + 文件內容可能接近或超過2MB限制</li>
+                    <li>PHP拒絕處理，返回HTML錯誤頁面而非JSON</li>
+                    <li>前端嘗試解析HTML為JSON，導致 "Unexpected token 'E'" 錯誤</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🛠️ 解決方案</h2>
+            
+            <div class="warning">
+                <h3>方案1：調整Zeabur環境變量 (推薦)</h3>
+                <p>在Zeabur控制台添加以下環境變量：</p>
+                <pre>
+PHP_UPLOAD_MAX_FILESIZE=50M
+PHP_POST_MAX_SIZE=100M
+PHP_MEMORY_LIMIT=256M
+PHP_MAX_EXECUTION_TIME=300
+PHP_MAX_INPUT_TIME=300
+                </pre>
+            </div>
+
+            <div class="info">
+                <h3>方案2：創建自定義php.ini</h3>
+                <p>在項目根目錄創建 <code>php.ini</code> 文件：</p>
+                <pre>
+upload_max_filesize = 50M
+post_max_size = 100M
+memory_limit = 256M
+max_execution_time = 300
+max_input_time = 300
+max_file_uploads = 20
+                </pre>
+            </div>
+
+            <div class="success">
+                <h3>方案3：代碼層面優化 (已實施)</h3>
+                <ul>
+                    <li>✅ 添加詳細的PHP配置檢查</li>
+                    <li>✅ 提供友好的錯誤信息</li>
+                    <li>✅ 動態調整應用文件大小限制</li>
+                    <li>✅ 增強錯誤日誌記錄</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 測試和驗證</h2>
+            <p><strong>測試端點</strong>：</p>
+            <ul>
+                <li><a href="/vidspark-upload/test" target="_blank">檢查上傳配置</a></li>
+                <li><a href="/vidspark-digital-human-complete" target="_blank">完整數字人流程</a></li>
+            </ul>
+            
+            <div class="info">
+                <p><strong>預期結果</strong>：</p>
+                <ul>
+                    <li>upload_max_filesize 應該至少 50M</li>
+                    <li>post_max_size 應該至少 100M</li>
+                    <li>文件上傳應該正常工作</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 下一步操作</h2>
+            <ol>
+                <li><strong>立即</strong>：在Zeabur控制台添加PHP環境變量</li>
+                <li><strong>重啟</strong>：重新部署應用讓配置生效</li>
+                <li><strong>測試</strong>：重新嘗試文件上傳</li>
+                <li><strong>驗證</strong>：檢查 <code>/vidspark-upload/test</code> 顯示的新配置</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <p><strong>注意</strong>：這是Zeabur容器環境的常見問題。默認PHP配置比較保守，需要手動調整以支持文件上傳功能。</p>
+        </div>
+    </div>
+</body>
+</html>
