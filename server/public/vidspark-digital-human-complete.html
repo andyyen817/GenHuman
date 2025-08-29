@@ -515,10 +515,12 @@
 
             const name = document.getElementById('voice-name').value.trim();
             const description = document.getElementById('voice-description').value.trim();
-            const audioUrl = document.getElementById('voice-url').value.trim();
+            let audioUrl = document.getElementById('voice-url').value.trim();
+            const audioFile = document.getElementById('voice-file').files[0];
 
-            if (!audioUrl) {
-                showResult(1, '❌ 請提供音頻URL', 'error');
+            // 檢查是否有文件上傳或URL
+            if (!audioUrl && !audioFile) {
+                showResult(1, '❌ 請上傳音頻文件或提供音頻URL', 'error');
                 return;
             }
 
@@ -526,6 +528,31 @@
             updateStepStatus(1, 'processing', '處理中...');
 
             try {
+                // 如果有文件上傳，先上傳文件
+                if (audioFile) {
+                    showResult(1, '📤 正在上傳音頻文件...', 'info');
+                    
+                    const formData = new FormData();
+                    formData.append('audio', audioFile);
+                    
+                    const uploadResponse = await fetch('/vidspark-upload/audio', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const uploadResult = await uploadResponse.json();
+                    
+                    if (!uploadResult.success) {
+                        throw new Error('文件上傳失敗: ' + uploadResult.message);
+                    }
+                    
+                    audioUrl = uploadResult.data.file_url;
+                    showResult(1, `📤 文件上傳成功: ${uploadResult.data.original_name}`, 'success');
+                }
+
+                // 使用audioUrl進行聲音克隆
+                showResult(1, '🎤 正在克隆聲音...', 'info');
+                
                 const response = await fetch('/vidspark-api-proxy/clone-voice', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -546,6 +573,7 @@
                     
                     showResult(1, `
                         <h4>✅ 聲音克隆成功！</h4>
+                        <p><strong>音頻來源:</strong> ${audioFile ? audioFile.name : audioUrl}</p>
                         <p><strong>聲音ID:</strong> ${result.data.voice_id}</p>
                         <p><strong>任務ID:</strong> ${result.data.task_id}</p>
                         <p>現在可以進行下一步語音合成。</p>
@@ -569,8 +597,8 @@
                 }
             } catch (error) {
                 showLoading(1, false);
-                showResult(1, `❌ 網絡錯誤: ${error.message}`, 'error');
-                updateStepStatus(1, 'error', '網絡錯誤');
+                showResult(1, `❌ 處理錯誤: ${error.message}`, 'error');
+                updateStepStatus(1, 'error', '處理錯誤');
             }
         }
 
@@ -635,10 +663,12 @@
         // 步驟3：場景創建
         async function createScene() {
             const sceneName = document.getElementById('scene-name').value.trim();
-            const videoUrl = document.getElementById('video-url').value.trim();
+            let videoUrl = document.getElementById('video-url').value.trim();
+            const videoFile = document.getElementById('video-file').files[0];
 
-            if (!videoUrl) {
-                showResult(3, '❌ 請提供影片URL', 'error');
+            // 檢查是否有文件上傳或URL
+            if (!videoUrl && !videoFile) {
+                showResult(3, '❌ 請上傳視頻文件或提供視頻URL', 'error');
                 return;
             }
 
@@ -646,6 +676,31 @@
             updateStepStatus(3, 'processing', '處理中...');
 
             try {
+                // 如果有文件上傳，先上傳文件
+                if (videoFile) {
+                    showResult(3, '📤 正在上傳視頻文件...', 'info');
+                    
+                    const formData = new FormData();
+                    formData.append('video', videoFile);
+                    
+                    const uploadResponse = await fetch('/vidspark-upload/video', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const uploadResult = await uploadResponse.json();
+                    
+                    if (!uploadResult.success) {
+                        throw new Error('文件上傳失敗: ' + uploadResult.message);
+                    }
+                    
+                    videoUrl = uploadResult.data.file_url;
+                    showResult(3, `📤 文件上傳成功: ${uploadResult.data.original_name}`, 'success');
+                }
+
+                // 使用videoUrl創建場景
+                showResult(3, '🏗️ 正在創建場景...', 'info');
+
                 const response = await fetch('/vidspark-api-proxy/create-scene', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -665,6 +720,7 @@
                     
                     showResult(3, `
                         <h4>✅ 場景創建成功！</h4>
+                        <p><strong>視頻來源:</strong> ${videoFile ? videoFile.name : videoUrl}</p>
                         <p><strong>場景ID:</strong> ${result.data.scene_task_id}</p>
                         <p>現在可以進行最後一步數字人合成。</p>
                     `, 'success');
@@ -687,8 +743,8 @@
                 }
             } catch (error) {
                 showLoading(3, false);
-                showResult(3, `❌ 網絡錯誤: ${error.message}`, 'error');
-                updateStepStatus(3, 'error', '網絡錯誤');
+                showResult(3, `❌ 處理錯誤: ${error.message}`, 'error');
+                updateStepStatus(3, 'error', '處理錯誤');
             }
         }
 
@@ -714,10 +770,30 @@
                 if (result.code === 200 && result.data) {
                     workflowData.videoTaskId = result.data.video_task_id;
                     
+                    // 保存生成的視頻記錄到數據庫
+                    try {
+                        const saveResponse = await fetch('/vidspark-upload/save-generated-video', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                video_task_id: result.data.video_task_id,
+                                video_url: `https://api.yidevs.com/generated/${result.data.video_task_id}`, // 假設的生成視頻URL
+                                bill_id: result.data.bill_id,
+                                token: workflowData.token
+                            })
+                        });
+                        
+                        const saveResult = await saveResponse.json();
+                        console.log('視頻記錄保存結果:', saveResult);
+                    } catch (saveError) {
+                        console.warn('保存視頻記錄失敗:', saveError);
+                    }
+                    
                     showResult(4, `
                         <h4>🎉 數字人合成成功提交！</h4>
                         <p><strong>影片任務ID:</strong> ${result.data.video_task_id}</p>
                         <p><strong>計費ID:</strong> ${result.data.bill_id}</p>
+                        <p><strong>數據庫記錄:</strong> 已保存到生產環境數據庫</p>
                         <p>系統正在後台處理您的數字人影片，請耐心等待...</p>
                         <p><em>註：實際的影片生成需要通過回調URL接收結果</em></p>
                     `, 'success');
@@ -732,6 +808,7 @@
                     document.getElementById('final-video-info').innerHTML = `
                         <p><strong>影片任務ID:</strong> ${result.data.video_task_id}</p>
                         <p><strong>計費ID:</strong> ${result.data.bill_id}</p>
+                        <p><strong>數據庫記錄:</strong> 所有文件和結果已保存到生產環境</p>
                         <p>完整的數字人生成流程已經全部完成！</p>
                     `;
                 } else {

@@ -223,6 +223,11 @@ Route::get('/vidspark-digital-human-complete', function () {
     return response('Complete workflow page not found', 404);
 });
 
+// 修復：支持用戶常見的拼寫錯誤
+Route::get('/vidspark-digital-human-completet', function () {
+    return response('', 301, ['Location' => '/vidspark-digital-human-complete']);
+});
+
 // Vidspark API代理路由（解決CORS問題）
 Route::post('/vidspark-api-proxy/validate-token', [app\controller\VidsparkApiProxyController::class, 'validateToken']);
 Route::post('/vidspark-api-proxy/test-free-avatar', [app\controller\VidsparkApiProxyController::class, 'testFreeAvatar']);
@@ -234,6 +239,12 @@ Route::post('/vidspark-api-proxy/create-scene', [app\controller\VidsparkApiProxy
 Route::post('/vidspark-api-proxy/synthesize-avatar', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatar']);
 
 Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyController::class, 'getProxyStatus']);
+
+// Vidspark文件上傳路由（生產環境文件處理）
+Route::post('/vidspark-upload/audio', [app\controller\VidsparkFileUploadController::class, 'uploadAudio']);
+Route::post('/vidspark-upload/video', [app\controller\VidsparkFileUploadController::class, 'uploadVideo']);
+Route::post('/vidspark-upload/save-generated-video', [app\controller\VidsparkFileUploadController::class, 'saveGeneratedVideo']);
+Route::get('/vidspark-upload/files', [app\controller\VidsparkFileUploadController::class, 'getFileList']);
 
 // Vidspark生產環境API測試路由（暫時移除，避免系統崩潰）
 // Route::get('/vidspark-api-test', [app\controller\VidsparkApiTestController::class, 'index']);
