@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音頻文件診斷工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        
+        audio {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Vidspark 音頻文件診斷工具</h1>
+        <p>診斷為什麼GenHuman API無法訪問我們的音頻文件</p>
+        
+        <!-- 測試1：我們的音頻文件 -->
+        <div class="test-section">
+            <h3>測試1：檢查我們上傳的音頻文件</h3>
+            <input type="text" id="our-audio-url" placeholder="輸入您的音頻URL" value="https://genhuman-digital-human.zeabur.app/vidspark/storage/audio/2025/08/vidspark_audio_20250829_235623_68b1cda7d1ea4.mp3">
+            <button class="btn" onclick="testOurAudio()">測試我們的音頻</button>
+            <div id="our-audio-result"></div>
+            <audio id="our-audio-player" controls style="display:none;"></audio>
+        </div>
+        
+        <!-- 測試2：官方示例音頻 -->
+        <div class="test-section">
+            <h3>測試2：使用官方示例音頻測試GenHuman API</h3>
+            <p>使用官方文檔中的音頻URL測試聲音克隆</p>
+            <button class="btn" onclick="testOfficialAudio()">使用官方音頻測試</button>
+            <div id="official-audio-result"></div>
+        </div>
+        
+        <!-- 測試3：外部公開音頻 -->
+        <div class="test-section">
+            <h3>測試3：使用其他外部音頻測試</h3>
+            <input type="text" id="external-audio-url" placeholder="輸入外部音頻URL" value="https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav">
+            <button class="btn" onclick="testExternalAudio()">測試外部音頻</button>
+            <div id="external-audio-result"></div>
+        </div>
+        
+        <!-- 測試4：Token驗證 -->
+        <div class="test-section">
+            <h3>測試4：GenHuman Token驗證</h3>
+            <input type="text" id="test-token" placeholder="輸入您的API Token">
+            <button class="btn" onclick="testToken()">驗證Token</button>
+            <div id="token-result"></div>
+        </div>
+        
+        <!-- 診斷結果 -->
+        <div class="test-section">
+            <h3>🎯 診斷結果總結</h3>
+            <div id="diagnosis-summary"></div>
+        </div>
+    </div>
+
+    <script>
+        let diagnosisResults = {
+            ourAudio: null,
+            officialAudio: null,
+            externalAudio: null,
+            token: null
+        };
+
+        // 測試我們的音頻文件
+        async function testOurAudio() {
+            const url = document.getElementById('our-audio-url').value;
+            const resultDiv = document.getElementById('our-audio-result');
+            const audioPlayer = document.getElementById('our-audio-player');
+            
+            resultDiv.innerHTML = '<div class="info">🔍 正在測試我們的音頻文件...</div>';
+            
+            try {
+                // 測試HEAD請求
+                const headResponse = await fetch(url, { method: 'HEAD' });
+                const headResult = `HEAD請求: ${headResponse.status} ${headResponse.statusText}`;
+                
+                // 測試GET請求
+                const getResponse = await fetch(url);
+                const getResult = `GET請求: ${getResponse.status} ${getResponse.statusText}`;
+                
+                // 測試音頻播放
+                audioPlayer.src = url;
+                audioPlayer.style.display = 'block';
+                
+                const success = headResponse.ok && getResponse.ok;
+                diagnosisResults.ourAudio = success;
+                
+                resultDiv.innerHTML = `
+                    <div class="${success ? 'success' : 'error'}">
+                        ${headResult}<br>
+                        ${getResult}<br>
+                        Content-Type: ${getResponse.headers.get('content-type') || '未知'}<br>
+                        Content-Length: ${getResponse.headers.get('content-length') || '未知'}<br>
+                        音頻播放測試: ${success ? '✅ 可以播放' : '❌ 無法播放'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                diagnosisResults.ourAudio = false;
+                resultDiv.innerHTML = `<div class="error">❌ 錯誤: ${error.message}</div>`;
+            }
+            
+            updateDiagnosis();
+        }
+
+        // 測試官方示例音頻
+        async function testOfficialAudio() {
+            const token = localStorage.getItem('vidspark_genhuman_token') || document.getElementById('test-token').value;
+            const resultDiv = document.getElementById('official-audio-result');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ 請先在測試4中輸入Token</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 正在使用官方示例音頻測試GenHuman API...</div>';
+            
+            try {
+                const response = await fetch('/vidspark-api-proxy/clone-voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        name: '官方示例測試',
+                        audio_url: 'https://yc-digital-human.oss-cn-guangzhou.aliyuncs.com/system_upload/20250103/95237a0bdfbfa18363a5ac8e008eed6a.mp3',
+                        description: '使用官方文檔示例音頻'
+                    })
+                });
+
+                const result = await response.json();
+                const success = result.code === 200;
+                diagnosisResults.officialAudio = success;
+                
+                resultDiv.innerHTML = `
+                    <div class="${success ? 'success' : 'error'}">
+                        官方示例音頻測試: ${success ? '✅ 成功' : '❌ 失敗'}<br>
+                        響應代碼: ${result.code}<br>
+                        響應信息: ${result.msg || '無信息'}<br>
+                        聲音ID: ${result.data?.voice_id || '無'}<br>
+                        任務ID: ${result.data?.task_id || '無'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                diagnosisResults.officialAudio = false;
+                resultDiv.innerHTML = `<div class="error">❌ 錯誤: ${error.message}</div>`;
+            }
+            
+            updateDiagnosis();
+        }
+
+        // 測試外部音頻
+        async function testExternalAudio() {
+            const token = localStorage.getItem('vidspark_genhuman_token') || document.getElementById('test-token').value;
+            const url = document.getElementById('external-audio-url').value;
+            const resultDiv = document.getElementById('external-audio-result');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ 請先在測試4中輸入Token</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 正在使用外部音頻測試GenHuman API...</div>';
+            
+            try {
+                const response = await fetch('/vidspark-api-proxy/clone-voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        name: '外部音頻測試',
+                        audio_url: url,
+                        description: '使用外部音頻測試GenHuman'
+                    })
+                });
+
+                const result = await response.json();
+                const success = result.code === 200;
+                diagnosisResults.externalAudio = success;
+                
+                resultDiv.innerHTML = `
+                    <div class="${success ? 'success' : 'error'}">
+                        外部音頻測試: ${success ? '✅ 成功' : '❌ 失敗'}<br>
+                        響應代碼: ${result.code}<br>
+                        響應信息: ${result.msg || '無信息'}<br>
+                        聲音ID: ${result.data?.voice_id || '無'}<br>
+                        任務ID: ${result.data?.task_id || '無'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                diagnosisResults.externalAudio = false;
+                resultDiv.innerHTML = `<div class="error">❌ 錯誤: ${error.message}</div>`;
+            }
+            
+            updateDiagnosis();
+        }
+
+        // 測試Token
+        async function testToken() {
+            const token = document.getElementById('test-token').value;
+            const resultDiv = document.getElementById('token-result');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ 請輸入Token</div>';
+                return;
+            }
+            
+            localStorage.setItem('vidspark_genhuman_token', token);
+            resultDiv.innerHTML = '<div class="info">🔍 正在驗證Token...</div>';
+            
+            try {
+                const response = await fetch('/vidspark-api-proxy/validate-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+
+                const result = await response.json();
+                const success = result.code === 200;
+                diagnosisResults.token = success;
+                
+                resultDiv.innerHTML = `
+                    <div class="${success ? 'success' : 'error'}">
+                        Token驗證: ${success ? '✅ 有效' : '❌ 無效'}<br>
+                        響應代碼: ${result.code}<br>
+                        響應信息: ${result.msg || '無信息'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                diagnosisResults.token = false;
+                resultDiv.innerHTML = `<div class="error">❌ 錯誤: ${error.message}</div>`;
+            }
+            
+            updateDiagnosis();
+        }
+
+        // 更新診斷總結
+        function updateDiagnosis() {
+            const summaryDiv = document.getElementById('diagnosis-summary');
+            let diagnosis = '';
+            
+            if (diagnosisResults.token === false) {
+                diagnosis = '<div class="error">❌ <strong>主要問題：Token無效</strong><br>請檢查您的GenHuman API Token是否正確</div>';
+            } else if (diagnosisResults.officialAudio === true && diagnosisResults.ourAudio === false) {
+                diagnosis = '<div class="warning">⚠️ <strong>問題確認：我們的音頻文件無法被GenHuman API訪問</strong><br>官方音頻可以正常使用，但我們上傳的音頻文件有問題</div>';
+            } else if (diagnosisResults.officialAudio === false && diagnosisResults.token === true) {
+                diagnosis = '<div class="error">❌ <strong>問題：GenHuman API服務異常</strong><br>Token有效但連官方示例音頻也無法使用</div>';
+            } else if (diagnosisResults.ourAudio === true && diagnosisResults.officialAudio === false) {
+                diagnosis = '<div class="info">🤔 <strong>混合結果</strong><br>我們的音頻文件可訪問，但GenHuman API調用失敗，可能是API服務問題</div>';
+            }
+            
+            summaryDiv.innerHTML = diagnosis;
+        }
+
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedToken = localStorage.getItem('vidspark_genhuman_token');
+            if (savedToken) {
+                document.getElementById('test-token').value = savedToken;
+            }
+        });
+    </script>
+</body>
+</html>

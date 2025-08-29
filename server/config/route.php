@@ -396,6 +396,20 @@ Route::get('/vidspark-voice-clone-debug', function() {
     ], file_get_contents(runtime_path() . '/../public/vidspark-voice-clone-debug.html'));
 });
 
+// 音頻文件訪問測試頁面
+Route::get('/test-audio-access', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/test-audio-access.html'));
+});
+
+// 音頻文件完整診斷工具
+Route::get('/vidspark-audio-diagnosis', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/vidspark-audio-diagnosis.html'));
+});
+
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
     return response('API endpoint not found', 404);
