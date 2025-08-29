@@ -211,6 +211,11 @@ Route::get('/vidspark-token-test', function () {
     return response('Token test page not found', 404);
 });
 
+// Vidspark API代理路由（解決CORS問題）
+Route::post('/vidspark-api-proxy/validate-token', [app\controller\VidsparkApiProxyController::class, 'validateToken']);
+Route::post('/vidspark-api-proxy/test-free-avatar', [app\controller\VidsparkApiProxyController::class, 'testFreeAvatar']);
+Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyController::class, 'getProxyStatus']);
+
 // Vidspark生產環境API測試路由（暫時移除，避免系統崩潰）
 // Route::get('/vidspark-api-test', [app\controller\VidsparkApiTestController::class, 'index']);
 // Route::post('/vidspark-api-test/validate-token', [app\controller\VidsparkApiTestController::class, 'validateToken']);
