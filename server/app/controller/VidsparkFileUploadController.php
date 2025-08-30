@@ -388,12 +388,27 @@ class VidsparkFileUploadController
                 $diagnostics['database_connection'] = 'FAILED: ' . $e->getMessage();
             }
             
-            // 測試存儲目錄
-            $storageDir = base_path() . '/public/vidspark/storage/video/' . date('Y/m');
+            // 測試存儲目錄（與數據庫初始化保持一致）
+            $videoStorageDir = base_path() . '/public/vidspark/storage/video/' . date('Y/m');
+            $audioStorageDir = base_path() . '/public/vidspark/storage/audio/' . date('Y/m');
+            $imagesStorageDir = base_path() . '/public/vidspark/storage/images/' . date('Y/m');
+            
             $diagnostics['storage_directory'] = [
-                'path' => $storageDir,
-                'exists' => is_dir($storageDir),
-                'writable' => is_writable(dirname($storageDir))
+                'video' => [
+                    'path' => $videoStorageDir,
+                    'exists' => is_dir($videoStorageDir),
+                    'writable' => is_dir($videoStorageDir) ? is_writable($videoStorageDir) : false
+                ],
+                'audio' => [
+                    'path' => $audioStorageDir,
+                    'exists' => is_dir($audioStorageDir),
+                    'writable' => is_dir($audioStorageDir) ? is_writable($audioStorageDir) : false
+                ],
+                'images' => [
+                    'path' => $imagesStorageDir,
+                    'exists' => is_dir($imagesStorageDir),
+                    'writable' => is_dir($imagesStorageDir) ? is_writable($imagesStorageDir) : false
+                ]
             ];
             
             return new Response(200, [

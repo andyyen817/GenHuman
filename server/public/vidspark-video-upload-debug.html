@@ -113,7 +113,7 @@
             <h3>📋 步驟3：小文件上傳測試</h3>
             <div class="file-input">
                 <input type="file" id="small-file" accept="video/*" />
-                <p>請選擇一個小於1MB的測試視頻文件</p>
+                <p>請選擇一個小於5MB的測試視頻文件</p>
             </div>
             <button class="btn" onclick="testSmallFileUpload()">📤 測試小文件上傳</button>
             <div id="small-file-results"></div>
@@ -211,8 +211,20 @@
                     <li>POST限制: ${data.diagnostics.post_max_size}</li>
                     <li>內存限制: ${data.diagnostics.memory_limit}</li>
                     <li>數據庫連接: ${data.diagnostics.database_connection}</li>
-                    <li>存儲目錄: ${data.diagnostics.storage_directory.exists ? '✅ 存在' : '❌ 不存在'}</li>
                 </ul>`;
+                
+                // 處理存儲目錄信息（支持新格式和舊格式）
+                html += '<div class="info">📁 存儲目錄狀態：</div><ul>';
+                if (data.diagnostics.storage_directory.video) {
+                    // 新格式：分別顯示video, audio, images
+                    html += `<li>視頻目錄: ${data.diagnostics.storage_directory.video.exists ? '✅ 存在' : '❌ 不存在'} (${data.diagnostics.storage_directory.video.writable ? '可寫' : '不可寫'})</li>`;
+                    html += `<li>音頻目錄: ${data.diagnostics.storage_directory.audio.exists ? '✅ 存在' : '❌ 不存在'} (${data.diagnostics.storage_directory.audio.writable ? '可寫' : '不可寫'})</li>`;
+                    html += `<li>圖片目錄: ${data.diagnostics.storage_directory.images.exists ? '✅ 存在' : '❌ 不存在'} (${data.diagnostics.storage_directory.images.writable ? '可寫' : '不可寫'})</li>`;
+                } else {
+                    // 舊格式：單一存儲目錄
+                    html += `<li>存儲目錄: ${data.diagnostics.storage_directory.exists ? '✅ 存在' : '❌ 不存在'}</li>`;
+                }
+                html += '</ul>';
                 
                 resultsDiv.innerHTML = html;
                 testResults.environment = data;
@@ -264,7 +276,16 @@
             }
             
             const file = fileInput.files[0];
-            addLog(`📤 開始小文件上傳測試: ${file.name} (${(file.size/1024).toFixed(2)}KB)`, 'info');
+            const fileSizeKB = file.size / 1024;
+            const fileSizeMB = fileSizeKB / 1024;
+            
+            // 檢查文件大小限制
+            if (file.size > 5 * 1024 * 1024) { // 5MB限制
+                resultsDiv.innerHTML = '<div class="error">❌ 文件太大！請選擇小於5MB的視頻文件</div>';
+                return;
+            }
+            
+            addLog(`📤 開始小文件上傳測試: ${file.name} (${fileSizeMB.toFixed(2)}MB)`, 'info');
             
             try {
                 const formData = new FormData();
