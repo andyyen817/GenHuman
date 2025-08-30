@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark - 檢查特定聲音克隆狀態</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .info-box h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+        }
+        
+        .form-group {
+            margin: 20px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result-box.success {
+            background: #d1edff;
+            border-color: #0084ff;
+            color: #0056b3;
+        }
+        
+        .result-box.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .audio-player {
+            margin: 15px 0;
+        }
+        
+        .voice-card {
+            background: #fff;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .voice-card h4 {
+            color: #28a745;
+            margin: 0 0 10px 0;
+        }
+        
+        .voice-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .voice-info strong {
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 檢查特定聲音克隆狀態</h1>
+        
+        <div class="info-box">
+            <h3>📋 任務信息</h3>
+            <p><strong>Voice ID:</strong> 46ba7f03e4f54fc5a0f5dff93f2a02b1</p>
+            <p><strong>Task ID:</strong> 198293</p>
+            <p><strong>提交時間:</strong> 2025-08-30 01:17:43</p>
+            <p><strong>音頻文件:</strong> 新錄音 16.mp3 (756KB)</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="api-token">GenHuman API Token:</label>
+            <input type="password" id="api-token" placeholder="請輸入您的GenHuman API Token">
+            <small style="color: #666;">Token會自動保存到localStorage</small>
+        </div>
+        
+        <button class="btn" id="check-btn" onclick="checkSpecificVoice()">🔍 檢查聲音克隆狀態</button>
+        <button class="btn" id="test-voice-btn" onclick="testClonedVoice()" disabled>🎵 測試克隆聲音</button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>正在查詢聲音狀態...</div>
+        </div>
+        
+        <div class="result-box" id="result" style="display: none;"></div>
+        
+        <div id="voice-details" style="display: none;"></div>
+        
+        <div id="voice-test-section" style="display: none;">
+            <h3>🎵 測試克隆聲音</h3>
+            <div class="form-group">
+                <label for="test-text">測試文字:</label>
+                <input type="text" id="test-text" value="你好，這是我的克隆聲音測試。" placeholder="輸入要合成的文字">
+            </div>
+            <div id="voice-test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 保存的聲音信息
+        let currentVoiceInfo = null;
+        
+        // 頁面加載時恢復Token
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedToken = localStorage.getItem('vidspark_genhuman_token');
+            if (savedToken) {
+                document.getElementById('api-token').value = savedToken;
+            }
+        });
+        
+        // 保存Token
+        document.getElementById('api-token').addEventListener('change', function() {
+            const token = this.value.trim();
+            if (token) {
+                localStorage.setItem('vidspark_genhuman_token', token);
+            }
+        });
+        
+        // 檢查特定聲音克隆狀態
+        async function checkSpecificVoice() {
+            const token = document.getElementById('api-token').value.trim();
+            if (!token) {
+                showResult('❌ 請先輸入API Token', 'error');
+                return;
+            }
+            
+            const targetVoiceId = '46ba7f03e4f54fc5a0f5dff93f2a02b1';
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('voice-details').style.display = 'none';
+            document.getElementById('test-voice-btn').disabled = true;
+            
+            try {
+                showResult('🔍 正在查詢所有聲音列表...', 'info');
+                
+                const response = await fetch('/vidspark-api-proxy/get-voice-roles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        token: token.startsWith('Bearer ') ? token.substring(7) : token 
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                
+                if (result.code === 200 && result.data) {
+                    // 查找特定的聲音ID
+                    const targetVoice = result.data.find(voice => voice.voice_id === targetVoiceId);
+                    
+                    if (targetVoice) {
+                        // 找到了！聲音克隆成功
+                        currentVoiceInfo = targetVoice;
+                        showVoiceFound(targetVoice, result.data.length);
+                        document.getElementById('test-voice-btn').disabled = false;
+                        document.getElementById('voice-test-section').style.display = 'block';
+                    } else {
+                        // 沒找到，可能還在處理
+                        showVoiceNotFound(result.data.length);
+                    }
+                    
+                    // 顯示所有聲音列表供參考
+                    showAllVoices(result.data);
+                    
+                } else {
+                    showResult(`❌ 查詢失敗\n錯誤代碼: ${result.code}\n錯誤信息: ${result.msg}`, 'error');
+                }
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                showResult(`❌ 網絡錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        // 顯示找到聲音的情況
+        function showVoiceFound(voice, totalCount) {
+            showResult(`🎉 聲音克隆成功完成！
+            
+📋 聲音詳情:
+🎤 聲音ID: ${voice.voice_id}
+📝 名稱: ${voice.name || '未設置'}
+📄 描述: ${voice.description || '未設置'}
+🕐 創建時間: ${voice.created_at || '未知'}
+✨ 狀態: 已可用於語音合成
+
+📊 統計信息:
+🔢 您的聲音庫總數: ${totalCount}個聲音
+⏱️ 從提交到完成時間: 已超過5分鐘
+✅ 處理狀態: 完全成功`, 'success');
+            
+            // 顯示詳細聲音卡片
+            const voiceDetails = document.getElementById('voice-details');
+            voiceDetails.innerHTML = `
+                <div class="voice-card">
+                    <h4>🎤 您的克隆聲音已就緒</h4>
+                    <div class="voice-info">
+                        <strong>聲音ID:</strong> <span>${voice.voice_id}</span>
+                        <strong>名稱:</strong> <span>${voice.name || '未設置'}</span>
+                        <strong>描述:</strong> <span>${voice.description || '未設置'}</span>
+                        <strong>創建時間:</strong> <span>${voice.created_at || '未知'}</span>
+                    </div>
+                    <p style="color: #28a745; margin: 15px 0;">✅ 現在可以使用這個聲音來合成語音了！</p>
+                </div>
+            `;
+            voiceDetails.style.display = 'block';
+        }
+        
+        // 顯示沒找到聲音的情況
+        function showVoiceNotFound(totalCount) {
+            showResult(`⏳ 聲音仍在處理中
+            
+📋 查詢結果:
+❌ 目標聲音ID未在聲音列表中找到
+🔢 當前聲音庫總數: ${totalCount}個聲音
+⏰ 處理狀態: 仍在生成中
+
+💡 可能原因:
+1. 聲音克隆需要更長時間處理（大於5分鐘）
+2. 系統處理隊列較忙
+3. 音頻文件較大需要更多時間
+
+🎯 建議:
+- 等待5-10分鐘後重新檢查
+- 大部分聲音克隆在15分鐘內完成`, 'error');
+        }
+        
+        // 顯示所有聲音列表
+        function showAllVoices(voices) {
+            let voiceList = '\n\n📋 您的完整聲音庫:\n';
+            voiceList += '=' .repeat(50) + '\n';
+            
+            if (voices.length === 0) {
+                voiceList += '🔇 暫無任何聲音\n';
+            } else {
+                voices.forEach((voice, index) => {
+                    voiceList += `${index + 1}. ${voice.name || '未命名'}\n`;
+                    voiceList += `   📋 ID: ${voice.voice_id}\n`;
+                    voiceList += `   📝 描述: ${voice.description || '無'}\n`;
+                    voiceList += `   🕐 時間: ${voice.created_at || '未知'}\n`;
+                    voiceList += '   ' + '-'.repeat(40) + '\n';
+                });
+            }
+            
+            const currentResult = document.getElementById('result').textContent;
+            showResult(currentResult + voiceList, document.getElementById('result').className.includes('success') ? 'success' : 'error');
+        }
+        
+        // 測試克隆聲音
+        async function testClonedVoice() {
+            if (!currentVoiceInfo) {
+                showResult('❌ 請先檢查聲音狀態', 'error');
+                return;
+            }
+            
+            const token = document.getElementById('api-token').value.trim();
+            const testText = document.getElementById('test-text').value.trim();
+            
+            if (!testText) {
+                document.getElementById('voice-test-result').innerHTML = '❌ 請輸入測試文字';
+                return;
+            }
+            
+            document.getElementById('voice-test-result').innerHTML = '🔄 正在合成語音...';
+            
+            try {
+                const response = await fetch('/vidspark-api-proxy/synthesize-voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token.startsWith('Bearer ') ? token.substring(7) : token,
+                        voice_id: currentVoiceInfo.voice_id,
+                        text: testText
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200 && result.data && result.data.audio_url) {
+                    document.getElementById('voice-test-result').innerHTML = `
+                        <div class="voice-card">
+                            <h4>🎵 語音合成成功！</h4>
+                            <p><strong>使用聲音:</strong> ${currentVoiceInfo.name} (${currentVoiceInfo.voice_id})</p>
+                            <p><strong>合成文字:</strong> "${testText}"</p>
+                            <div class="audio-player">
+                                <audio controls style="width: 100%;">
+                                    <source src="${result.data.audio_url}" type="audio/mpeg">
+                                    您的瀏覽器不支持音頻播放。
+                                </audio>
+                            </div>
+                            <p><strong>音頻URL:</strong> <a href="${result.data.audio_url}" target="_blank">${result.data.audio_url}</a></p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('voice-test-result').innerHTML = `❌ 語音合成失敗: ${result.msg}`;
+                }
+                
+            } catch (error) {
+                document.getElementById('voice-test-result').innerHTML = `❌ 測試錯誤: ${error.message}`;
+            }
+        }
+        
+        // 顯示結果
+        function showResult(content, type = 'info') {
+            const resultElement = document.getElementById('result');
+            resultElement.className = `result-box ${type}`;
+            resultElement.textContent = content;
+            resultElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -440,6 +440,13 @@ Route::get('/vidspark-audio-diagnosis', function() {
     ], file_get_contents(runtime_path() . '/../public/vidspark-audio-diagnosis.html'));
 });
 
+// Vidspark檢查特定聲音狀態
+Route::get('/vidspark-check-specific-voice', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/vidspark-check-specific-voice.html'));
+});
+
 // Vidspark存儲管理路由
 Route::get('/vidspark-storage-init', [app\controller\VidsparkStorageController::class, 'init']);
 Route::get('/vidspark-storage-status', [app\controller\VidsparkStorageController::class, 'status']);

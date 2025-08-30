@@ -404,8 +404,8 @@
 
         // 異步輪詢聲音克隆狀態
         async function startPollingVoiceStatus(token, debugInfo) {
-            const maxAttempts = 20;  // 最多檢查20次
-            const intervalMs = 15000; // 每15秒檢查一次
+            const maxAttempts = 40;  // 最多檢查40次 (40 * 30秒 = 20分鐘)
+            const intervalMs = 30000; // 每30秒檢查一次
             let attempts = 0;
             
             debugInfo.polling = {
