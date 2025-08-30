@@ -328,6 +328,14 @@ class VidsparkApiProxyController
 
     /**
      * 步驟2：用克隆聲音合成語音
+     * 根據官方文檔說明，使用 /Voice/created 接口
+     * 
+     * 輸入參數：
+     * - token: GenHuman API Token
+     * - text: 要合成的文字
+     * - voice_id: 第一步聲音克隆返回的voice_id
+     * 
+     * 返回：音頻地址和Base64編碼的音頻文件
      */
     public function synthesizeWithClonedVoice(Request $request): Response
     {
@@ -337,14 +345,31 @@ class VidsparkApiProxyController
             $text = $input['text'] ?? '';
             $voiceId = $input['voice_id'] ?? '';
             
+            // 詳細記錄輸入參數
+            $requestLog = [
+                'method' => 'synthesizeWithClonedVoice',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'text' => $text,
+                    'voice_id' => $voiceId,
+                    'text_length' => strlen($text)
+                ]
+            ];
+            
             if (empty($token) || empty($text) || empty($voiceId)) {
                 throw new Exception('Token、文字和聲音ID不能為空');
             }
             
+            // 根據官方文檔，調用免費聲音合成API
+            // https://api.yidevs.com/app/human/human/Voice/created
             $result = $this->callGenHumanAPI('/app/human/human/Voice/created', [
                 'text' => $text,
                 'voice_id' => $voiceId
             ], $token);
+            
+            // 記錄成功結果
+            $result['_request_log'] = $requestLog;
             
             return new Response(200, [
                 'Content-Type' => 'application/json; charset=utf-8'
@@ -357,9 +382,19 @@ class VidsparkApiProxyController
                 'success' => false,
                 'code' => 500,
                 'msg' => $e->getMessage(),
+                'error_detail' => '語音合成失敗，請檢查Token、文字內容和聲音ID',
                 'test_time' => date('Y-m-d H:i:s')
             ], JSON_UNESCAPED_UNICODE));
         }
+    }
+
+    /**
+     * 語音合成方法的別名，提供更清晰的命名
+     * 與 synthesizeWithClonedVoice 完全相同
+     */
+    public function synthesizeVoice(Request $request): Response
+    {
+        return $this->synthesizeWithClonedVoice($request);
     }
 
     /**
