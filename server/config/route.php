@@ -448,6 +448,13 @@ Route::get('/vidspark-audio-diagnosis', function() {
     ], file_get_contents(runtime_path() . '/../public/vidspark-audio-diagnosis.html'));
 });
 
+// Vidspark視頻上傳專項調試工具
+Route::get('/vidspark-video-upload-debug', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/vidspark-video-upload-debug.html'));
+});
+
 // Vidspark快速數據庫初始化（使用控制器）
 Route::get('/vidspark-quick-db-init', [app\controller\VidsparkStorageController::class, 'quickDbInit']);
 

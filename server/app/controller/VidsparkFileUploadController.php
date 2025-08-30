@@ -6,6 +6,7 @@ use support\Request;
 use support\Response;
 use think\facade\Db;
 use Exception;
+use Throwable;
 
 /**
  * Vidspark文件上傳控制器

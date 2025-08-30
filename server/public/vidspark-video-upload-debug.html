@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark視頻上傳專項調試工具</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f7fa; 
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+        }
+        .step { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border-left: 4px solid #3498db; 
+            background: #f8f9fa; 
+            border-radius: 5px; 
+        }
+        .success { color: #27ae60; background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .error { color: #e74c3c; background: #f8d7da; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .warning { color: #f39c12; background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .info { color: #3498db; background: #d1ecf1; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .btn { 
+            background: #3498db; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 10px 5px; 
+            font-size: 14px;
+        }
+        .btn:hover { background: #2980b9; }
+        .btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+        textarea { 
+            width: 100%; 
+            height: 200px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 12px; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .file-input { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border: 2px dashed #3498db; 
+            border-radius: 5px; 
+            text-align: center; 
+        }
+        .test-section { 
+            margin: 30px 0; 
+            padding: 20px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 10px; 
+        }
+        .log-entry { 
+            font-family: monospace; 
+            font-size: 11px; 
+            padding: 5px; 
+            margin: 2px 0; 
+            background: #f1f2f6; 
+            border-left: 3px solid #74b9ff; 
+        }
+        .progress { 
+            width: 100%; 
+            height: 20px; 
+            background: #ecf0f1; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            margin: 10px 0; 
+        }
+        .progress-bar { 
+            height: 100%; 
+            background: #3498db; 
+            width: 0%; 
+            transition: width 0.3s; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Vidspark視頻上傳專項調試工具</h1>
+        <p><strong>目的</strong>：系統性排查視頻上傳500錯誤和JSON解析問題</p>
+        <p><strong>版本</strong>：v1.0 | <strong>時間</strong>：<span id="current-time"></span></p>
+        <hr>
+
+        <!-- 步驟1：環境檢查 -->
+        <div class="test-section">
+            <h3>📋 步驟1：環境狀態檢查</h3>
+            <button class="btn" onclick="checkEnvironment()">🔍 檢查環境狀態</button>
+            <div id="env-results"></div>
+        </div>
+
+        <!-- 步驟2：數據庫連接測試 -->
+        <div class="test-section">
+            <h3>📋 步驟2：數據庫連接深度測試</h3>
+            <button class="btn" onclick="testDatabaseDeep()">🗄️ 深度數據庫測試</button>
+            <div id="db-results"></div>
+        </div>
+
+        <!-- 步驟3：小文件上傳測試 -->
+        <div class="test-section">
+            <h3>📋 步驟3：小文件上傳測試</h3>
+            <div class="file-input">
+                <input type="file" id="small-file" accept="video/*" />
+                <p>請選擇一個小於1MB的測試視頻文件</p>
+            </div>
+            <button class="btn" onclick="testSmallFileUpload()">📤 測試小文件上傳</button>
+            <div id="small-file-results"></div>
+        </div>
+
+        <!-- 步驟4：表單數據測試 -->
+        <div class="test-section">
+            <h3>📋 步驟4：表單數據結構測試</h3>
+            <button class="btn" onclick="testFormDataStructure()">📝 測試表單數據</button>
+            <div id="form-data-results"></div>
+        </div>
+
+        <!-- 步驟5：API端點詳細測試 -->
+        <div class="test-section">
+            <h3>📋 步驟5：API端點詳細測試</h3>
+            <button class="btn" onclick="testApiEndpoint()">🔗 測試API端點</button>
+            <div id="api-results"></div>
+        </div>
+
+        <!-- 步驟6：錯誤重現測試 -->
+        <div class="test-section">
+            <h3>📋 步驟6：錯誤重現測試</h3>
+            <div class="file-input">
+                <input type="file" id="error-file" accept="video/*" />
+                <p>選擇任意視頻文件重現錯誤</p>
+            </div>
+            <button class="btn" onclick="reproduceError()">🐛 重現錯誤</button>
+            <div id="error-results"></div>
+        </div>
+
+        <!-- 實時日誌 -->
+        <div class="test-section">
+            <h3>📋 實時診斷日誌</h3>
+            <div id="debug-logs" style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 5px;"></div>
+            <button class="btn" onclick="clearLogs()">🧹 清空日誌</button>
+            <button class="btn" onclick="exportLogs()">💾 導出日誌</button>
+        </div>
+
+        <!-- 解決方案建議 -->
+        <div class="test-section">
+            <h3>📋 智能解決方案建議</h3>
+            <div id="solution-suggestions"></div>
+        </div>
+    </div>
+
+    <script>
+        // 全局變量
+        let debugLogs = [];
+        let testResults = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            addLog('🚀 Vidspark視頻上傳調試工具已啟動', 'info');
+        });
+
+        function updateCurrentTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleString('zh-TW');
+        }
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = {
+                time: timestamp,
+                message: message,
+                type: type
+            };
+            debugLogs.push(logEntry);
+            
+            const logDiv = document.createElement('div');
+            logDiv.className = 'log-entry';
+            logDiv.innerHTML = `[${timestamp}] ${message}`;
+            
+            const logsContainer = document.getElementById('debug-logs');
+            logsContainer.appendChild(logDiv);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        // 步驟1：環境檢查
+        async function checkEnvironment() {
+            addLog('🔍 開始環境狀態檢查...', 'info');
+            const resultsDiv = document.getElementById('env-results');
+            
+            try {
+                // 檢查診斷端點
+                const response = await fetch('/vidspark-upload/video-diagnosis');
+                const data = await response.json();
+                
+                let html = '<div class="success">✅ 環境診斷端點正常</div>';
+                html += '<div class="info">🔧 PHP配置信息：</div>';
+                html += `<ul>
+                    <li>PHP版本: ${data.diagnostics.php_version}</li>
+                    <li>上傳限制: ${data.diagnostics.upload_max_filesize}</li>
+                    <li>POST限制: ${data.diagnostics.post_max_size}</li>
+                    <li>內存限制: ${data.diagnostics.memory_limit}</li>
+                    <li>數據庫連接: ${data.diagnostics.database_connection}</li>
+                    <li>存儲目錄: ${data.diagnostics.storage_directory.exists ? '✅ 存在' : '❌ 不存在'}</li>
+                </ul>`;
+                
+                resultsDiv.innerHTML = html;
+                testResults.environment = data;
+                addLog('✅ 環境檢查完成', 'success');
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ 環境檢查失敗: ${error.message}</div>`;
+                addLog(`❌ 環境檢查錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        // 步驟2：數據庫深度測試
+        async function testDatabaseDeep() {
+            addLog('🗄️ 開始數據庫深度測試...', 'info');
+            const resultsDiv = document.getElementById('db-results');
+            
+            try {
+                const response = await fetch('/vidspark-quick-db-init');
+                const data = await response.json();
+                
+                let html = `<div class="${data.success ? 'success' : 'error'}">
+                    ${data.success ? '✅' : '❌'} 數據庫測試: ${data.message}
+                </div>`;
+                
+                html += '<div class="info">📊 詳細結果：</div><ul>';
+                data.results.forEach(result => {
+                    html += `<li>${result}</li>`;
+                });
+                html += '</ul>';
+                
+                resultsDiv.innerHTML = html;
+                testResults.database = data;
+                addLog(`✅ 數據庫測試完成: ${data.success ? '成功' : '失敗'}`, data.success ? 'success' : 'error');
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ 數據庫測試失敗: ${error.message}</div>`;
+                addLog(`❌ 數據庫測試錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        // 步驟3：小文件上傳測試
+        async function testSmallFileUpload() {
+            const fileInput = document.getElementById('small-file');
+            const resultsDiv = document.getElementById('small-file-results');
+            
+            if (!fileInput.files[0]) {
+                resultsDiv.innerHTML = '<div class="warning">⚠️ 請先選擇一個測試文件</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            addLog(`📤 開始小文件上傳測試: ${file.name} (${(file.size/1024).toFixed(2)}KB)`, 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('video', file);
+                
+                addLog('📨 正在發送請求到 /vidspark-upload/video...', 'info');
+                
+                const response = await fetch('/vidspark-upload/video', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                addLog(`📥 服務器響應: ${response.status} ${response.statusText}`, 'info');
+                
+                const responseText = await response.text();
+                addLog(`📄 響應內容類型: ${response.headers.get('content-type')}`, 'info');
+                addLog(`📄 響應內容長度: ${responseText.length} 字符`, 'info');
+                
+                let html = `<div class="info">🔍 響應分析：</div>`;
+                html += `<p><strong>狀態碼</strong>: ${response.status} ${response.statusText}</p>`;
+                html += `<p><strong>內容類型</strong>: ${response.headers.get('content-type')}</p>`;
+                html += `<p><strong>響應長度</strong>: ${responseText.length} 字符</p>`;
+                
+                // 嘗試解析JSON
+                try {
+                    const jsonData = JSON.parse(responseText);
+                    html += `<div class="success">✅ JSON解析成功</div>`;
+                    html += `<pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px;">${JSON.stringify(jsonData, null, 2)}</pre>`;
+                    addLog('✅ 小文件上傳測試成功！', 'success');
+                } catch (jsonError) {
+                    html += `<div class="error">❌ JSON解析失敗: ${jsonError.message}</div>`;
+                    html += `<div class="warning">⚠️ 原始響應內容（前500字符）：</div>`;
+                    html += `<textarea readonly>${responseText.substring(0, 500)}</textarea>`;
+                    addLog(`❌ JSON解析錯誤: ${jsonError.message}`, 'error');
+                }
+                
+                resultsDiv.innerHTML = html;
+                testResults.smallFile = { response: responseText, status: response.status };
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ 上傳請求失敗: ${error.message}</div>`;
+                addLog(`❌ 上傳請求錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        // 步驟4：表單數據結構測試
+        async function testFormDataStructure() {
+            addLog('📝 開始表單數據結構測試...', 'info');
+            const resultsDiv = document.getElementById('form-data-results');
+            
+            try {
+                // 創建測試用的Blob文件
+                const testBlob = new Blob(['test video content'], { type: 'video/mp4' });
+                const testFile = new File([testBlob], 'test.mp4', { type: 'video/mp4' });
+                
+                const formData = new FormData();
+                formData.append('video', testFile);
+                
+                addLog('📊 測試FormData結構...', 'info');
+                
+                // 顯示FormData內容
+                let html = '<div class="info">📋 FormData結構分析：</div>';
+                html += '<ul>';
+                for (let [key, value] of formData.entries()) {
+                    if (value instanceof File) {
+                        html += `<li><strong>${key}</strong>: File(name="${value.name}", size=${value.size}, type="${value.type}")</li>`;
+                    } else {
+                        html += `<li><strong>${key}</strong>: ${value}</li>`;
+                    }
+                }
+                html += '</ul>';
+                
+                // 測試fetch請求配置
+                const requestConfig = {
+                    method: 'POST',
+                    body: formData,
+                    // 不設置Content-Type，讓瀏覽器自動設置
+                };
+                
+                html += '<div class="info">🔧 請求配置：</div>';
+                html += `<pre style="background: #f8f9fa; padding: 10px; border-radius: 5px;">${JSON.stringify({
+                    method: requestConfig.method,
+                    bodyType: 'FormData',
+                    fileCount: 1
+                }, null, 2)}</pre>`;
+                
+                resultsDiv.innerHTML = html;
+                addLog('✅ 表單數據結構測試完成', 'success');
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ 表單測試失敗: ${error.message}</div>`;
+                addLog(`❌ 表單測試錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        // 步驟5：API端點測試
+        async function testApiEndpoint() {
+            addLog('🔗 開始API端點詳細測試...', 'info');
+            const resultsDiv = document.getElementById('api-results');
+            
+            try {
+                // 測試不同的HTTP方法
+                const tests = [
+                    { method: 'GET', description: '測試GET請求（應該失敗）' },
+                    { method: 'POST', description: '測試空POST請求' },
+                    { method: 'POST', description: '測試無效數據POST', body: 'invalid data' }
+                ];
+                
+                let html = '<div class="info">🔧 API端點測試結果：</div>';
+                
+                for (const test of tests) {
+                    addLog(`🔍 ${test.description}...`, 'info');
+                    
+                    try {
+                        const response = await fetch('/vidspark-upload/video', {
+                            method: test.method,
+                            body: test.body
+                        });
+                        
+                        const responseText = await response.text();
+                        const contentType = response.headers.get('content-type');
+                        
+                        html += `<div class="step">
+                            <h4>${test.description}</h4>
+                            <p><strong>狀態</strong>: ${response.status} ${response.statusText}</p>
+                            <p><strong>內容類型</strong>: ${contentType}</p>
+                            <p><strong>響應長度</strong>: ${responseText.length}</p>
+                        `;
+                        
+                        if (contentType && contentType.includes('application/json')) {
+                            try {
+                                const jsonData = JSON.parse(responseText);
+                                html += `<div class="success">✅ JSON格式正確</div>`;
+                                html += `<pre style="font-size: 11px;">${JSON.stringify(jsonData, null, 2)}</pre>`;
+                            } catch (e) {
+                                html += `<div class="error">❌ JSON解析失敗</div>`;
+                            }
+                        } else {
+                            html += `<div class="warning">⚠️ 非JSON響應</div>`;
+                            html += `<textarea readonly style="height: 80px;">${responseText.substring(0, 200)}</textarea>`;
+                        }
+                        
+                        html += '</div>';
+                        
+                    } catch (error) {
+                        html += `<div class="error">❌ ${test.description} 失敗: ${error.message}</div>`;
+                    }
+                }
+                
+                resultsDiv.innerHTML = html;
+                addLog('✅ API端點測試完成', 'success');
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ API測試失敗: ${error.message}</div>`;
+                addLog(`❌ API測試錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        // 步驟6：錯誤重現
+        async function reproduceError() {
+            const fileInput = document.getElementById('error-file');
+            const resultsDiv = document.getElementById('error-results');
+            
+            if (!fileInput.files[0]) {
+                resultsDiv.innerHTML = '<div class="warning">⚠️ 請先選擇一個視頻文件</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            addLog(`🐛 開始錯誤重現測試: ${file.name}`, 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('video', file);
+                
+                addLog('📨 發送請求以重現錯誤...', 'info');
+                
+                const startTime = Date.now();
+                const response = await fetch('/vidspark-upload/video', {
+                    method: 'POST',
+                    body: formData
+                });
+                const endTime = Date.now();
+                
+                const responseText = await response.text();
+                const contentType = response.headers.get('content-type');
+                
+                let html = `<div class="info">🔍 錯誤重現結果：</div>`;
+                html += `<p><strong>文件</strong>: ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)</p>`;
+                html += `<p><strong>響應時間</strong>: ${endTime - startTime}ms</p>`;
+                html += `<p><strong>狀態碼</strong>: ${response.status} ${response.statusText}</p>`;
+                html += `<p><strong>內容類型</strong>: ${contentType}</p>`;
+                
+                if (response.status === 500) {
+                    html += `<div class="error">❌ 確認500錯誤重現</div>`;
+                    addLog('🎯 成功重現500錯誤！', 'error');
+                    
+                    // 分析錯誤內容
+                    if (responseText.includes('ErrorException') || responseText.includes('Fatal error')) {
+                        html += `<div class="warning">⚠️ 檢測到PHP錯誤頁面</div>`;
+                        addLog('🔍 檢測到PHP Fatal Error或Exception', 'error');
+                    }
+                    
+                    if (responseText.includes('Unexpected token')) {
+                        html += `<div class="warning">⚠️ 前端嘗試解析HTML為JSON導致錯誤</div>`;
+                        addLog('🔍 前端JSON解析錯誤（試圖解析HTML）', 'error');
+                    }
+                    
+                    html += `<div class="warning">📄 錯誤響應內容（前1000字符）：</div>`;
+                    html += `<textarea readonly style="height: 150px;">${responseText.substring(0, 1000)}</textarea>`;
+                }
+                
+                resultsDiv.innerHTML = html;
+                testResults.errorReproduction = { 
+                    status: response.status, 
+                    contentType: contentType, 
+                    responseText: responseText.substring(0, 1000) 
+                };
+                
+                // 生成解決方案建議
+                generateSolutions();
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ 錯誤重現失敗: ${error.message}</div>`;
+                addLog(`❌ 錯誤重現失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // 生成解決方案建議
+        function generateSolutions() {
+            addLog('💡 生成智能解決方案建議...', 'info');
+            const suggestionsDiv = document.getElementById('solution-suggestions');
+            
+            let solutions = [];
+            
+            // 基於測試結果分析問題
+            if (testResults.errorReproduction && testResults.errorReproduction.status === 500) {
+                solutions.push({
+                    priority: 'high',
+                    title: '500錯誤分析',
+                    description: 'PHP服務器端發生致命錯誤，返回HTML錯誤頁面而非JSON',
+                    actions: [
+                        '檢查PHP錯誤日誌',
+                        '確認VidsparkFileUploadController.php語法正確性',
+                        '驗證think\\facade\\Db類導入是否正確',
+                        '檢查數據庫連接配置'
+                    ]
+                });
+            }
+            
+            if (testResults.environment && testResults.environment.diagnostics.upload_max_filesize === '2M') {
+                solutions.push({
+                    priority: 'medium',
+                    title: 'PHP上傳限制過小',
+                    description: '當前上傳限制僅2MB，可能導致大文件上傳失敗',
+                    actions: [
+                        '考慮使用Base64編碼上傳繞過PHP限制',
+                        '在Zeabur中設置環境變量增加PHP限制',
+                        '使用分片上傳機制'
+                    ]
+                });
+            }
+            
+            if (testResults.database && !testResults.database.success) {
+                solutions.push({
+                    priority: 'high',
+                    title: '數據庫問題',
+                    description: '數據庫操作失敗可能導致整個上傳流程中斷',
+                    actions: [
+                        '重新運行數據庫初始化腳本',
+                        '檢查數據庫連接配置',
+                        '驗證表結構是否正確'
+                    ]
+                });
+            }
+            
+            // 通用解決方案
+            solutions.push({
+                priority: 'medium',
+                title: '通用解決方案',
+                description: '基於常見問題的解決方案',
+                actions: [
+                    '重新部署應用確保代碼最新',
+                    '檢查Zeabur日誌獲取詳細錯誤信息',
+                    '使用更小的測試文件驗證基本功能',
+                    '聯繫技術支持提供完整錯誤日誌'
+                ]
+            });
+            
+            let html = '<div class="info">💡 基於診斷結果的智能建議：</div>';
+            
+            solutions.forEach((solution, index) => {
+                const priorityClass = solution.priority === 'high' ? 'error' : solution.priority === 'medium' ? 'warning' : 'info';
+                html += `<div class="${priorityClass}" style="margin: 15px 0;">
+                    <h4>🎯 ${solution.title} (${solution.priority} 優先級)</h4>
+                    <p>${solution.description}</p>
+                    <ul>`;
+                solution.actions.forEach(action => {
+                    html += `<li>${action}</li>`;
+                });
+                html += '</ul></div>';
+            });
+            
+            suggestionsDiv.innerHTML = html;
+            addLog('✅ 解決方案建議生成完成', 'success');
+        }
+
+        // 工具函數
+        function clearLogs() {
+            debugLogs = [];
+            document.getElementById('debug-logs').innerHTML = '';
+            addLog('🧹 日誌已清空', 'info');
+        }
+
+        function exportLogs() {
+            const logText = debugLogs.map(log => `[${log.time}] ${log.message}`).join('\n');
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vidspark-debug-logs-${new Date().toISOString().substr(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('💾 日誌已導出', 'success');
+        }
+    </script>
+</body>
+</html>
