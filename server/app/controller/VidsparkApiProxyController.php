@@ -513,7 +513,121 @@ class VidsparkApiProxyController
     }
 
     /**
-     * 步驟3：創建場景（上傳影片）
+     * 步驟3A：免費數字人克隆 (/Scene/created)
+     */
+    public function createSceneFree(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $videoUrl = $input['video_url'] ?? '';
+            $videoName = $input['video_name'] ?? 'Vidspark免費數字人分身';
+            $callbackUrl = $input['callback_url'] ?? 'https://genhuman-digital-human.zeabur.app/webhook/vidspark';
+            
+            $requestLog = [
+                'method' => 'createSceneFree',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'cost' => '免費',
+                'api_endpoint' => '/Scene/created',
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'video_url' => $videoUrl,
+                    'video_name' => $videoName,
+                    'callback_url' => $callbackUrl
+                ]
+            ];
+            
+            if (empty($token) || empty($videoUrl)) {
+                throw new Exception('Token和視頻地址不能為空');
+            }
+            
+            // 調用免費數字人分身克隆API
+            $result = $this->callGenHumanAPI('/app/human/human/Scene/created', [
+                'callback_url' => $callbackUrl,
+                'video_name' => $videoName,
+                'video_url' => $videoUrl
+            ], $token);
+            
+            $result['_request_log'] = $requestLog;
+            $result['_api_type'] = 'free_scene_clone';
+            $result['_compatible_with'] = 'Index/created (免費數字人合成)';
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '免費數字人克隆失敗，可能併發已滿',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 步驟3B：付費數字人克隆 (/Scene/senior)
+     */
+    public function createScenePaid(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $videoUrl = $input['video_url'] ?? '';
+            $videoName = $input['video_name'] ?? 'Vidspark付費數字人分身';
+            $callbackUrl = $input['callback_url'] ?? 'https://genhuman-digital-human.zeabur.app/webhook/vidspark';
+            
+            $requestLog = [
+                'method' => 'createScenePaid',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'cost' => '免費',
+                'api_endpoint' => '/Scene/senior',
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'video_url' => $videoUrl,
+                    'video_name' => $videoName,
+                    'callback_url' => $callbackUrl
+                ]
+            ];
+            
+            if (empty($token) || empty($videoUrl)) {
+                throw new Exception('Token和視頻地址不能為空');
+            }
+            
+            // 調用付費數字人分身克隆API
+            $result = $this->callGenHumanAPI('/app/human/human/Scene/senior', [
+                'callback_url' => $callbackUrl,
+                'video_name' => $videoName,
+                'video_url' => $videoUrl
+            ], $token);
+            
+            $result['_request_log'] = $requestLog;
+            $result['_api_type'] = 'paid_scene_clone';
+            $result['_compatible_with'] = 'Musetalk/create (統一數字人合成)';
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '付費數字人克隆失敗，請檢查Token和視頻',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 步驟3：創建場景（上傳影片）- 兼容性保留
      */
     public function createScene(Request $request): Response
     {
@@ -551,7 +665,161 @@ class VidsparkApiProxyController
     }
 
     /**
-     * 步驟4：合成數字人
+     * 步驟4A：免費數字人合成 (/Index/created)
+     */
+    public function synthesizeAvatarFree(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $sceneTaskId = $input['scene_task_id'] ?? '';
+            $audioUrl = $input['audio_url'] ?? '';
+            $callbackUrl = $input['callback_url'] ?? 'https://genhuman-digital-human.zeabur.app/webhook/vidspark';
+            
+            $requestLog = [
+                'method' => 'synthesizeAvatarFree',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'cost' => '免費',
+                'api_endpoint' => '/Index/created',
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'scene_task_id' => $sceneTaskId,
+                    'audio_url' => $audioUrl,
+                    'callback_url' => $callbackUrl
+                ]
+            ];
+            
+            if (empty($token) || empty($sceneTaskId) || empty($audioUrl)) {
+                throw new Exception('Token、場景ID和音頻地址不能為空');
+            }
+            
+            // 調用免費數字人合成API
+            $result = $this->callGenHumanAPI('/app/human/human/Index/created', [
+                'callback_url' => $callbackUrl,
+                'scene_task_id' => $sceneTaskId,
+                'audio_url' => $audioUrl
+            ], $token);
+            
+            $result['_request_log'] = $requestLog;
+            $result['_api_type'] = 'free_avatar_synthesis';
+            $result['_task_query_endpoint'] = '/Musetalk/task';
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '免費數字人合成失敗，可能併發已滿',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 步驟4B：付費數字人合成 (/Musetalk/create)
+     */
+    public function synthesizeAvatarPaid(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $sceneTaskId = $input['scene_task_id'] ?? '';
+            $audioUrl = $input['audio_url'] ?? '';
+            $callbackUrl = $input['callback_url'] ?? 'https://genhuman-digital-human.zeabur.app/webhook/vidspark';
+            
+            $requestLog = [
+                'method' => 'synthesizeAvatarPaid',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'cost' => '1積分/秒',
+                'api_endpoint' => '/Musetalk/create',
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'scene_task_id' => $sceneTaskId,
+                    'audio_url' => $audioUrl,
+                    'callback_url' => $callbackUrl
+                ]
+            ];
+            
+            if (empty($token) || empty($sceneTaskId) || empty($audioUrl)) {
+                throw new Exception('Token、場景ID和音頻地址不能為空');
+            }
+            
+            // 調用統一數字人合成API
+            $result = $this->callGenHumanAPI('/app/human/human/Musetalk/create', [
+                'callback_url' => $callbackUrl,
+                'scene_task_id' => $sceneTaskId,
+                'audio_url' => $audioUrl
+            ], $token);
+            
+            $result['_request_log'] = $requestLog;
+            $result['_api_type'] = 'paid_avatar_synthesis';
+            $result['_task_query_endpoint'] = '/Musetalk/task';
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '統一數字人合成失敗，請檢查Token、場景ID和音頻',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 任務查詢-通用 (/Musetalk/task) - 用於輪詢數字人合成進度
+     */
+    public function queryTask(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $taskId = $input['task_id'] ?? '';
+            
+            if (empty($token) || empty($taskId)) {
+                throw new Exception('Token和任務ID不能為空');
+            }
+            
+            // 調用任務查詢API (GET請求)
+            $result = $this->callGenHumanAPI('/app/human/human/Musetalk/task?task_id=' . $taskId, [], $token, 'GET');
+            
+            $result['_query_info'] = [
+                'task_id' => $taskId,
+                'query_time' => date('Y-m-d H:i:s'),
+                'endpoint' => '/Musetalk/task'
+            ];
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '任務查詢失敗',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 步驟4：合成數字人 - 兼容性保留
      */
     public function synthesizeAvatar(Request $request): Response
     {

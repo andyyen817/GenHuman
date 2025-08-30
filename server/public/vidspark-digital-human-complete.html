@@ -388,9 +388,12 @@
                     </div>
                     <div class="form-group">
                         <label>克隆的聲音ID:</label>
-                        <input type="text" id="cloned-voice-id" readonly placeholder="等待步驟1完成...">
+                        <input type="text" id="cloned-voice-id" placeholder="等待步驟1完成或手動輸入...">
+                        <small style="color: #666; font-size: 12px;">
+                            💡 提示：可以手動輸入已有的Voice ID進行獨立測試
+                        </small>
                     </div>
-                    <button class="btn" onclick="synthesizeSpeech()" disabled id="btn-step2">🎵 合成語音</button>
+                    <button class="btn" onclick="synthesizeSpeech()" id="btn-step2">🎵 合成語音</button>
                     <div class="loading" id="loading2">
                         <div class="spinner"></div>
                         <div>正在合成語音...</div>
@@ -405,8 +408,8 @@
                     <div class="step-title">
                         <div class="step-number">3</div>
                         <div>
-                            <h3>🎬 場景創建</h3>
-                            <p>上傳您想要合成口型的影片</p>
+                            <h3>🎬 數字人克隆</h3>
+                            <p>上傳您的影片，創建數字人分身場景</p>
                         </div>
                     </div>
                 </div>
@@ -416,17 +419,22 @@
                         <div style="display: flex; gap: 15px; margin: 10px 0;">
                             <label style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="radio" name="digital-api-type" value="free" checked onchange="updateDigitalApiType(this.value)">
-                                <span style="margin-left: 8px;">🆓 免費數字人合成</span>
+                                <span style="margin-left: 8px;">🆓 免費數字人克隆 → 免費合成</span>
                             </label>
                             <label style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="radio" name="digital-api-type" value="paid" onchange="updateDigitalApiType(this.value)">
-                                <span style="margin-left: 8px;">💎 統一數字人合成 (1積分/秒)</span>
+                                <span style="margin-left: 8px;">💎 付費數字人克隆 → 統一合成 (1積分/秒)</span>
                             </label>
+                        </div>
+                        <div style="background: #f3f4f6; border-radius: 8px; padding: 12px; margin: 10px 0; font-size: 13px;">
+                            <strong>📋 API對應關係：</strong><br>
+                            • <strong>免費克隆</strong>：Scene/created → Index/created (易客滿)<br>
+                            • <strong>付費克隆</strong>：Scene/senior → Musetalk/create (穩定)
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="scene-name">場景名稱:</label>
-                        <input type="text" id="scene-name" placeholder="給場景起個名字" value="我的數字人場景">
+                        <label for="scene-name">數字人分身名稱:</label>
+                        <input type="text" id="scene-name" placeholder="給您的數字人分身起個名字" value="我的數字人分身">
                     </div>
                     <div class="form-group">
                         <label>上傳影片文件:</label>
@@ -440,7 +448,7 @@
                         <label for="video-url">或者輸入影片URL:</label>
                         <input type="url" id="video-url" placeholder="https://example.com/video.mp4">
                     </div>
-                    <button class="btn" onclick="createScene()" disabled id="btn-step3">🏗️ 創建場景</button>
+                    <button class="btn" onclick="createScene()" id="btn-step3">👤 數字人克隆</button>
                     <div class="loading" id="loading3">
                         <div class="spinner"></div>
                         <div>正在創建場景...</div>
@@ -463,13 +471,44 @@
                 <div class="step-content">
                     <div class="form-group">
                         <label>場景ID:</label>
-                        <input type="text" id="scene-task-id" readonly placeholder="等待步驟3完成...">
+                        <input type="text" id="scene-task-id" placeholder="等待步驟3完成或手動輸入...">
+                        <small style="color: #666; font-size: 12px;">
+                            💡 提示：可以手動輸入已有的Scene Task ID進行獨立測試
+                        </small>
                     </div>
                     <div class="form-group">
-                        <label>音頻URL:</label>
+                        <label>音頻來源:</label>
+                        <div style="display: flex; gap: 15px; margin: 10px 0;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="audio-source" value="workflow" checked onchange="updateAudioSource(this.value)">
+                                <span style="margin-left: 8px;">🔗 使用步驟2生成的音頻</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="audio-source" value="upload" onchange="updateAudioSource(this.value)">
+                                <span style="margin-left: 8px;">📤 上傳本地音頻文件</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="audio-source" value="url" onchange="updateAudioSource(this.value)">
+                                <span style="margin-left: 8px;">🌐 使用音頻URL</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group" id="audio-workflow-section">
+                        <label>步驟2生成的音頻URL:</label>
                         <input type="url" id="audio-url" readonly placeholder="等待步驟2完成...">
                     </div>
-                    <button class="btn" onclick="synthesizeAvatar()" disabled id="btn-step4">🎯 合成數字人</button>
+                    <div class="form-group hidden" id="audio-upload-section">
+                        <label>上傳音頻文件:</label>
+                        <div class="file-upload" onclick="document.getElementById('audio-file').click()">
+                            <input type="file" id="audio-file" accept="audio/*">
+                            <div>🎵 點擊選擇音頻文件 (.mp3, .wav, .m4a)</div>
+                        </div>
+                    </div>
+                    <div class="form-group hidden" id="audio-url-section">
+                        <label>音頻URL:</label>
+                        <input type="url" id="custom-audio-url" placeholder="https://example.com/audio.mp3">
+                    </div>
+                    <button class="btn" onclick="synthesizeAvatar()" id="btn-step4">🎯 合成數字人</button>
                     <div class="loading" id="loading4">
                         <div class="spinner"></div>
                         <div>正在合成數字人影片...</div>
@@ -702,10 +741,23 @@
         // 步驟2：語音合成
         async function synthesizeSpeech() {
             const text = document.getElementById('speech-text').value.trim();
+            const manualVoiceId = document.getElementById('cloned-voice-id').value.trim();
+            
             if (!text) {
                 showResult(2, '❌ 請輸入要合成的文字', 'error');
                 return;
             }
+            
+            // 優先使用手動輸入的Voice ID，其次使用工作流程中的Voice ID
+            const voiceIdToUse = manualVoiceId || workflowData.voiceId;
+            
+            if (!voiceIdToUse) {
+                showResult(2, '❌ 請先完成聲音克隆步驟或手動輸入Voice ID', 'error');
+                return;
+            }
+            
+            // 更新工作流程數據
+            workflowData.voiceId = voiceIdToUse;
 
             showLoading(2, true);
             updateStepStatus(2, 'processing', '處理中...');
@@ -722,7 +774,7 @@
                     body: JSON.stringify({
                         token: workflowData.token,
                         text: text,
-                        voice_id: workflowData.voiceId
+                        voice_id: voiceIdToUse
                     })
                 });
 
@@ -828,10 +880,15 @@
                     showResult(3, `📤 文件上傳成功: ${uploadResult.data.original_name}`, 'success');
                 }
 
-                // 使用videoUrl創建場景
-                showResult(3, '🏗️ 正在創建場景...', 'info');
+                // 根據選擇的API類型調用不同接口
+                const sceneApiEndpoint = workflowData.digitalHumanApiType === 'paid' ? 
+                    '/vidspark-api-proxy/create-scene-paid' : 
+                    '/vidspark-api-proxy/create-scene-free';
+                
+                const apiTypeName = workflowData.digitalHumanApiType === 'paid' ? '付費數字人克隆' : '免費數字人克隆';
+                showResult(3, `🏗️ 正在進行${apiTypeName}...`, 'info');
 
-                const response = await fetch('/vidspark-api-proxy/create-scene', {
+                const response = await fetch(sceneApiEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -848,19 +905,23 @@
                     workflowData.sceneTaskId = result.data.scene_task_id;
                     document.getElementById('scene-task-id').value = workflowData.sceneTaskId;
                     
+                    const compatibilityInfo = result._compatible_with || (workflowData.digitalHumanApiType === 'paid' ? 'Musetalk/create' : 'Index/created');
+                    
                     showResult(3, `
-                        <h4>📹 場景創建提交成功，開始處理...</h4>
+                        <h4>👤 ${apiTypeName}成功！</h4>
                         <p><strong>視頻來源:</strong> ${videoFile ? videoFile.name : videoUrl}</p>
-                        <p><strong>場景名稱:</strong> ${sceneName}</p>
+                        <p><strong>分身名稱:</strong> ${sceneName}</p>
                         <p><strong>場景ID:</strong> ${result.data.scene_task_id}</p>
-                        <div style="background: #fff3e0; border: 1px solid #ff9800; border-radius: 8px; padding: 15px; margin: 15px 0;">
-                            <h5 style="color: #e65100; margin: 0 0 10px 0;">⏰ 異步處理模式</h5>
-                            <p style="color: #e65100; margin: 0; font-size: 14px;">
-                                場景創建需要異步處理，將進行10分鐘輪詢（每30秒檢查一次）。
+                        <p><strong>API類型:</strong> ${result._api_type || 'scene_clone'}</p>
+                        <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                            <h5 style="color: #2e7d32; margin: 0 0 10px 0;">✅ 數字人分身創建完成</h5>
+                            <p style="color: #2e7d32; margin: 0; font-size: 14px;">
+                                <strong>兼容接口:</strong> ${compatibilityInfo}<br>
+                                可以立即用於第四步數字人合成！
                             </p>
                         </div>
-                        <p id="step3-polling-status">🔍 開始輪詢場景創建狀態...</p>
-                    `, 'info');
+                        <p><strong>✨ 現在可以進行下一步數字人合成！</strong></p>
+                    `, 'success');
                     
                     // 開始步驟3的輪詢
                     await startStep3Polling(workflowData.token, result.data.scene_task_id, sceneName);
@@ -881,42 +942,116 @@
 
         // 步驟4：數字人合成
         async function synthesizeAvatar() {
+            // 獲取場景ID（優先使用手動輸入）
+            const manualSceneId = document.getElementById('scene-task-id').value.trim();
+            const sceneIdToUse = manualSceneId || workflowData.sceneTaskId;
+            
+            if (!sceneIdToUse) {
+                showResult(4, '❌ 請先完成數字人克隆步驟或手動輸入Scene ID', 'error');
+                return;
+            }
+            
+            // 獲取音頻來源
+            const audioSource = document.querySelector('input[name="audio-source"]:checked').value;
+            let audioUrlToUse = '';
+            
+            if (audioSource === 'workflow') {
+                audioUrlToUse = workflowData.audioUrl;
+                if (!audioUrlToUse) {
+                    showResult(4, '❌ 請先完成語音合成步驟', 'error');
+                    return;
+                }
+            } else if (audioSource === 'upload') {
+                const audioFile = document.getElementById('audio-file').files[0];
+                if (!audioFile) {
+                    showResult(4, '❌ 請選擇要上傳的音頻文件', 'error');
+                    return;
+                }
+                
+                // 上傳音頻文件
+                showResult(4, '📤 正在上傳音頻文件...', 'info');
+                showLoading(4, true);
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('audio', audioFile);
+                    
+                    const uploadResponse = await fetch('/vidspark-upload/audio', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const uploadResult = await uploadResponse.json();
+                    
+                    if (!uploadResult.success) {
+                        throw new Error('音頻文件上傳失敗: ' + uploadResult.message);
+                    }
+                    
+                    audioUrlToUse = uploadResult.data.file_url;
+                    showResult(4, `📤 音頻上傳成功: ${uploadResult.data.original_name}`, 'success');
+                } catch (error) {
+                    showLoading(4, false);
+                    showResult(4, `❌ 音頻上傳失敗: ${error.message}`, 'error');
+                    return;
+                }
+            } else if (audioSource === 'url') {
+                audioUrlToUse = document.getElementById('custom-audio-url').value.trim();
+                if (!audioUrlToUse) {
+                    showResult(4, '❌ 請輸入音頻URL', 'error');
+                    return;
+                }
+            }
+            
+            // 更新工作流程數據
+            workflowData.sceneTaskId = sceneIdToUse;
+            workflowData.audioUrl = audioUrlToUse;
+
             showLoading(4, true);
             updateStepStatus(4, 'processing', '處理中...');
 
             try {
-                const response = await fetch('/vidspark-api-proxy/synthesize-avatar', {
+                // 根據第三步選擇的API類型調用對應的數字人合成接口
+                const avatarApiEndpoint = workflowData.digitalHumanApiType === 'paid' ? 
+                    '/vidspark-api-proxy/synthesize-avatar-paid' : 
+                    '/vidspark-api-proxy/synthesize-avatar-free';
+                
+                const response = await fetch(avatarApiEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         token: workflowData.token,
-                        scene_task_id: workflowData.sceneTaskId,
-                        audio_url: workflowData.audioUrl
+                        scene_task_id: sceneIdToUse,
+                        audio_url: audioUrlToUse
                     })
                 });
 
                 const result = await response.json();
                 showLoading(4, false);
 
-                                if (result.code === 200 && result.data && result.data.video_task_id) {
+                if (result.code === 200 && result.data && result.data.video_task_id) {
                     workflowData.videoTaskId = result.data.video_task_id;
                     
+                    const apiTypeName = workflowData.digitalHumanApiType === 'paid' ? '統一數字人合成' : '免費數字人合成';
+                    
                     showResult(4, `
-                        <h4>🎬 數字人合成提交成功，開始處理...</h4>
-                        <p><strong>場景ID:</strong> ${workflowData.sceneTaskId}</p>
-                        <p><strong>音頻URL:</strong> ${workflowData.audioUrl}</p>
+                        <h4>🎬 ${apiTypeName}提交成功，開始處理...</h4>
+                        <p><strong>場景ID:</strong> ${sceneIdToUse}</p>
+                        <p><strong>音頻來源:</strong> ${audioSource === 'workflow' ? '步驟2生成' : audioSource === 'upload' ? '本地上傳' : '自定義URL'}</p>
+                        <p><strong>音頻URL:</strong> ${audioUrlToUse}</p>
                         <p><strong>視頻任務ID:</strong> ${result.data.video_task_id}</p>
                         <p><strong>計費ID:</strong> ${result.data.bill_id || '未提供'}</p>
+                        <p><strong>API類型:</strong> ${result._api_type || 'avatar_synthesis'}</p>
                         <div style="background: #fff3e0; border: 1px solid #ff9800; border-radius: 8px; padding: 15px; margin: 15px 0;">
                             <h5 style="color: #e65100; margin: 0 0 10px 0;">⏰ 異步處理模式</h5>
                             <p style="color: #e65100; margin: 0; font-size: 14px;">
-                                數字人合成需要異步處理，將進行10分鐘輪詢（每30秒檢查一次）。
+                                數字人合成需要異步處理，將進行10分鐘輪詢（每30秒檢查一次）。<br>
+                                <strong>查詢接口:</strong> ${result._task_query_endpoint || '/Musetalk/task'}
                             </p>
                         </div>
                         <p id="step4-polling-status">🔍 開始輪詢數字人合成狀態...</p>
                     `, 'info');
                     
-                    // 開始步驟4的輪詢
+                    // 開始步驟4的輪詢（10分鐘，30秒間隔）
                     await startStep4Polling(workflowData.token, result.data.video_task_id);
                 } else {
                     showResult(4, `
@@ -1188,63 +1323,108 @@
                 try {
                     statusElement.textContent = `🔍 第${attempts}/${maxAttempts}次檢查數字人合成狀態...`;
                     
-                    // 這裡需要調用實際的任務查詢API（待後續實現）
-                    // 暫時模擬成功
-                    if (attempts >= 4) { // 模擬2分鐘後成功
-                        clearInterval(pollingInterval);
+                    // 調用任務查詢API
+                    const queryResponse = await fetch('/vidspark-api-proxy/query-task', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            token: token,
+                            task_id: videoTaskId
+                        })
+                    });
+                    
+                    const queryResult = await queryResponse.json();
+                    
+                    if (queryResult.code === 200 && queryResult.data) {
+                        const taskData = queryResult.data;
                         
-                        const mockVideoUrl = `https://mock-video-url.com/digital_human_${videoTaskId}.mp4`;
-                        
-                        showResult(4, `
-                            <h4>🎬 數字人合成完成！</h4>
-                            <p><strong>視頻任務ID:</strong> ${videoTaskId}</p>
-                            <p><strong>處理用時:</strong> ${attempts * intervalMs / 1000}秒</p>
-                            <p><strong>數字人視頻:</strong> <a href="${mockVideoUrl}" target="_blank" style="color: #1976d2;">🎥 點擊查看視頻</a></p>
-                            <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px; padding: 15px; margin: 15px 0;">
-                                <h5 style="color: #2e7d32; margin: 0 0 10px 0;">🎉 完整流程完成</h5>
-                                <p style="color: #2e7d32; margin: 0; font-size: 14px;">
-                                    您的數字人視頻已成功生成！鏈接有效期24小時，請及時下載保存。
-                                </p>
-                            </div>
-                            <p><strong>🎊 恭喜！您的數字人視頻已準備就緒！</strong></p>
-                        `, 'success');
-                        
-                        // 保存生成的視頻記錄到數據庫
-                        try {
-                            const saveResponse = await fetch('/vidspark-upload/save-generated-video', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    video_task_id: videoTaskId,
-                                    video_url: mockVideoUrl,
-                                    bill_id: 'generated_' + videoTaskId,
-                                    token: token
-                                })
-                            });
+                        // 檢查任務狀態 (state: 20 表示完成)
+                        if (taskData.state === 20 && taskData.videoUrl) {
+                            clearInterval(pollingInterval);
                             
-                            const saveResult = await saveResponse.json();
-                            console.log('視頻記錄保存結果:', saveResult);
-                        } catch (saveError) {
-                            console.warn('保存視頻記錄失敗:', saveError);
+                            showResult(4, `
+                                <h4>🎬 數字人合成完成！</h4>
+                                <p><strong>視頻任務ID:</strong> ${videoTaskId}</p>
+                                <p><strong>視頻名稱:</strong> ${taskData.videoName || '數字人視頻'}</p>
+                                <p><strong>處理用時:</strong> ${attempts * intervalMs / 1000}秒</p>
+                                <p><strong>視頻時長:</strong> ${taskData.duration || 'N/A'}秒</p>
+                                <p><strong>數字人視頻:</strong> <a href="${taskData.videoUrl}" target="_blank" style="color: #1976d2;">🎥 點擊查看視頻</a></p>
+                                ${taskData.coverUrl ? `<p><strong>視頻封面:</strong> <a href="${taskData.coverUrl}" target="_blank" style="color: #1976d2;">🖼️ 查看封面</a></p>` : ''}
+                                <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                                    <h5 style="color: #2e7d32; margin: 0 0 10px 0;">🎉 完整流程完成</h5>
+                                    <p style="color: #2e7d32; margin: 0; font-size: 14px;">
+                                        您的數字人視頻已成功生成！${taskData.tips || '鏈接有效期24小時，請及時下載保存。'}
+                                    </p>
+                                </div>
+                                <p><strong>🎊 恭喜！您的數字人視頻已準備就緒！</strong></p>
+                            `, 'success');
+                        
+                            // 保存生成的視頻記錄到數據庫
+                            try {
+                                const saveResponse = await fetch('/vidspark-upload/save-generated-video', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        video_task_id: videoTaskId,
+                                        video_url: taskData.videoUrl,
+                                        bill_id: workflowData.billId || 'no_bill_id',
+                                        video_name: taskData.videoName,
+                                        duration: taskData.duration,
+                                        cover_url: taskData.coverUrl,
+                                        token: token
+                                    })
+                                });
+                                
+                                const saveResult = await saveResponse.json();
+                                console.log('視頻記錄保存結果:', saveResult);
+                            } catch (saveError) {
+                                console.warn('保存視頻記錄失敗:', saveError);
+                            }
+                            
+                            updateStepStatus(4, 'completed', '已完成');
+                            updateProgress(4);
+                            
+                            // 顯示最終完成狀態
+                            document.getElementById('step4').classList.remove('active');
+                            document.getElementById('step4').classList.add('completed');
+                            document.getElementById('final-result').classList.remove('hidden');
+                            
+                            return;
+                        } else {
+                            // 任務還在處理中，顯示當前狀態
+                            const stateText = taskData.state === 10 ? '處理中' : taskData.state === 15 ? '渲染中' : `狀態${taskData.state}`;
+                            statusElement.textContent = `🔄 第${attempts}/${maxAttempts}次 - ${stateText}...`;
                         }
-                        
-                        updateStepStatus(4, 'completed', '已完成');
-                        updateProgress(4);
-                        
-                        return;
+                    } else {
+                        // API調用失敗，但繼續輪詢
+                        statusElement.textContent = `⚠️ 第${attempts}/${maxAttempts}次 - API查詢失敗，繼續重試...`;
                     }
                     
                     if (attempts >= maxAttempts) {
                         clearInterval(pollingInterval);
-                        statusElement.textContent = `⚠️ 10分鐘內未完成數字人合成`;
-                        updateStepStatus(4, 'error', '處理超時');
+                        statusElement.textContent = `⚠️ 10分鐘內未完成數字人合成，請手動查詢任務ID: ${videoTaskId}`;
+                        
+                        showResult(4, `
+                            <h4>⏰ 數字人合成處理超時</h4>
+                            <p><strong>視頻任務ID:</strong> ${videoTaskId}</p>
+                            <p><strong>處理時間:</strong> 已等待10分鐘</p>
+                            <div style="background: #fff3e0; border: 1px solid #ff9800; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                                <h5 style="color: #e65100; margin: 0 0 10px 0;">⏰ 處理可能需要更長時間</h5>
+                                <p style="color: #e65100; margin: 0; font-size: 14px;">
+                                    數字人合成可能需要更長時間。您可以稍後使用任務ID手動查詢結果。
+                                </p>
+                            </div>
+                        `, 'warning');
+                        
+                        updateStepStatus(4, 'warning', '處理超時');
                     }
                     
                 } catch (error) {
-                    statusElement.textContent = `❌ 檢查錯誤: ${error.message}`;
+                    statusElement.textContent = `❌ 第${attempts}/${maxAttempts}次檢查錯誤: ${error.message}`;
                     
                     if (attempts >= maxAttempts) {
                         clearInterval(pollingInterval);
+                        showResult(4, `❌ 輪詢驗證失敗: ${error.message}`, 'error');
                         updateStepStatus(4, 'error', '驗證失敗');
                     }
                 }
@@ -1265,6 +1445,25 @@
         function updateDigitalApiType(type) {
             workflowData.digitalHumanApiType = type;
             console.log('數字人API類型已更新為:', type);
+        }
+        
+        // 音頻來源切換處理函數
+        function updateAudioSource(source) {
+            // 隱藏所有音頻輸入區域
+            document.getElementById('audio-workflow-section').classList.add('hidden');
+            document.getElementById('audio-upload-section').classList.add('hidden');
+            document.getElementById('audio-url-section').classList.add('hidden');
+            
+            // 顯示選中的音頻輸入區域
+            if (source === 'workflow') {
+                document.getElementById('audio-workflow-section').classList.remove('hidden');
+            } else if (source === 'upload') {
+                document.getElementById('audio-upload-section').classList.remove('hidden');
+            } else if (source === 'url') {
+                document.getElementById('audio-url-section').classList.remove('hidden');
+            }
+            
+            console.log('音頻來源已更新為:', source);
         }
 
         // 頁面加載完成後初始化

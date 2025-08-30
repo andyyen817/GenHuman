@@ -264,7 +264,12 @@ Route::post('/vidspark-api-proxy/clone-voice-deep', [app\controller\VidsparkApiP
 Route::post('/vidspark-api-proxy/synthesize-voice', [app\controller\VidsparkApiProxyController::class, 'synthesizeWithClonedVoice']);
 Route::post('/vidspark-api-proxy/synthesize-voice-deep', [app\controller\VidsparkApiProxyController::class, 'synthesizeVoiceDeep']);
 Route::post('/vidspark-api-proxy/create-scene', [app\controller\VidsparkApiProxyController::class, 'createScene']);
+Route::post('/vidspark-api-proxy/create-scene-free', [app\controller\VidsparkApiProxyController::class, 'createSceneFree']);
+Route::post('/vidspark-api-proxy/create-scene-paid', [app\controller\VidsparkApiProxyController::class, 'createScenePaid']);
 Route::post('/vidspark-api-proxy/synthesize-avatar', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatar']);
+Route::post('/vidspark-api-proxy/synthesize-avatar-free', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatarFree']);
+Route::post('/vidspark-api-proxy/synthesize-avatar-paid', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatarPaid']);
+Route::post('/vidspark-api-proxy/query-task', [app\controller\VidsparkApiProxyController::class, 'queryTask']);
 
 Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyController::class, 'getProxyStatus']);
 Route::post('/vidspark-api-proxy/get-voice-roles', [app\controller\VidsparkApiProxyController::class, 'getVoiceRoles']);
