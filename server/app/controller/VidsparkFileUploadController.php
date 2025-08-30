@@ -4,7 +4,7 @@ namespace app\controller;
 
 use support\Request;
 use support\Response;
-use support\Db;
+use think\facade\Db;
 use Exception;
 
 /**
