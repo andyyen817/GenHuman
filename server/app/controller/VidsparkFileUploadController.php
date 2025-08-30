@@ -267,7 +267,20 @@ class VidsparkFileUploadController
                 'user_ip' => $request->getRealIp()
             ];
 
-            $fileId = Db::table('vidspark_production_files')->insertGetId($fileRecord);
+            // 檢查表是否存在，如果不存在先創建
+            try {
+                $fileId = Db::table('vidspark_production_files')->insertGetId($fileRecord);
+            } catch (Exception $dbError) {
+                error_log('[VidsparkUpload] 數據庫錯誤: ' . $dbError->getMessage());
+                
+                // 如果是表不存在錯誤，提供友好提示
+                if (strpos($dbError->getMessage(), "doesn't exist") !== false) {
+                    throw new Exception('數據庫表不存在，請先運行初始化腳本：https://genhuman-digital-human.zeabur.app/vidspark-quick-db-init');
+                }
+                
+                // 其他數據庫錯誤
+                throw new Exception('數據庫操作失敗: ' . $dbError->getMessage());
+            }
 
             return new Response(200, [
                 'Content-Type' => 'application/json; charset=utf-8'
