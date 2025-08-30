@@ -448,12 +448,8 @@ Route::get('/vidspark-audio-diagnosis', function() {
     ], file_get_contents(runtime_path() . '/../public/vidspark-audio-diagnosis.html'));
 });
 
-// Vidspark快速數據庫初始化
-Route::get('/vidspark-quick-db-init', function() {
-    return new Response(200, [
-        'Content-Type' => 'application/json; charset=utf-8'
-    ], include(runtime_path() . '/../public/vidspark-quick-db-init.php'));
-});
+// Vidspark快速數據庫初始化（使用控制器）
+Route::get('/vidspark-quick-db-init', [app\controller\VidsparkStorageController::class, 'quickDbInit']);
 
 // Vidspark檢查特定聲音狀態
 Route::get('/vidspark-check-specific-voice', function() {
