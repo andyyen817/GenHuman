@@ -465,6 +465,10 @@ Route::get('/vidspark-path-debug', function() {
 // Vidspark快速數據庫初始化（使用控制器）
 Route::get('/vidspark-quick-db-init', [app\controller\VidsparkStorageController::class, 'quickDbInit']);
 
+// Vidspark存儲系統管理
+Route::get('/vidspark-storage-status', [app\controller\VidsparkStorageSystemController::class, 'checkStorageStatus']);
+Route::get('/vidspark-storage-init', [app\controller\VidsparkStorageSystemController::class, 'initializeStorage']);
+
 // Vidspark檢查特定聲音狀態
 Route::get('/vidspark-check-specific-voice', function() {
     return new Response(200, [

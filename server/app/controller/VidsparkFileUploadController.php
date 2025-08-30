@@ -235,16 +235,15 @@ class VidsparkFileUploadController
                 throw new Exception('文件太大，最大支持200MB');
             }
 
-            // 生成安全的文件名
-            $extension = $this->getFileExtension($file->getClientOriginalName());
-            $filename = 'vidspark_video_' . date('Ymd_His') . '_' . uniqid() . '.' . $extension;
-            $relativePath = 'vidspark/storage/video/' . date('Y/m') . '/' . $filename;
-            $fullPath = base_path() . '/public/' . $relativePath;
+            // 使用統一的存儲系統
+            $filename = VidsparkStorageSystemController::generateSafeFilename($file->getClientOriginalName(), 'video');
+            $storagePath = VidsparkStorageSystemController::getStoragePath('video');
+            $fullPath = $storagePath . '/' . $filename;
+            $relativePath = 'vidspark/storage/' . date('Y/m') . '/video/' . $filename;
 
-            // 確保目錄存在
-            $directory = dirname($fullPath);
-            if (!is_dir($directory)) {
-                mkdir($directory, 0755, true);
+            // 確保目錄存在（使用統一方法）
+            if (!VidsparkStorageSystemController::ensureDirectoryExists($storagePath)) {
+                throw new Exception('無法創建存儲目錄: ' . $storagePath);
             }
 
             // 保存文件
@@ -252,8 +251,8 @@ class VidsparkFileUploadController
                 throw new Exception('文件保存失敗');
             }
 
-            // 生成可訪問的URL
-            $fileUrl = 'https://genhuman-digital-human.zeabur.app/' . $relativePath;
+            // 生成可訪問的URL（使用統一方法）
+            $fileUrl = VidsparkStorageSystemController::getPublicUrl(date('Y/m') . '/video/' . $filename);
 
             // 保存到數據庫（根據實際表結構動態調整）
             try {
@@ -324,17 +323,26 @@ class VidsparkFileUploadController
             error_log('[VidsparkUpload] 視頻上傳錯誤: ' . $e->getMessage());
             error_log('[VidsparkUpload] 錯誤堆棧: ' . $e->getTraceAsString());
             
-            // 詳細診斷信息
+            // 詳細診斷信息（安全處理$file變量）
+            $fileInfo = 'No file';
+            if (isset($file) && $file) {
+                try {
+                    $fileInfo = [
+                        'name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                        'type' => $file->getMimeType(),
+                        'error' => $file->getError()
+                    ];
+                } catch (Exception $fileError) {
+                    $fileInfo = 'File access error: ' . $fileError->getMessage();
+                }
+            }
+            
             $diagnostics = [
                 'php_version' => PHP_VERSION,
                 'request_method' => $request->method(),
                 'content_type' => $request->header('content-type'),
-                'file_info' => $file ? [
-                    'name' => $file->getClientOriginalName(),
-                    'size' => $file->getSize(),
-                    'type' => $file->getMimeType(),
-                    'error' => $file->getError()
-                ] : 'No file',
+                'file_info' => $fileInfo,
                 'memory_usage' => memory_get_usage(true),
                 'upload_max_filesize' => ini_get('upload_max_filesize'),
                 'post_max_size' => ini_get('post_max_size'),
