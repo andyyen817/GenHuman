@@ -179,7 +179,44 @@ class VidsparkFileUploadController
      */
     public function uploadVideo(Request $request): Response
     {
+        // 在Webman中強制返回JSON，避免HTML錯誤頁面
         try {
+            return $this->handleVideoUpload($request);
+        } catch (Throwable $e) {
+            error_log('[VidsparkUpload] 捕獲到Throwable錯誤: ' . $e->getMessage());
+            error_log('[VidsparkUpload] 錯誤文件: ' . $e->getFile() . ':' . $e->getLine());
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'message' => 'Throwable錯誤: ' . $e->getMessage(),
+                'error_type' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'upload_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+    
+    private function handleVideoUpload(Request $request): Response
+    {
+        try {
+            // 基本驗證
+            if ($request->method() !== 'POST') {
+                throw new Exception('只支持POST請求');
+            }
+            
+            error_log('[VidsparkUpload] 開始處理視頻上傳請求');
+            
+            // 檢查$_FILES是否有數據
+            if (empty($_FILES)) {
+                error_log('[VidsparkUpload] $_FILES為空');
+                throw new Exception('沒有接收到文件數據，請檢查表單enctype');
+            }
+            
+            error_log('[VidsparkUpload] $_FILES內容: ' . json_encode($_FILES));
+            
             $file = $request->file('video');
             if (!$file || !$file->isValid()) {
                 throw new Exception('沒有上傳文件或文件無效');
@@ -250,13 +287,93 @@ class VidsparkFileUploadController
             error_log('[VidsparkUpload] 視頻上傳錯誤: ' . $e->getMessage());
             error_log('[VidsparkUpload] 錯誤堆棧: ' . $e->getTraceAsString());
             
+            // 詳細診斷信息
+            $diagnostics = [
+                'php_version' => PHP_VERSION,
+                'request_method' => $request->method(),
+                'content_type' => $request->header('content-type'),
+                'file_info' => $file ? [
+                    'name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'type' => $file->getMimeType(),
+                    'error' => $file->getError()
+                ] : 'No file',
+                'memory_usage' => memory_get_usage(true),
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'post_max_size' => ini_get('post_max_size'),
+                'max_execution_time' => ini_get('max_execution_time')
+            ];
+            
+            error_log('[VidsparkUpload] 診斷信息: ' . json_encode($diagnostics));
+            
             return new Response(200, [
                 'Content-Type' => 'application/json; charset=utf-8'
             ], json_encode([
                 'success' => false,
                 'message' => $e->getMessage(),
                 'error_details' => '視頻上傳失敗，請檢查文件格式和大小',
+                'diagnostics' => $diagnostics,
                 'upload_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 視頻上傳診斷端點
+     */
+    public function videoUploadDiagnosis(Request $request): Response
+    {
+        try {
+            $diagnostics = [
+                'timestamp' => date('Y-m-d H:i:s'),
+                'php_version' => PHP_VERSION,
+                'webman_framework' => 'Webman',
+                'request_method' => $request->method(),
+                'content_type' => $request->header('content-type'),
+                'content_length' => $request->header('content-length'),
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'post_max_size' => ini_get('post_max_size'),
+                'max_file_uploads' => ini_get('max_file_uploads'),
+                'memory_limit' => ini_get('memory_limit'),
+                'max_execution_time' => ini_get('max_execution_time'),
+                'file_uploads' => ini_get('file_uploads'),
+                'temp_dir' => sys_get_temp_dir(),
+                'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
+                'request_uri' => $request->uri(),
+                'files_received' => $_FILES ? array_keys($_FILES) : 'None'
+            ];
+            
+            // 測試數據庫連接
+            try {
+                Db::table('vidspark_production_files')->limit(1)->select();
+                $diagnostics['database_connection'] = 'OK';
+            } catch (Exception $e) {
+                $diagnostics['database_connection'] = 'FAILED: ' . $e->getMessage();
+            }
+            
+            // 測試存儲目錄
+            $storageDir = base_path() . '/public/vidspark/storage/video/' . date('Y/m');
+            $diagnostics['storage_directory'] = [
+                'path' => $storageDir,
+                'exists' => is_dir($storageDir),
+                'writable' => is_writable(dirname($storageDir))
+            ];
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => true,
+                'message' => '視頻上傳診斷信息',
+                'diagnostics' => $diagnostics
+            ], JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'message' => '診斷失敗',
+                'error' => $e->getMessage()
             ], JSON_UNESCAPED_UNICODE));
         }
     }

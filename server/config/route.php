@@ -281,6 +281,7 @@ Route::post('/vidspark-upload/audio-base64', [app\controller\VidsparkFileUploadC
 Route::post('/vidspark-upload/video', [app\controller\VidsparkFileUploadController::class, 'uploadVideo']);
 Route::post('/vidspark-upload/save-generated-video', [app\controller\VidsparkFileUploadController::class, 'saveGeneratedVideo']);
 Route::get('/vidspark-upload/files', [app\controller\VidsparkFileUploadController::class, 'getFileList']);
+Route::get('/vidspark-upload/video-diagnosis', [app\controller\VidsparkFileUploadController::class, 'videoUploadDiagnosis']);
 
 // Vidspark生產環境API測試路由（暫時移除，避免系統崩潰）
 // Route::get('/vidspark-api-test', [app\controller\VidsparkApiTestController::class, 'index']);
