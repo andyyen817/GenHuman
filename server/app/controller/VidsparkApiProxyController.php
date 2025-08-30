@@ -398,6 +398,121 @@ class VidsparkApiProxyController
     }
 
     /**
+     * 付費深度聲音克隆 (200積分/次)
+     * 使用 /Voice/deepClone 接口
+     */
+    public function cloneVoiceDeep(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $name = $input['name'] ?? 'Vidspark深度聲音';
+            $audioUrl = $input['audio_url'] ?? '';
+            $description = $input['description'] ?? 'Vidspark深度聲音克隆';
+            
+            // 詳細記錄輸入參數
+            $requestLog = [
+                'method' => 'cloneVoiceDeep',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'cost' => '200積分/次',
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'name' => $name,
+                    'audio_url' => $audioUrl,
+                    'description' => $description
+                ]
+            ];
+            
+            if (empty($token) || empty($audioUrl)) {
+                throw new Exception('Token和音頻地址不能為空');
+            }
+            
+            // 調用深度聲音克隆API
+            $result = $this->callGenHumanAPI('/app/human/human/Voice/deepClone', [
+                'name' => $name,
+                'audio_url' => $audioUrl,
+                'description' => $description
+            ], $token);
+            
+            // 記錄成功結果
+            $result['_request_log'] = $requestLog;
+            $result['_api_type'] = 'paid_deep_clone';
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '深度聲音克隆失敗，請檢查Token和音頻',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
+     * 付費深度語音合成 (1積分/20字)
+     * 使用 /Voice/deepCreated 接口
+     */
+    public function synthesizeVoiceDeep(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $text = $input['text'] ?? '';
+            $voiceId = $input['voice_id'] ?? '';
+            
+            // 詳細記錄輸入參數
+            $requestLog = [
+                'method' => 'synthesizeVoiceDeep',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'cost' => '1積分/20字',
+                'input_data' => [
+                    'token_mask' => $this->maskToken($token),
+                    'text' => $text,
+                    'voice_id' => $voiceId,
+                    'text_length' => strlen($text),
+                    'estimated_cost' => ceil(strlen($text) / 20) . '積分'
+                ]
+            ];
+            
+            if (empty($token) || empty($text) || empty($voiceId)) {
+                throw new Exception('Token、文字和聲音ID不能為空');
+            }
+            
+            // 調用深度語音合成API
+            $result = $this->callGenHumanAPI('/app/human/human/Voice/deepCreated', [
+                'text' => $text,
+                'voice_id' => $voiceId
+            ], $token);
+            
+            // 記錄成功結果
+            $result['_request_log'] = $requestLog;
+            $result['_api_type'] = 'paid_deep_synthesis';
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '深度語音合成失敗，請檢查Token、文字和聲音ID',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
      * 步驟3：創建場景（上傳影片）
      */
     public function createScene(Request $request): Response

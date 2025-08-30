@@ -316,6 +316,19 @@
                 </div>
                 <div class="step-content">
                     <div class="form-group">
+                        <label>API類型選擇:</label>
+                        <div style="display: flex; gap: 15px; margin: 10px 0;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="voice-api-type" value="free" checked onchange="updateVoiceApiType(this.value)">
+                                <span style="margin-left: 8px;">🆓 免費聲音克隆</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="voice-api-type" value="paid" onchange="updateVoiceApiType(this.value)">
+                                <span style="margin-left: 8px;">💎 深度聲音克隆 (200積分)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="voice-name">聲音名稱:</label>
                         <input type="text" id="voice-name" placeholder="給您的聲音起個名字" value="我的聲音">
                     </div>
@@ -357,6 +370,19 @@
                 </div>
                 <div class="step-content">
                     <div class="form-group">
+                        <label>語音合成類型:</label>
+                        <div style="display: flex; gap: 15px; margin: 10px 0;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="speech-api-type" value="free" checked onchange="updateSpeechApiType(this.value)">
+                                <span style="margin-left: 8px;">🆓 免費語音合成</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="speech-api-type" value="paid" onchange="updateSpeechApiType(this.value)">
+                                <span style="margin-left: 8px;">💎 深度語音合成 (1積分/20字)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="speech-text">要合成的文字:</label>
                         <textarea id="speech-text" rows="4" placeholder="輸入您想要數字人說的話...">歡迎來到Vidspark！這是一個使用AI技術創建的數字人影片。</textarea>
                     </div>
@@ -385,6 +411,19 @@
                     </div>
                 </div>
                 <div class="step-content">
+                    <div class="form-group">
+                        <label>數字人合成類型:</label>
+                        <div style="display: flex; gap: 15px; margin: 10px 0;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="digital-api-type" value="free" checked onchange="updateDigitalApiType(this.value)">
+                                <span style="margin-left: 8px;">🆓 免費數字人合成</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="digital-api-type" value="paid" onchange="updateDigitalApiType(this.value)">
+                                <span style="margin-left: 8px;">💎 統一數字人合成 (1積分/秒)</span>
+                            </label>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="scene-name">場景名稱:</label>
                         <input type="text" id="scene-name" placeholder="給場景起個名字" value="我的數字人場景">
@@ -467,7 +506,10 @@
             voiceId: '',
             audioUrl: '',
             sceneTaskId: '',
-            videoTaskId: ''
+            videoTaskId: '',
+            // API類型選擇
+            voiceApiType: 'free', // 'free' 或 'paid'
+            digitalHumanApiType: 'free' // 'free' 或 'paid'
         };
 
         // 更新進度條
@@ -595,7 +637,12 @@
                 // 使用audioUrl進行聲音克隆
                 showResult(1, '🎤 正在克隆聲音...', 'info');
                 
-                const response = await fetch('/vidspark-api-proxy/clone-voice', {
+                // 根據選擇的API類型調用不同接口
+                const apiEndpoint = workflowData.voiceApiType === 'paid' ? 
+                    '/vidspark-api-proxy/clone-voice-deep' : 
+                    '/vidspark-api-proxy/clone-voice';
+                
+                const response = await fetch(apiEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -615,22 +662,28 @@
                     document.getElementById('cloned-voice-id').value = workflowData.voiceId;
                     
                     showResult(1, `
-                        <h4>🎤 聲音克隆提交成功，開始驗證...</h4>
+                        <h4>🎉 聲音克隆立即完成！</h4>
                         <p><strong>音頻來源:</strong> ${audioFile ? audioFile.name : audioUrl}</p>
                         <p><strong>聲音ID:</strong> ${result.data.voice_id}</p>
                         <p><strong>任務ID:</strong> ${result.data.task_id}</p>
-                        <div style="background: #fff3e0; border: 1px solid #ff9800; border-radius: 8px; padding: 15px; margin: 15px 0;">
-                            <h5 style="color: #e65100; margin: 0 0 10px 0;">⏰ 生產環境優化</h5>
-                            <p style="color: #e65100; margin: 0; font-size: 14px;">
-                                為確保異步API穩定性，將進行3分鐘驗證輪詢（每10秒檢查一次）。
-                                <br>這樣可以確保聲音克隆在生產環境中真正可用。
+                        <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                            <h5 style="color: #2e7d32; margin: 0 0 10px 0;">✅ API調用成功</h5>
+                            <p style="color: #2e7d32; margin: 0; font-size: 14px;">
+                                根據GenHuman官方文檔，聲音克隆API成功返回voice_id即表示完成。
+                                <br><strong>立即可用於語音合成，無需等待！</strong>
                             </p>
                         </div>
-                        <p id="step1-polling-status">🔍 開始輪詢驗證聲音克隆狀態...</p>
-                    `, 'info');
+                        <p><strong>✨ 現在可以立即進行下一步語音合成！</strong></p>
+                    `, 'success');
 
-                    // 開始步驟1的輪詢驗證
-                    await startStep1Polling(workflowData.token, result.data.voice_id, result.data.task_id);
+                    updateStepStatus(1, 'completed', '已完成');
+                    updateProgress(1);
+                    
+                    // 立即啟用步驟2，不需要輪詢等待
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step1').classList.add('completed');
+                    document.getElementById('step2').classList.add('active');
+                    document.getElementById('btn-step2').disabled = false;
                 } else {
                     showResult(1, `
                         <h4>❌ 聲音克隆失敗</h4>
@@ -658,7 +711,12 @@
             updateStepStatus(2, 'processing', '處理中...');
 
             try {
-                const response = await fetch('/vidspark-api-proxy/synthesize-voice', {
+                // 根據選擇的API類型調用不同接口  
+                const speechApiEndpoint = workflowData.speechApiType === 'paid' ? 
+                    '/vidspark-api-proxy/synthesize-voice-deep' : 
+                    '/vidspark-api-proxy/synthesize-voice';
+                
+                const response = await fetch(speechApiEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1191,6 +1249,22 @@
                     }
                 }
             }, intervalMs);
+        }
+
+        // API類型選擇處理函數
+        function updateVoiceApiType(type) {
+            workflowData.voiceApiType = type;
+            console.log('聲音API類型已更新為:', type);
+        }
+        
+        function updateSpeechApiType(type) {
+            workflowData.speechApiType = type;
+            console.log('語音合成API類型已更新為:', type);
+        }
+        
+        function updateDigitalApiType(type) {
+            workflowData.digitalHumanApiType = type;
+            console.log('數字人API類型已更新為:', type);
         }
 
         // 頁面加載完成後初始化

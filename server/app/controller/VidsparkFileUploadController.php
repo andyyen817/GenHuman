@@ -247,11 +247,15 @@ class VidsparkFileUploadController
             ], JSON_UNESCAPED_UNICODE));
 
         } catch (Exception $e) {
+            error_log('[VidsparkUpload] 視頻上傳錯誤: ' . $e->getMessage());
+            error_log('[VidsparkUpload] 錯誤堆棧: ' . $e->getTraceAsString());
+            
             return new Response(200, [
                 'Content-Type' => 'application/json; charset=utf-8'
             ], json_encode([
                 'success' => false,
                 'message' => $e->getMessage(),
+                'error_details' => '視頻上傳失敗，請檢查文件格式和大小',
                 'upload_time' => date('Y-m-d H:i:s')
             ], JSON_UNESCAPED_UNICODE));
         }

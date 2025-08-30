@@ -260,7 +260,9 @@ Route::post('/vidspark-api-proxy/test-free-avatar', [app\controller\VidsparkApiP
 
 // Vidspark完整數字人生成流程API代理
 Route::post('/vidspark-api-proxy/clone-voice', [app\controller\VidsparkApiProxyController::class, 'cloneVoice']);
+Route::post('/vidspark-api-proxy/clone-voice-deep', [app\controller\VidsparkApiProxyController::class, 'cloneVoiceDeep']);
 Route::post('/vidspark-api-proxy/synthesize-voice', [app\controller\VidsparkApiProxyController::class, 'synthesizeWithClonedVoice']);
+Route::post('/vidspark-api-proxy/synthesize-voice-deep', [app\controller\VidsparkApiProxyController::class, 'synthesizeVoiceDeep']);
 Route::post('/vidspark-api-proxy/create-scene', [app\controller\VidsparkApiProxyController::class, 'createScene']);
 Route::post('/vidspark-api-proxy/synthesize-avatar', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatar']);
 
