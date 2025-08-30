@@ -209,34 +209,83 @@ class VidsparkFileUploadController
             }
             
             error_log('[VidsparkUpload] 開始處理視頻上傳請求');
+            error_log('[VidsparkUpload] 請求方法: ' . $request->method());
+            error_log('[VidsparkUpload] Content-Type: ' . $request->header('content-type'));
             
-            // 檢查$_FILES是否有數據
-            if (empty($_FILES)) {
-                error_log('[VidsparkUpload] $_FILES為空');
+            // 檢查$_FILES（用於診斷）
+            error_log('[VidsparkUpload] $_FILES內容: ' . json_encode($_FILES));
+            
+            // 在Webman中使用Request對象獲取文件
+            $file = $request->file('video');
+            error_log('[VidsparkUpload] 從Request獲取文件: ' . ($file ? '成功' : '失敗'));
+            
+            // 如果Request方法失敗，嘗試直接從$_FILES獲取
+            if (!$file && !empty($_FILES['video'])) {
+                error_log('[VidsparkUpload] 嘗試從$_FILES獲取文件');
+                // 在Webman中手動創建文件對象
+                $uploadedFile = $_FILES['video'];
+                if ($uploadedFile['error'] === UPLOAD_ERR_OK) {
+                    error_log('[VidsparkUpload] $_FILES中的文件有效');
+                    // 創建臨時文件對象（簡化處理）
+                    $file = new \SplFileInfo($uploadedFile['tmp_name']);
+                    $file->originalName = $uploadedFile['name'];
+                    $file->mimeType = $uploadedFile['type'];
+                    $file->fileSize = $uploadedFile['size'];
+                } else {
+                    error_log('[VidsparkUpload] $_FILES中的文件無效，錯誤代碼: ' . $uploadedFile['error']);
+                }
+            }
+            
+            // 最終檢查
+            if (!$file) {
+                error_log('[VidsparkUpload] 無法獲取上傳文件');
                 throw new Exception('沒有接收到文件數據，請檢查表單enctype');
             }
             
-            error_log('[VidsparkUpload] $_FILES內容: ' . json_encode($_FILES));
-            
-            $file = $request->file('video');
-            if (!$file || !$file->isValid()) {
-                throw new Exception('沒有上傳文件或文件無效');
+            // 檢查文件有效性（根據不同的文件對象類型）
+            if (method_exists($file, 'isValid') && !$file->isValid()) {
+                throw new Exception('上傳的文件無效');
             }
 
+            // 獲取文件信息（兼容不同的文件對象類型）
+            $originalName = '';
+            $mimeType = '';
+            $fileSize = 0;
+            
+            if (method_exists($file, 'getClientOriginalName')) {
+                // Webman UploadFile對象
+                $originalName = $file->getClientOriginalName();
+                $mimeType = $file->getMimeType();
+                $fileSize = $file->getSize();
+            } elseif (isset($file->originalName)) {
+                // 自定義文件對象
+                $originalName = $file->originalName;
+                $mimeType = $file->mimeType;
+                $fileSize = $file->fileSize;
+            } else {
+                // 備用方案：從$_FILES獲取
+                if (!empty($_FILES['video'])) {
+                    $originalName = $_FILES['video']['name'];
+                    $mimeType = $_FILES['video']['type'];
+                    $fileSize = $_FILES['video']['size'];
+                }
+            }
+            
+            error_log('[VidsparkUpload] 文件信息 - 名稱: ' . $originalName . ', 類型: ' . $mimeType . ', 大小: ' . $fileSize);
+            
             // 驗證文件類型
             $allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
-            $mimeType = $file->getMimeType();
             if (!in_array($mimeType, $allowedTypes)) {
-                throw new Exception('不支持的視頻格式，僅支持MP4、MOV、AVI、WebM');
+                throw new Exception('不支持的視頻格式，僅支持MP4、MOV、AVI、WebM。當前類型：' . $mimeType);
             }
 
             // 驗證文件大小 (最大200MB)
-            if ($file->getSize() > 200 * 1024 * 1024) {
-                throw new Exception('文件太大，最大支持200MB');
+            if ($fileSize > 200 * 1024 * 1024) {
+                throw new Exception('文件太大，最大支持200MB。當前大小：' . round($fileSize/1024/1024, 2) . 'MB');
             }
 
             // 使用統一的存儲系統
-            $filename = VidsparkStorageSystemController::generateSafeFilename($file->getClientOriginalName(), 'video');
+            $filename = VidsparkStorageSystemController::generateSafeFilename($originalName, 'video');
             $storagePath = VidsparkStorageSystemController::getStoragePath('video');
             $fullPath = $storagePath . '/' . $filename;
             $relativePath = 'vidspark/storage/' . date('Y/m') . '/video/' . $filename;
@@ -246,9 +295,20 @@ class VidsparkFileUploadController
                 throw new Exception('無法創建存儲目錄: ' . $storagePath);
             }
 
-            // 保存文件
-            if (!$file->move($fullPath)) {
-                throw new Exception('文件保存失敗');
+            // 保存文件（兼容不同的文件對象類型）
+            $fileSaved = false;
+            if (method_exists($file, 'move')) {
+                // Webman UploadFile對象
+                $fileSaved = $file->move($fullPath);
+                error_log('[VidsparkUpload] 使用Webman方法保存文件: ' . ($fileSaved ? '成功' : '失敗'));
+            } elseif (!empty($_FILES['video']['tmp_name'])) {
+                // 使用原生PHP方法
+                $fileSaved = move_uploaded_file($_FILES['video']['tmp_name'], $fullPath);
+                error_log('[VidsparkUpload] 使用原生PHP方法保存文件: ' . ($fileSaved ? '成功' : '失敗'));
+            }
+            
+            if (!$fileSaved) {
+                throw new Exception('文件保存失敗，請檢查目錄權限');
             }
 
             // 生成可訪問的URL（使用統一方法）
@@ -266,13 +326,13 @@ class VidsparkFileUploadController
                     'file_name' => $filename,
                     'file_path' => $relativePath,
                     'file_url' => $fileUrl,
-                    'file_size' => $file->getSize(),
+                    'file_size' => $fileSize,
                     'mime_type' => $mimeType
                 ];
                 
                 // 根據表結構添加可選字段
                 if (in_array('original_name', $availableColumns)) {
-                    $fileRecord['original_name'] = $file->getClientOriginalName();
+                    $fileRecord['original_name'] = $originalName;
                 }
                 if (in_array('upload_time', $availableColumns)) {
                     $fileRecord['upload_time'] = date('Y-m-d H:i:s');
@@ -313,8 +373,8 @@ class VidsparkFileUploadController
                 'data' => [
                     'file_id' => $fileId,
                     'file_url' => $fileUrl,
-                    'original_name' => $file->getClientOriginalName(),
-                    'file_size' => $this->formatFileSize($file->getSize()),
+                    'original_name' => $originalName,
+                    'file_size' => $this->formatFileSize($fileSize),
                     'upload_time' => date('Y-m-d H:i:s')
                 ]
             ], JSON_UNESCAPED_UNICODE));
