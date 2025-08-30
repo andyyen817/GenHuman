@@ -476,9 +476,8 @@ Route::get('/vidspark-check-specific-voice', function() {
     ], file_get_contents(runtime_path() . '/../public/vidspark-check-specific-voice.html'));
 });
 
-// Vidspark存儲管理路由
-Route::get('/vidspark-storage-init', [app\controller\VidsparkStorageController::class, 'init']);
-Route::get('/vidspark-storage-status', [app\controller\VidsparkStorageController::class, 'status']);
+// 舊的存儲管理路由（已被新系統替代）
+// Route::get('/vidspark-storage-status-old', [app\controller\VidsparkStorageController::class, 'status']);
 
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
