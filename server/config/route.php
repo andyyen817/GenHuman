@@ -455,6 +455,13 @@ Route::get('/vidspark-video-upload-debug', function() {
     ], file_get_contents(runtime_path() . '/../public/vidspark-video-upload-debug.html'));
 });
 
+// Vidspark路徑調試工具
+Route::get('/vidspark-path-debug', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/vidspark-path-debug.html'));
+});
+
 // Vidspark快速數據庫初始化（使用控制器）
 Route::get('/vidspark-quick-db-init', [app\controller\VidsparkStorageController::class, 'quickDbInit']);
 

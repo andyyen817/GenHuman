@@ -388,10 +388,48 @@ class VidsparkFileUploadController
                 $diagnostics['database_connection'] = 'FAILED: ' . $e->getMessage();
             }
             
-            // 測試存儲目錄（與數據庫初始化保持一致）
-            $videoStorageDir = base_path() . '/public/vidspark/storage/video/' . date('Y/m');
-            $audioStorageDir = base_path() . '/public/vidspark/storage/audio/' . date('Y/m');
-            $imagesStorageDir = base_path() . '/public/vidspark/storage/images/' . date('Y/m');
+            // 測試存儲目錄（智能查找已創建的目錄）
+            $storageBasePath = base_path() . '/public/vidspark/storage';
+            
+            // 首先嘗試當前日期路徑
+            $currentDatePath = date('Y/m');
+            $videoStorageDir = $storageBasePath . '/video/' . $currentDatePath;
+            $audioStorageDir = $storageBasePath . '/audio/' . $currentDatePath;
+            $imagesStorageDir = $storageBasePath . '/images/' . $currentDatePath;
+            
+            // 如果當前日期路徑不存在，掃描已存在的目錄
+            if (!is_dir($videoStorageDir)) {
+                $videoYearDirs = glob($storageBasePath . '/video/*/');
+                if (!empty($videoYearDirs)) {
+                    $latestVideoDir = end($videoYearDirs);
+                    $videoMonthDirs = glob($latestVideoDir . '*/');
+                    if (!empty($videoMonthDirs)) {
+                        $videoStorageDir = rtrim(end($videoMonthDirs), '/');
+                    }
+                }
+            }
+            
+            if (!is_dir($audioStorageDir)) {
+                $audioYearDirs = glob($storageBasePath . '/audio/*/');
+                if (!empty($audioYearDirs)) {
+                    $latestAudioDir = end($audioYearDirs);
+                    $audioMonthDirs = glob($latestAudioDir . '*/');
+                    if (!empty($audioMonthDirs)) {
+                        $audioStorageDir = rtrim(end($audioMonthDirs), '/');
+                    }
+                }
+            }
+            
+            if (!is_dir($imagesStorageDir)) {
+                $imagesYearDirs = glob($storageBasePath . '/images/*/');
+                if (!empty($imagesYearDirs)) {
+                    $latestImagesDir = end($imagesYearDirs);
+                    $imagesMonthDirs = glob($latestImagesDir . '*/');
+                    if (!empty($imagesMonthDirs)) {
+                        $imagesStorageDir = rtrim(end($imagesMonthDirs), '/');
+                    }
+                }
+            }
             
             $diagnostics['storage_directory'] = [
                 'video' => [
@@ -408,6 +446,10 @@ class VidsparkFileUploadController
                     'path' => $imagesStorageDir,
                     'exists' => is_dir($imagesStorageDir),
                     'writable' => is_dir($imagesStorageDir) ? is_writable($imagesStorageDir) : false
+                ],
+                'scan_info' => [
+                    'current_date_path' => $currentDatePath,
+                    'base_path' => $storageBasePath
                 ]
             ];
             
