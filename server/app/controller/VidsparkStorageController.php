@@ -153,11 +153,11 @@ class VidsparkStorageController
         ];
 
         try {
-            // 數據庫連接信息
-            $host = 'mysql.zeabur.internal';
-            $dbname = 'genhuman_db';
-            $username = 'root';
-            $password = 'fhlkzgNuRQL79C5eFb4036vX2T18YdAn';
+            // 數據庫連接信息（與Think-ORM配置保持一致）
+            $host = $_ENV['DB_HOST'] ?? 'mysql.zeabur.internal';
+            $dbname = $_ENV['DB_DATABASE'] ?? 'zeabur';
+            $username = $_ENV['DB_USERNAME'] ?? 'root';
+            $password = $_ENV['DB_PASSWORD'] ?? 'fhlkzgNuRQL79C5eFb4036vX2T18YdAn';
             
             // 創建PDO連接
             $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $username, $password, [
@@ -221,30 +221,54 @@ class VidsparkStorageController
             if (!empty($tables)) {
                 $response['results'][] = "✅ 驗證: vidspark_production_files 表已存在";
                 
-                // 測試插入一條記錄
-                $testInsert = $pdo->prepare("
-                    INSERT INTO vidspark_production_files 
-                    (file_type, original_name, file_name, file_path, file_url, file_size, mime_type, user_ip) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ");
-                
-                $testResult = $testInsert->execute([
-                    'video',
-                    'test.mp4',
-                    'test_' . time() . '.mp4',
-                    'vidspark/storage/video/test.mp4',
-                    'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/test.mp4',
-                    1024,
-                    'video/mp4',
-                    '127.0.0.1'
-                ]);
-                
-                if ($testResult) {
-                    $response['results'][] = "✅ 測試插入成功，表格功能正常";
+                // 檢查表結構
+                try {
+                    $columns = $pdo->query("DESCRIBE vidspark_production_files")->fetchAll(PDO::FETCH_COLUMN);
+                    $response['results'][] = "ℹ️ 表字段: " . implode(', ', $columns);
                     
-                    // 刪除測試記錄
-                    $pdo->exec("DELETE FROM vidspark_production_files WHERE original_name = 'test.mp4'");
-                    $response['results'][] = "✅ 清理測試數據完成";
+                    // 根據實際字段結構進行測試插入
+                    if (in_array('original_name', $columns)) {
+                        // 如果original_name字段存在，使用完整插入
+                        $testInsert = $pdo->prepare("
+                            INSERT INTO vidspark_production_files 
+                            (file_type, original_name, file_name, file_path, file_url, file_size, mime_type, user_ip) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+                        
+                        $testParams = [
+                            'video', 'test.mp4', 'test_' . time() . '.mp4',
+                            'vidspark/storage/video/test.mp4',
+                            'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/test.mp4',
+                            1024, 'video/mp4', '127.0.0.1'
+                        ];
+                    } else {
+                        // 如果original_name字段不存在，使用簡化插入
+                        $testInsert = $pdo->prepare("
+                            INSERT INTO vidspark_production_files 
+                            (file_type, file_name, file_path, file_url, file_size, mime_type) 
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        ");
+                        
+                        $testParams = [
+                            'video', 'test_' . time() . '.mp4',
+                            'vidspark/storage/video/test.mp4',
+                            'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/test.mp4',
+                            1024, 'video/mp4'
+                        ];
+                    }
+                    
+                    $testResult = $testInsert->execute($testParams);
+                    
+                    if ($testResult) {
+                        $response['results'][] = "✅ 測試插入成功，表格功能正常";
+                        
+                        // 刪除測試記錄（使用安全的方式）
+                        $pdo->exec("DELETE FROM vidspark_production_files WHERE file_name LIKE 'test_%'");
+                        $response['results'][] = "✅ 清理測試數據完成";
+                    }
+                    
+                } catch (Exception $structureError) {
+                    $response['results'][] = "⚠️ 表結構檢查錯誤: " . $structureError->getMessage();
                 }
             }
             

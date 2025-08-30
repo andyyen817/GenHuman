@@ -254,28 +254,51 @@ class VidsparkFileUploadController
             // 生成可訪問的URL
             $fileUrl = 'https://genhuman-digital-human.zeabur.app/' . $relativePath;
 
-            // 保存到數據庫
-            $fileRecord = [
-                'file_type' => 'video',
-                'original_name' => $file->getClientOriginalName(),
-                'file_name' => $filename,
-                'file_path' => $relativePath,
-                'file_url' => $fileUrl,
-                'file_size' => $file->getSize(),
-                'mime_type' => $mimeType,
-                'upload_time' => date('Y-m-d H:i:s'),
-                'user_ip' => $request->getRealIp()
-            ];
-
-            // 檢查表是否存在，如果不存在先創建
+            // 保存到數據庫（根據實際表結構動態調整）
             try {
+                // 首先檢查表結構，確定哪些字段存在
+                $columns = Db::query("DESCRIBE vidspark_production_files");
+                $availableColumns = array_column($columns, 'Field');
+                
+                // 準備基礎字段
+                $fileRecord = [
+                    'file_type' => 'video',
+                    'file_name' => $filename,
+                    'file_path' => $relativePath,
+                    'file_url' => $fileUrl,
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $mimeType
+                ];
+                
+                // 根據表結構添加可選字段
+                if (in_array('original_name', $availableColumns)) {
+                    $fileRecord['original_name'] = $file->getClientOriginalName();
+                }
+                if (in_array('upload_time', $availableColumns)) {
+                    $fileRecord['upload_time'] = date('Y-m-d H:i:s');
+                }
+                if (in_array('user_ip', $availableColumns)) {
+                    $fileRecord['user_ip'] = $request->getRealIp();
+                }
+                if (in_array('user_id', $availableColumns)) {
+                    $fileRecord['user_id'] = 1; // 默認用戶ID
+                }
+                
+                error_log('[VidsparkUpload] 準備插入字段: ' . json_encode(array_keys($fileRecord)));
+                
                 $fileId = Db::table('vidspark_production_files')->insertGetId($fileRecord);
+                
             } catch (Exception $dbError) {
                 error_log('[VidsparkUpload] 數據庫錯誤: ' . $dbError->getMessage());
                 
                 // 如果是表不存在錯誤，提供友好提示
                 if (strpos($dbError->getMessage(), "doesn't exist") !== false) {
                     throw new Exception('數據庫表不存在，請先運行初始化腳本：https://genhuman-digital-human.zeabur.app/vidspark-quick-db-init');
+                }
+                
+                // 如果是字段不存在錯誤，提供具體提示
+                if (strpos($dbError->getMessage(), "Unknown column") !== false) {
+                    throw new Exception('數據庫表結構不匹配: ' . $dbError->getMessage() . '。請檢查表結構或重新運行初始化腳本。');
                 }
                 
                 // 其他數據庫錯誤
