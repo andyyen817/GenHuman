@@ -252,10 +252,10 @@ class VidsparkFileUploadController
             $mimeType = '';
             $fileSize = 0;
             
-            if (method_exists($file, 'getClientOriginalName')) {
-                // Webman UploadFile對象
-                $originalName = $file->getClientOriginalName();
-                $mimeType = $file->getMimeType();
+            if (method_exists($file, 'getUploadName')) {
+                // Webman UploadFile對象 - 使用正確的方法
+                $originalName = $file->getUploadName();
+                $mimeType = $file->getUploadMimeType();
                 $fileSize = $file->getSize();
             } elseif (isset($file->originalName)) {
                 // 自定義文件對象
@@ -456,48 +456,15 @@ class VidsparkFileUploadController
                 $diagnostics['database_connection'] = 'FAILED: ' . $e->getMessage();
             }
             
-            // 測試存儲目錄（智能查找已創建的目錄）
-            $storageBasePath = base_path() . '/public/vidspark/storage';
+            // 測試存儲目錄（使用統一的存儲系統）
+            $videoStorageDir = VidsparkStorageSystemController::getStoragePath('video');
+            $audioStorageDir = VidsparkStorageSystemController::getStoragePath('audio');
+            $imagesStorageDir = VidsparkStorageSystemController::getStoragePath('images');
             
-            // 首先嘗試當前日期路徑
-            $currentDatePath = date('Y/m');
-            $videoStorageDir = $storageBasePath . '/video/' . $currentDatePath;
-            $audioStorageDir = $storageBasePath . '/audio/' . $currentDatePath;
-            $imagesStorageDir = $storageBasePath . '/images/' . $currentDatePath;
-            
-            // 如果當前日期路徑不存在，掃描已存在的目錄
-            if (!is_dir($videoStorageDir)) {
-                $videoYearDirs = glob($storageBasePath . '/video/*/');
-                if (!empty($videoYearDirs)) {
-                    $latestVideoDir = end($videoYearDirs);
-                    $videoMonthDirs = glob($latestVideoDir . '*/');
-                    if (!empty($videoMonthDirs)) {
-                        $videoStorageDir = rtrim(end($videoMonthDirs), '/');
-                    }
-                }
-            }
-            
-            if (!is_dir($audioStorageDir)) {
-                $audioYearDirs = glob($storageBasePath . '/audio/*/');
-                if (!empty($audioYearDirs)) {
-                    $latestAudioDir = end($audioYearDirs);
-                    $audioMonthDirs = glob($latestAudioDir . '*/');
-                    if (!empty($audioMonthDirs)) {
-                        $audioStorageDir = rtrim(end($audioMonthDirs), '/');
-                    }
-                }
-            }
-            
-            if (!is_dir($imagesStorageDir)) {
-                $imagesYearDirs = glob($storageBasePath . '/images/*/');
-                if (!empty($imagesYearDirs)) {
-                    $latestImagesDir = end($imagesYearDirs);
-                    $imagesMonthDirs = glob($latestImagesDir . '*/');
-                    if (!empty($imagesMonthDirs)) {
-                        $imagesStorageDir = rtrim(end($imagesMonthDirs), '/');
-                    }
-                }
-            }
+            // 自動創建目錄（如果不存在）
+            VidsparkStorageSystemController::ensureDirectoryExists($videoStorageDir);
+            VidsparkStorageSystemController::ensureDirectoryExists($audioStorageDir);
+            VidsparkStorageSystemController::ensureDirectoryExists($imagesStorageDir);
             
             $diagnostics['storage_directory'] = [
                 'video' => [

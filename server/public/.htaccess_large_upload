@@ -1,0 +1,51 @@
+# Vidspark大文件上傳 Apache配置
+# 支持500MB+視頻文件上傳
+
+# PHP配置覆蓋
+php_value upload_max_filesize 1000M
+php_value post_max_size 1100M
+php_value max_file_uploads 20
+php_value memory_limit 2048M
+php_value max_execution_time 1800
+php_value max_input_time 1800
+php_value max_input_vars 10000
+
+# 文件訪問控制
+<Files "*.mp4">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</Files>
+
+<Files "*.mov">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</Files>
+
+<Files "*.avi">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</Files>
+
+# 安全設置
+<Files "*.php">
+    Deny from all
+</Files>
+
+# 緩存設置
+<FilesMatch "\.(mp4|mov|avi|webm)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+    Header append Cache-Control "public, must-revalidate, proxy-revalidate"
+</FilesMatch>
+
+# 壓縮設置
+<IfModule mod_deflate.c>
+    SetOutputFilter DEFLATE
+    SetEnvIfNoCase Request_URI \
+        \.(?:gif|jpe?g|png|mp4|mov|avi|webm)$ no-gzip dont-vary
+    SetEnvIfNoCase Request_URI \
+        \.(?:exe|t?gz|zip|bz2|sit|rar)$ no-gzip dont-vary
+</IfModule>
