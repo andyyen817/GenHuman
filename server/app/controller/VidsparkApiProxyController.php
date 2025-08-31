@@ -132,8 +132,8 @@ class VidsparkApiProxyController
                 'Accept: application/json',
                 'User-Agent: Vidspark-Proxy/1.0'
             ],
-            CURLOPT_TIMEOUT => 120,        // 增加到2分鐘
-            CURLOPT_CONNECTTIMEOUT => 30,  // 增加連接超時
+            CURLOPT_TIMEOUT => 300,        // 增加到5分鐘（數字人克隆可能需要更長時間）
+            CURLOPT_CONNECTTIMEOUT => 60,  // 增加連接超時到1分鐘
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false
         ];
@@ -163,6 +163,10 @@ class VidsparkApiProxyController
         ];
         
         if ($error) {
+            // 特殊處理超時錯誤
+            if (strpos($error, 'timeout') !== false || strpos($error, 'Operation timed out') !== false) {
+                throw new Exception('GenHuman API響應超時 (300秒) - 數字人克隆可能需要更長時間，請稍後查詢任務狀態。錯誤詳情: ' . $error);
+            }
             throw new Exception("cURL錯誤: $error");
         }
         
@@ -176,7 +180,16 @@ class VidsparkApiProxyController
         ];
         
         if ($httpCode !== 200) {
-            // 增強錯誤診斷信息
+            // 特殊處理504錯誤
+            if ($httpCode == 504) {
+                $errorMessage = "GenHuman API服務器超時 (504 Gateway Timeout) - 數字人克隆任務可能已提交但需要更長處理時間";
+                if ($response) {
+                    $errorMessage .= " - 響應片段: " . substr($response, 0, 200);
+                }
+                throw new Exception($errorMessage);
+            }
+            
+            // 其他HTTP錯誤的增強診斷信息
             $errorMessage = "HTTP錯誤 $httpCode";
             if ($response) {
                 $errorMessage .= " - 響應: " . substr($response, 0, 500);

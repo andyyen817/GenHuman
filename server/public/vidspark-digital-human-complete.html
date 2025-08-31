@@ -268,8 +268,8 @@
         <div class="header">
             <h1>🎬 Vidspark 數字人生成流程</h1>
             <p>完整的4步驟數字人製作流程 - 基於GenHuman免費API</p>
-            <div style="background: #dc3545; color: white; padding: 5px 10px; border-radius: 4px; margin: 10px 0; font-size: 12px;">
-                🔧 修復版本 v2.1 - 已添加callback_url+視頻URL測試 (請強制刷新 Ctrl+F5)
+            <div style="background: #007bff; color: white; padding: 5px 10px; border-radius: 4px; margin: 10px 0; font-size: 12px;">
+                ⚡ 超時修復版 v2.2 - 增加API超時到300秒+優化504錯誤處理 (請強制刷新 Ctrl+F5)
             </div>
         </div>
         
@@ -976,6 +976,7 @@
                 console.log(`[${new Date().toLocaleTimeString()}] 🏷️ video_name: ${sceneName}`);
                 console.log(`[${new Date().toLocaleTimeString()}] 📹 video_url: ${videoUrl}`);
                 console.log(`[${new Date().toLocaleTimeString()}] 📞 callback_url: https://genhuman-digital-human.zeabur.app/vidspark-admin/api/callback`);
+                console.log(`[${new Date().toLocaleTimeString()}] ⏰ API超時設置: 300秒 (5分鐘)`);
 
                 showResult(3, `📊 API響應狀態: ${response.status} ${response.statusText}`, 'info');
                 console.log(`[${new Date().toLocaleTimeString()}] 📊 GenHuman API響應: ${response.status} ${response.statusText}`);
