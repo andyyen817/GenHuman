@@ -566,6 +566,64 @@ Route::get('/check-actual-files', function() {
     ], file_get_contents(runtime_path() . '/../public/check-actual-files.html'));
 });
 
+// 🚨 CRITICAL: GenHuman API回調端點（數字人克隆必需）
+Route::any('/vidspark-admin/api/callback', function ($request) {
+    try {
+        $method = $request->method();
+        $input = null;
+        
+        // 獲取請求數據
+        if ($method === 'POST') {
+            $input = json_decode($request->rawBody(), true);
+        } elseif ($method === 'GET') {
+            $input = $request->all();
+        }
+        
+        // 記錄回調詳情
+        error_log("[GenHuman Callback] 接收到回調請求:");
+        error_log("  - 方法: {$method}");
+        error_log("  - 時間: " . date('Y-m-d H:i:s'));
+        error_log("  - IP: " . $request->getRealIp());
+        error_log("  - User-Agent: " . $request->header('user-agent'));
+        error_log("  - Content-Type: " . $request->header('content-type'));
+        error_log("  - 原始數據: " . $request->rawBody());
+        
+        if ($input) {
+            error_log("  - 解析數據: " . json_encode($input, JSON_UNESCAPED_UNICODE));
+            
+            // 檢查是否是任務完成回調
+            if (isset($input['task_id']) && isset($input['status'])) {
+                error_log("[GenHuman Callback] 任務狀態更新:");
+                error_log("  - 任務ID: " . $input['task_id']);
+                error_log("  - 狀態: " . $input['status']);
+                if (isset($input['video_url'])) {
+                    error_log("  - 視頻URL: " . $input['video_url']);
+                }
+                if (isset($input['scene_task_id'])) {
+                    error_log("  - 場景任務ID: " . $input['scene_task_id']);
+                }
+            }
+        }
+        
+        // 返回成功響應（告訴GenHuman我們收到了）
+        return response()->json([
+            'success' => true,
+            'message' => 'Callback received successfully',
+            'timestamp' => date('Y-m-d H:i:s'),
+            'method' => $method
+        ], 200);
+        
+    } catch (Exception $e) {
+        error_log("[GenHuman Callback] 處理回調時發生錯誤: " . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'timestamp' => date('Y-m-d H:i:s')
+        ], 500);
+    }
+});
+
 // 🆕 Vidspark簡單上傳系統（歸零重寫）
 Route::post('/vidspark-simple-upload/video', [app\controller\VidsparkSimpleUploadController::class, 'uploadVideo']);
 Route::get('/vidspark-simple-upload/test', [app\controller\VidsparkSimpleUploadController::class, 'test']);
