@@ -268,8 +268,8 @@
         <div class="header">
             <h1>🎬 Vidspark 數字人生成流程</h1>
             <p>完整的4步驟數字人製作流程 - 基於GenHuman免費API</p>
-            <div style="background: #28a745; color: white; padding: 5px 10px; border-radius: 4px; margin: 10px 0; font-size: 12px;">
-                ✅ 增強診斷版本 v2.0 - 詳細步驟日誌已啟用 (請強制刷新 Ctrl+F5)
+            <div style="background: #dc3545; color: white; padding: 5px 10px; border-radius: 4px; margin: 10px 0; font-size: 12px;">
+                🔧 修復版本 v2.1 - 已添加callback_url+視頻URL測試 (請強制刷新 Ctrl+F5)
             </div>
         </div>
         
@@ -948,6 +948,17 @@
                 console.log(`[${new Date().toLocaleTimeString()}] 📡 準備調用GenHuman API: ${sceneApiEndpoint}`);
                 console.log(`[${new Date().toLocaleTimeString()}] 📹 視頻URL: ${videoUrl}`);
                 console.log(`[${new Date().toLocaleTimeString()}] 🏷️ 場景名稱: ${sceneName}`);
+                
+                // 🔧 關鍵：測試視頻URL的外部可訪問性
+                console.log(`[${new Date().toLocaleTimeString()}] 🧪 測試視頻URL外部可訪問性...`);
+                try {
+                    const testResponse = await fetch(videoUrl, { method: 'HEAD' });
+                    console.log(`[${new Date().toLocaleTimeString()}] 🧪 視頻URL測試結果: ${testResponse.status} ${testResponse.statusText}`);
+                    console.log(`[${new Date().toLocaleTimeString()}] 🧪 Content-Type: ${testResponse.headers.get('content-type')}`);
+                    console.log(`[${new Date().toLocaleTimeString()}] 🧪 Content-Length: ${testResponse.headers.get('content-length')} bytes`);
+                } catch (testError) {
+                    console.log(`[${new Date().toLocaleTimeString()}] ❌ 視頻URL測試失敗: ${testError.message}`);
+                }
 
                 const response = await fetch(sceneApiEndpoint, {
                     method: 'POST',
@@ -960,7 +971,11 @@
                     })
                 });
                 
-                console.log(`[${new Date().toLocaleTimeString()}] 📋 請求參數: token=${workflowData.token ? '已設置' : '未設置'}, video_name=${sceneName}, video_url=${videoUrl}`);
+                console.log(`[${new Date().toLocaleTimeString()}] 📋 完整請求參數:`);
+                console.log(`[${new Date().toLocaleTimeString()}] 🔑 token: ${workflowData.token ? '已設置' : '未設置'}`);
+                console.log(`[${new Date().toLocaleTimeString()}] 🏷️ video_name: ${sceneName}`);
+                console.log(`[${new Date().toLocaleTimeString()}] 📹 video_url: ${videoUrl}`);
+                console.log(`[${new Date().toLocaleTimeString()}] 📞 callback_url: https://genhuman-digital-human.zeabur.app/vidspark-admin/api/callback`);
 
                 showResult(3, `📊 API響應狀態: ${response.status} ${response.statusText}`, 'info');
                 console.log(`[${new Date().toLocaleTimeString()}] 📊 GenHuman API響應: ${response.status} ${response.statusText}`);
