@@ -132,8 +132,8 @@ class VidsparkApiProxyController
                 'Accept: application/json',
                 'User-Agent: Vidspark-Proxy/1.0'
             ],
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 120,        // 增加到2分鐘
+            CURLOPT_CONNECTTIMEOUT => 30,  // 增加連接超時
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false
         ];
@@ -880,5 +880,98 @@ class VidsparkApiProxyController
         return new Response(200, [
             'Content-Type' => 'application/json; charset=utf-8'
         ], json_encode($status, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * 測試GenHuman API連接狀態
+     */
+    public function testApiConnection(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            
+            if (empty($token)) {
+                throw new Exception('Token不能為空');
+            }
+
+            $testResults = [];
+            $startTime = microtime(true);
+
+            // 測試1：基本連接測試（獲取聲音列表）
+            try {
+                $testResults['basic_connection'] = [
+                    'test_name' => '基本API連接測試',
+                    'endpoint' => '/app/human/human/Voice/role',
+                    'start_time' => date('H:i:s')
+                ];
+
+                $result = $this->callGenHumanAPI('/app/human/human/Voice/role', [], $token, 'GET');
+                $responseTime = microtime(true) - $startTime;
+
+                $testResults['basic_connection']['status'] = 'success';
+                $testResults['basic_connection']['response_time'] = round($responseTime * 1000, 2) . 'ms';
+                $testResults['basic_connection']['data_received'] = isset($result['data']) ? count($result['data']) . '個聲音' : '無數據';
+                
+            } catch (Exception $e) {
+                $testResults['basic_connection']['status'] = 'failed';
+                $testResults['basic_connection']['error'] = $e->getMessage();
+                $testResults['basic_connection']['response_time'] = round((microtime(true) - $startTime) * 1000, 2) . 'ms';
+            }
+
+            // 測試2：網絡延遲測試
+            $pingStartTime = microtime(true);
+            try {
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, 'https://api.yidevs.com');
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_NOBODY, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $connectTime = curl_getinfo($ch, CURLINFO_CONNECT_TIME);
+                $totalTime = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
+                curl_close($ch);
+
+                $testResults['network_latency'] = [
+                    'test_name' => '網絡延遲測試',
+                    'status' => $httpCode > 0 ? 'success' : 'failed',
+                    'connect_time' => round($connectTime * 1000, 2) . 'ms',
+                    'total_time' => round($totalTime * 1000, 2) . 'ms',
+                    'http_code' => $httpCode
+                ];
+            } catch (Exception $e) {
+                $testResults['network_latency'] = [
+                    'test_name' => '網絡延遲測試',
+                    'status' => 'failed',
+                    'error' => $e->getMessage()
+                ];
+            }
+
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => true,
+                'message' => 'API連接測試完成',
+                'test_results' => $testResults,
+                'summary' => [
+                    'total_tests' => count($testResults),
+                    'passed' => array_reduce($testResults, function($count, $test) {
+                        return $count + ($test['status'] === 'success' ? 1 : 0);
+                    }, 0)
+                ]
+            ], JSON_UNESCAPED_UNICODE));
+
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'message' => 'API連接測試失敗',
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE));
+        }
     }
 }
