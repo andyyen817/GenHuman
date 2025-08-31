@@ -955,9 +955,12 @@
                     body: JSON.stringify({
                         token: workflowData.token,
                         video_name: sceneName,
-                        video_url: videoUrl
+                        video_url: videoUrl,
+                        callback_url: 'https://genhuman-digital-human.zeabur.app/vidspark-admin/api/callback' // 必填參數
                     })
                 });
+                
+                console.log(`[${new Date().toLocaleTimeString()}] 📋 請求參數: token=${workflowData.token ? '已設置' : '未設置'}, video_name=${sceneName}, video_url=${videoUrl}`);
 
                 showResult(3, `📊 API響應狀態: ${response.status} ${response.statusText}`, 'info');
                 console.log(`[${new Date().toLocaleTimeString()}] 📊 GenHuman API響應: ${response.status} ${response.statusText}`);
