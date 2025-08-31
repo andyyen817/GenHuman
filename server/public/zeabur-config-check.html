@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeabur環境變量檢查工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .config-item { margin: 10px 0; padding: 10px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .config-item.error { border-left-color: #dc3545; background: #f8d7da; }
+        .config-item.success { border-left-color: #28a745; background: #d4edda; }
+        .config-item.warning { border-left-color: #ffc107; background: #fff3cd; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 5px 0 0; }
+        .btn:hover { background: #0056b3; }
+        .btn.refresh { background: #28a745; }
+        .btn.copy { background: #6c757d; }
+        h1 { color: #333; text-align: center; }
+        h2 { color: #555; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
+        .status { font-weight: bold; }
+        .expected { color: #28a745; }
+        .actual { color: #dc3545; }
+        .code { background: #f1f1f1; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        .instructions { background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Zeabur環境變量檢查工具</h1>
+        <p><strong>目的</strong>：檢查PHP配置是否反映了Zeabur環境變量設置</p>
+        
+        <div class="instructions">
+            <h3>📋 使用說明</h3>
+            <ol>
+                <li>點擊"檢查當前配置"按鈕</li>
+                <li>對比實際值與期望值</li>
+                <li>如果不匹配，請檢查Zeabur環境變量設置</li>
+                <li>設置完環境變量後，重新部署容器</li>
+            </ol>
+        </div>
+
+        <button class="btn" onclick="checkConfig()">🔍 檢查當前配置</button>
+        <button class="btn refresh" onclick="location.reload()">🔄 刷新頁面</button>
+        <button class="btn copy" onclick="copyResults()">📋 複製結果</button>
+
+        <div id="results"></div>
+        
+        <div id="zeabur-instructions" style="display: none;">
+            <h2>⚙️ Zeabur環境變量設置指南</h2>
+            <div class="instructions">
+                <h3>步驟1：進入Zeabur控制台</h3>
+                <p>1. 訪問 <a href="https://zeabur.com" target="_blank">Zeabur控制台</a></p>
+                <p>2. 選擇您的項目：<strong>genhuman-digital-human</strong></p>
+                <p>3. 點擊 <strong>環境變量</strong> 標籤</p>
+                
+                <h3>步驟2：添加以下環境變量</h3>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace;">
+                    PHP_UPLOAD_MAX_FILESIZE=1000M<br>
+                    PHP_POST_MAX_SIZE=1100M<br>
+                    PHP_MEMORY_LIMIT=2048M<br>
+                    PHP_MAX_EXECUTION_TIME=1800<br>
+                    PHP_MAX_INPUT_TIME=1800<br>
+                    PHP_MAX_INPUT_VARS=10000
+                </div>
+                
+                <h3>步驟3：重新部署</h3>
+                <p>1. 點擊 <strong>重新部署</strong> 按鈕</p>
+                <p>2. 等待部署完成（約1-2分鐘）</p>
+                <p>3. 重新運行此檢查工具驗證</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let configResults = null;
+
+        async function checkConfig() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 正在檢查配置...</p>';
+
+            try {
+                const response = await fetch('/vidspark-upload/video-diagnosis');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    resultsDiv.innerHTML = `<div class="config-item error">❌ API錯誤: ${data.message}</div>`;
+                    return;
+                }
+
+                configResults = data.diagnostics;
+                displayResults(data.diagnostics);
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="config-item error">❌ 請求失敗: ${error.message}</div>`;
+            }
+        }
+
+        function displayResults(config) {
+            const expectations = {
+                'upload_max_filesize': '1000M',
+                'post_max_size': '1100M', 
+                'memory_limit': '2048M',
+                'max_execution_time': '1800',
+                'max_input_time': '1800'
+            };
+
+            let html = '<h2>📊 配置檢查結果</h2>';
+            let allCorrect = true;
+
+            for (const [key, expectedValue] of Object.entries(expectations)) {
+                const actualValue = config[key] || 'Unknown';
+                const isCorrect = actualValue === expectedValue || 
+                                 (key === 'max_execution_time' && actualValue === '0'); // 0 表示無限制，也是可接受的
+
+                const statusClass = isCorrect ? 'success' : 'error';
+                const statusIcon = isCorrect ? '✅' : '❌';
+                
+                if (!isCorrect) allCorrect = false;
+
+                html += `
+                    <div class="config-item ${statusClass}">
+                        ${statusIcon} <strong>${key}</strong><br>
+                        期望值: <span class="expected">${expectedValue}</span><br>
+                        實際值: <span class="actual">${actualValue}</span>
+                        ${isCorrect ? ' <span class="status">✓ 正確</span>' : ' <span class="status">✗ 需要修正</span>'}
+                    </div>
+                `;
+            }
+
+            // 添加其他重要信息
+            html += `
+                <div class="config-item">
+                    ℹ️ <strong>其他信息</strong><br>
+                    PHP版本: <span class="code">${config.php_version || 'Unknown'}</span><br>
+                    數據庫連接: <span class="code">${config.database_connection || 'Unknown'}</span><br>
+                    檢查時間: <span class="code">${config.timestamp || new Date().toLocaleString()}</span>
+                </div>
+            `;
+
+            if (allCorrect) {
+                html += `
+                    <div class="config-item success">
+                        🎉 <strong>所有配置都正確！</strong><br>
+                        您的Zeabur環境變量已正確設置並生效。
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="config-item error">
+                        ⚠️ <strong>發現配置問題</strong><br>
+                        請檢查Zeabur環境變量設置，並重新部署容器。
+                    </div>
+                `;
+                document.getElementById('zeabur-instructions').style.display = 'block';
+            }
+
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function copyResults() {
+            if (!configResults) {
+                alert('請先執行配置檢查');
+                return;
+            }
+
+            const text = `Zeabur配置檢查結果 - ${new Date().toLocaleString()}
+=====================================
+upload_max_filesize: ${configResults.upload_max_filesize || 'Unknown'}
+post_max_size: ${configResults.post_max_size || 'Unknown'}
+memory_limit: ${configResults.memory_limit || 'Unknown'}
+max_execution_time: ${configResults.max_execution_time || 'Unknown'}
+max_input_time: ${configResults.max_input_time || 'Unknown'}
+PHP版本: ${configResults.php_version || 'Unknown'}
+數據庫連接: ${configResults.database_connection || 'Unknown'}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('結果已複製到剪貼簿');
+            });
+        }
+
+        // 頁面載入時自動檢查
+        window.onload = function() {
+            checkConfig();
+        };
+    </script>
+</body>
+</html>
