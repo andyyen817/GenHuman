@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音頻任務查詢工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+        .form-group { margin: 20px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 5px 0 0; }
+        .btn:hover { background: #0056b3; }
+        .btn:disabled { background: #6c757d; cursor: not-allowed; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .result.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result.error { background: #f8d7da; color: #721c24; border: 1px solid #f1aeb5; }
+        .audio-player { margin: 20px 0; }
+        .download-link { display: inline-block; margin: 10px 0; padding: 10px 15px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; }
+        .download-link:hover { background: #218838; }
+        h1 { color: #333; text-align: center; }
+        .task-info { background: #e9ecef; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .json-display { background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎧 音頻任務查詢工具</h1>
+        <p><strong>目的</strong>：根據任務ID查詢和下載GenHuman語音合成結果</p>
+        
+        <div class="task-info">
+            <h3>📋 任務信息示例</h3>
+            <p><strong>任務ID</strong>：1484588</p>
+            <p><strong>消費記錄</strong>：小甲鱼数字人测试，深度語音合成，消費60積分</p>
+            <p><strong>時間</strong>：2025-08-30 20:40:19</p>
+        </div>
+
+        <div class="form-group">
+            <label for="taskId">任務ID：</label>
+            <input type="text" id="taskId" placeholder="請輸入任務ID，例如：1484588" value="1484588">
+        </div>
+
+        <div class="form-group">
+            <label for="token">API Token：</label>
+            <input type="text" id="token" placeholder="請輸入GenHuman API Token">
+        </div>
+
+        <button class="btn" onclick="queryVoiceResult()">🔍 查詢音頻結果</button>
+        <button class="btn" onclick="clearResults()">🗑️ 清空結果</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function queryVoiceResult() {
+            const taskId = document.getElementById('taskId').value.trim();
+            const token = document.getElementById('token').value.trim();
+            
+            if (!taskId) {
+                showResult('請輸入任務ID', 'error');
+                return;
+            }
+            
+            if (!token) {
+                showResult('請輸入API Token', 'error');
+                return;
+            }
+            
+            showResult('🔄 正在查詢任務結果...', 'info');
+            
+            try {
+                const response = await fetch('/vidspark-api-proxy/get-voice-result', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        task_id: taskId,
+                        token: token
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200 && result.data) {
+                    showSuccessResult(result, taskId);
+                } else {
+                    showResult(`❌ 查詢失敗: ${result.msg || result.message || '未知錯誤'}`, 'error');
+                    showJsonResult(result);
+                }
+                
+            } catch (error) {
+                showResult(`❌ 請求失敗: ${error.message}`, 'error');
+            }
+        }
+        
+        function showSuccessResult(result, taskId) {
+            const audioUrl = result.data.audio_url;
+            const audioBase64 = result.data.audio_base64;
+            
+            let html = `
+                <div class="result success">
+                    <h3>✅ 音頻查詢成功！</h3>
+                    <p><strong>任務ID:</strong> ${taskId}</p>
+                    <p><strong>查詢時間:</strong> ${result._query_info?.query_time || new Date().toLocaleString()}</p>
+                </div>
+            `;
+            
+            if (audioUrl) {
+                html += `
+                    <div class="result success">
+                        <h4>🎵 音頻文件</h4>
+                        <p><strong>音頻URL:</strong></p>
+                        <div class="json-display">${audioUrl}</div>
+                        <div class="audio-player">
+                            <audio controls style="width: 100%;">
+                                <source src="${audioUrl}" type="audio/mpeg">
+                                您的瀏覽器不支持音頻播放
+                            </audio>
+                        </div>
+                        <a href="${audioUrl}" download="voice_${taskId}.mp3" class="download-link">
+                            💾 下載音頻文件
+                        </a>
+                    </div>
+                `;
+            }
+            
+            if (audioBase64) {
+                html += `
+                    <div class="result success">
+                        <h4>📊 Base64音頻數據</h4>
+                        <p>可用於直接在網頁中播放</p>
+                        <div class="audio-player">
+                            <audio controls style="width: 100%;">
+                                <source src="${audioBase64}" type="audio/mpeg">
+                                您的瀏覽器不支持音頻播放
+                            </audio>
+                        </div>
+                        <button class="btn" onclick="copyBase64ToClipboard('${audioBase64}')">
+                            📋 複製Base64數據
+                        </button>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="result">
+                    <h4>🔍 完整API響應</h4>
+                    <div class="json-display">${JSON.stringify(result, null, 2)}</div>
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        function showResult(message, type) {
+            const html = `<div class="result ${type}">${message}</div>`;
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        function showJsonResult(result) {
+            const html = `
+                <div class="result">
+                    <h4>🔍 API響應詳情</h4>
+                    <div class="json-display">${JSON.stringify(result, null, 2)}</div>
+                </div>
+            `;
+            document.getElementById('results').innerHTML += html;
+        }
+        
+        function copyBase64ToClipboard(base64Data) {
+            navigator.clipboard.writeText(base64Data).then(() => {
+                showResult('✅ Base64數據已複製到剪貼板', 'success');
+            }).catch(err => {
+                showResult('❌ 複製失敗: ' + err.message, 'error');
+            });
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // 頁面載入時提示
+        window.onload = function() {
+            showResult('📝 請輸入任務ID和API Token開始查詢', 'info');
+        };
+    </script>
+</body>
+</html>

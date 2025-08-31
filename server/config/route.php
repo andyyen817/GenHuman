@@ -270,6 +270,7 @@ Route::post('/vidspark-api-proxy/synthesize-avatar', [app\controller\VidsparkApi
 Route::post('/vidspark-api-proxy/synthesize-avatar-free', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatarFree']);
 Route::post('/vidspark-api-proxy/synthesize-avatar-paid', [app\controller\VidsparkApiProxyController::class, 'synthesizeAvatarPaid']);
 Route::post('/vidspark-api-proxy/query-task', [app\controller\VidsparkApiProxyController::class, 'queryTask']);
+Route::post('/vidspark-api-proxy/get-voice-result', [app\controller\VidsparkApiProxyController::class, 'getVoiceResult']);
 
 Route::get('/vidspark-api-proxy/status', [app\controller\VidsparkApiProxyController::class, 'getProxyStatus']);
 Route::post('/vidspark-api-proxy/get-voice-roles', [app\controller\VidsparkApiProxyController::class, 'getVoiceRoles']);
@@ -309,6 +310,11 @@ Route::get('/vidspark-config/upload-reality', [app\controller\VidsparkConfigReal
 // 超級簡單視頻Base64測試工具
 Route::get('/simple-video-base64-test', function() {
     return new \support\Response(200, [], file_get_contents(public_path() . '/simple-video-base64-test.html'));
+});
+
+// 音頻任務查詢工具
+Route::get('/retrieve-audio-by-id', function() {
+    return new \support\Response(200, [], file_get_contents(public_path() . '/retrieve-audio-by-id.html'));
 });
 // Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
 // Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);

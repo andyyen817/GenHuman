@@ -779,6 +779,48 @@ class VidsparkApiProxyController
     }
 
     /**
+     * 語音結果查詢 - 根據任務ID取回語音合成結果
+     */
+    public function getVoiceResult(Request $request): Response
+    {
+        try {
+            $input = json_decode($request->rawBody(), true);
+            $token = $input['token'] ?? '';
+            $taskId = $input['task_id'] ?? '';
+            
+            if (empty($token) || empty($taskId)) {
+                throw new Exception('Token和任務ID不能為空');
+            }
+            
+            // 調用語音結果查詢API
+            $result = $this->callGenHumanAPI('/app/human/human/Voice/getResult', [
+                'task_id' => $taskId
+            ], $token, 'POST');
+            
+            $result['_query_info'] = [
+                'task_id' => $taskId,
+                'query_time' => date('Y-m-d H:i:s'),
+                'endpoint' => '/Voice/getResult'
+            ];
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'code' => 500,
+                'msg' => $e->getMessage(),
+                'error_detail' => '語音結果查詢失敗',
+                'test_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
      * 任務查詢-通用 (/Musetalk/task) - 用於輪詢數字人合成進度
      */
     public function queryTask(Request $request): Response
