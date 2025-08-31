@@ -176,7 +176,7 @@
             formData.append('video', blob, 'test-file.txt');
             
             try {
-                const response = await fetch('/vidspark-upload/video', {
+                const response = await fetch('/vidspark-simple-upload/video', {
                     method: 'POST',
                     body: formData
                 });
@@ -220,7 +220,7 @@
             formData.append('video', file);
             
             try {
-                const response = await fetch('/vidspark-upload/video', {
+                const response = await fetch('/vidspark-simple-upload/video', {
                     method: 'POST',
                     body: formData
                 });

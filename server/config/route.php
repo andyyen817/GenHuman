@@ -580,23 +580,38 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
         error_log("[SimpleStorage] 路徑: {$filePath}");
         error_log("[SimpleStorage] 存在: " . (file_exists($filePath) ? '是' : '否'));
         
+        // 處理OPTIONS預檢請求
+        if ($request->method() === 'OPTIONS') {
+            error_log("[SimpleStorage] OPTIONS預檢請求");
+            return response('', 200, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
+                'Access-Control-Max-Age' => '86400'
+            ]);
+        }
+        
         if (file_exists($filePath)) {
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             $contentType = $ext === 'mp4' ? 'video/mp4' : 'application/octet-stream';
             
+            $headers = [
+                'Content-Type' => $contentType,
+                'Content-Length' => filesize($filePath),
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
+                'Accept-Ranges' => 'bytes',
+                'Cache-Control' => 'public, max-age=86400'
+            ];
+            
             if ($request->method() === 'HEAD') {
-                return response('', 200, [
-                    'Content-Type' => $contentType,
-                    'Content-Length' => filesize($filePath),
-                    'Access-Control-Allow-Origin' => '*'
-                ]);
+                error_log("[SimpleStorage] HEAD請求，返回頭信息");
+                return response('', 200, $headers);
             }
             
-            return response()->file($filePath, 200, [
-                'Content-Type' => $contentType,
-                'Access-Control-Allow-Origin' => '*',
-                'Cache-Control' => 'public, max-age=86400'
-            ]);
+            error_log("[SimpleStorage] GET請求，返回文件內容");
+            return response()->file($filePath, 200, $headers);
         }
         
         return response('File not found: ' . $type . '/' . $filename, 404);

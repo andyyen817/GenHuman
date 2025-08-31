@@ -936,12 +936,19 @@
                 // 🔧 關鍵：測試視頻URL的外部可訪問性
                 console.log(`[${new Date().toLocaleTimeString()}] 🧪 測試視頻URL外部可訪問性...`);
                 try {
-                    const testResponse = await fetch(videoUrl, { method: 'HEAD' });
+                    const testResponse = await fetch(videoUrl, { 
+                        method: 'HEAD',
+                        mode: 'cors'  // 明確指定CORS模式
+                    });
                     console.log(`[${new Date().toLocaleTimeString()}] 🧪 視頻URL測試結果: ${testResponse.status} ${testResponse.statusText}`);
                     console.log(`[${new Date().toLocaleTimeString()}] 🧪 Content-Type: ${testResponse.headers.get('content-type')}`);
                     console.log(`[${new Date().toLocaleTimeString()}] 🧪 Content-Length: ${testResponse.headers.get('content-length')} bytes`);
+                    
+                    if (testResponse.status !== 200) {
+                        console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ 視頻URL返回非200狀態，但繼續嘗試GenHuman API調用`);
+                    }
                 } catch (testError) {
-                    console.log(`[${new Date().toLocaleTimeString()}] ❌ 視頻URL測試失敗: ${testError.message}`);
+                    console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ 視頻URL測試失敗: ${testError.message}，但繼續嘗試GenHuman API調用`);
                 }
 
                 const response = await fetch(sceneApiEndpoint, {

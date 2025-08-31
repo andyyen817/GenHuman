@@ -823,7 +823,7 @@ class VidsparkFileUploadController
                 $query->where('file_type', $fileType);
             }
 
-            $files = $query->get();
+            $files = $query->select();
             $total = Db::table('vidspark_production_files')
                 ->when($fileType !== 'all', function ($q) use ($fileType) {
                     return $q->where('file_type', $fileType);
