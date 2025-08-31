@@ -595,9 +595,16 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             $contentType = $ext === 'mp4' ? 'video/mp4' : 'application/octet-stream';
             
+            // 安全獲取文件大小
+            $fileSize = @filesize($filePath);
+            if ($fileSize === false) {
+                error_log("[SimpleStorage] 無法獲取文件大小: {$filePath}");
+                $fileSize = 0;
+            }
+            
             $headers = [
                 'Content-Type' => $contentType,
-                'Content-Length' => filesize($filePath),
+                'Content-Length' => $fileSize,
                 'Access-Control-Allow-Origin' => '*',
                 'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
                 'Access-Control-Allow-Headers' => 'Content-Type, Authorization',

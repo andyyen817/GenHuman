@@ -182,10 +182,22 @@ class VidsparkApiProxyController
         if ($httpCode !== 200) {
             // 特殊處理504錯誤
             if ($httpCode == 504) {
-                $errorMessage = "GenHuman API服務器超時 (504 Gateway Timeout) - 數字人克隆任務可能已提交但需要更長處理時間";
+                $responseTime = $info['total_time'];
+                $errorMessage = "GenHuman API服務器超時 (504 Gateway Timeout) - 實際響應時間: {$responseTime}秒";
+                $errorMessage .= " - 數字人克隆任務可能已提交但需要更長處理時間";
+                $errorMessage .= " - 建議：請等待2-5分鐘後查詢任務狀態";
                 if ($response) {
                     $errorMessage .= " - 響應片段: " . substr($response, 0, 200);
                 }
+                
+                // 記錄詳細的504診斷信息
+                error_log("[GenHuman API] 504超時詳情:");
+                error_log("  - URL: {$url}");
+                error_log("  - 實際響應時間: {$responseTime}秒");
+                error_log("  - 設置超時: 300秒");
+                error_log("  - 連接時間: " . ($info['connect_time'] ?? 'unknown'));
+                error_log("  - DNS解析時間: " . ($info['namelookup_time'] ?? 'unknown'));
+                
                 throw new Exception($errorMessage);
             }
             
