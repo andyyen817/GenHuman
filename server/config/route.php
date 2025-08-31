@@ -606,21 +606,25 @@ Route::any('/vidspark-admin/api/callback', function ($request) {
         }
         
         // 返回成功響應（告訴GenHuman我們收到了）
-        return response()->json([
+        return new Response(200, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode([
             'success' => true,
             'message' => 'Callback received successfully',
             'timestamp' => date('Y-m-d H:i:s'),
             'method' => $method
-        ], 200);
+        ], JSON_UNESCAPED_UNICODE));
         
     } catch (Exception $e) {
         error_log("[GenHuman Callback] 處理回調時發生錯誤: " . $e->getMessage());
         
-        return response()->json([
+        return new Response(500, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode([
             'success' => false,
             'error' => $e->getMessage(),
             'timestamp' => date('Y-m-d H:i:s')
-        ], 500);
+        ], JSON_UNESCAPED_UNICODE));
     }
 });
 
