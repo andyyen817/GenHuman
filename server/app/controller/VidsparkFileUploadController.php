@@ -317,8 +317,13 @@ class VidsparkFileUploadController
                 throw new Exception('文件保存失敗，請檢查目錄權限');
             }
 
-            // 生成可訪問的URL（使用統一方法）
+            // 生成可訪問的URL（修復路徑匹配）
             $fileUrl = VidsparkStorageSystemController::getPublicUrl(date('Y/m') . '/video/' . $filename);
+            
+            // 記錄調試信息
+            error_log('[VidsparkUpload] 文件保存路徑: ' . $fullPath);
+            error_log('[VidsparkUpload] 生成的URL: ' . $fileUrl);
+            error_log('[VidsparkUpload] 期望的路由路徑: /vidspark/storage/' . date('Y/m') . '/video/' . $filename);
 
             // 保存到數據庫（根據實際表結構動態調整）
             try {

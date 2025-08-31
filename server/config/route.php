@@ -398,8 +398,16 @@ Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
 });
 
 // 🔧 CRITICAL: Vidspark存儲文件路由（解決視頻封面提取失敗問題）
-Route::get('/vidspark/storage/{path:.+}', function ($request, $path) {
+// 支持HEAD和GET請求
+Route::any('/vidspark/storage/{path:.+}', function ($request, $path) {
     $filePath = base_path() . '/public/vidspark/storage/' . $path;
+    
+    // 詳細調試日誌
+    error_log("[Storage Route] 請求方法: {$request->method()}");
+    error_log("[Storage Route] 請求路徑: {$path}");
+    error_log("[Storage Route] 完整文件路徑: {$filePath}");
+    error_log("[Storage Route] 文件是否存在: " . (file_exists($filePath) ? '是' : '否'));
+    
     if (file_exists($filePath)) {
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
         $contentTypes = [
@@ -420,14 +428,27 @@ Route::get('/vidspark/storage/{path:.+}', function ($request, $path) {
             'bmp' => 'image/bmp'
         ];
         $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+        $fileSize = filesize($filePath);
         
-        return response()->file($filePath, 200, [
+        $headers = [
             'Content-Type' => $contentType,
-            'Cache-Control' => 'public, max-age=86400', // 24小時緩存
-            'Access-Control-Allow-Origin' => '*', // 允許GenHuman API訪問
+            'Content-Length' => $fileSize,
+            'Cache-Control' => 'public, max-age=86400',
+            'Access-Control-Allow-Origin' => '*',
             'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Authorization'
-        ]);
+            'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
+            'Accept-Ranges' => 'bytes'
+        ];
+        
+        // HEAD請求只返回頭信息
+        if ($request->method() === 'HEAD') {
+            error_log("[Storage Route] HEAD請求，返回頭信息，文件大小: {$fileSize}");
+            return response('', 200, $headers);
+        }
+        
+        // GET請求返回文件內容
+        error_log("[Storage Route] GET請求，返回文件內容，文件大小: {$fileSize}");
+        return response()->file($filePath, 200, $headers);
     }
     return response('Vidspark storage file not found: ' . $path, 404);
 });
@@ -508,6 +529,13 @@ Route::get('/vidspark-check-specific-voice', function() {
     return new Response(200, [
         'Content-Type' => 'text/html; charset=utf-8'
     ], file_get_contents(runtime_path() . '/../public/vidspark-check-specific-voice.html'));
+});
+
+// 🔧 存儲路徑診斷工具
+Route::get('/debug-storage-path', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/debug-storage-path.html'));
 });
 
 // 舊的存儲管理路由（已被新系統替代）
