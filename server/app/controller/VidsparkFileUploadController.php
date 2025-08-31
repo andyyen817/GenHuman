@@ -808,6 +808,136 @@ class VidsparkFileUploadController
     }
 
     /**
+     * Base64視頻上傳（繞過PHP文件大小限制）
+     */
+    public function uploadVideoBase64(Request $request): Response
+    {
+        try {
+            // 強制設置PHP配置
+            $this->forcePhpConfig();
+            
+            $requestData = json_decode($request->rawBody(), true);
+            if (!$requestData || !isset($requestData['video_data']) || !isset($requestData['filename'])) {
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                    'success' => false,
+                    'message' => '缺少必要參數：video_data 和 filename'
+                ], JSON_UNESCAPED_UNICODE));
+            }
+            
+            $base64Data = $requestData['video_data'];
+            $filename = $requestData['filename'];
+            $originalName = $requestData['original_name'] ?? $filename;
+            
+            // 解析Base64數據
+            if (strpos($base64Data, ',') !== false) {
+                $base64Data = explode(',', $base64Data)[1]; // 移除data:video/mp4;base64,前綴
+            }
+            
+            $videoData = base64_decode($base64Data);
+            if ($videoData === false) {
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                    'success' => false,
+                    'message' => 'Base64解碼失敗'
+                ], JSON_UNESCAPED_UNICODE));
+            }
+            
+            $fileSize = strlen($videoData);
+            
+            // 生成存儲路徑
+            $datePath = date('Y/m');
+            $storagePath = public_path() . '/vidspark/storage/video/' . $datePath;
+            
+            // 確保目錄存在
+            if (!is_dir($storagePath)) {
+                mkdir($storagePath, 0755, true);
+            }
+            
+            // 生成唯一文件名
+            $fileExtension = pathinfo($filename, PATHINFO_EXTENSION) ?: 'mp4';
+            $uniqueFileName = 'vidspark_video_' . date('Ymd_His') . '_' . substr(md5(uniqid()), 0, 8) . '.' . $fileExtension;
+            $fullPath = $storagePath . '/' . $uniqueFileName;
+            
+            // 保存文件
+            $result = file_put_contents($fullPath, $videoData);
+            if ($result === false) {
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                    'success' => false,
+                    'message' => '文件保存失敗'
+                ], JSON_UNESCAPED_UNICODE));
+            }
+            
+            // 生成公開URL
+            $publicUrl = 'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/' . $datePath . '/' . $uniqueFileName;
+            
+            // 保存到數據庫
+            $fileRecord = [
+                'user_id' => 1,
+                'file_type' => 'video',
+                'original_name' => $originalName,
+                'file_name' => $uniqueFileName,
+                'file_path' => $fullPath,
+                'file_url' => $publicUrl,
+                'file_size' => $fileSize,
+                'mime_type' => 'video/' . $fileExtension,
+                'upload_time' => date('Y-m-d H:i:s'),
+                'user_ip' => $request->getRealIp()
+            ];
+            
+            // 檢查表是否存在
+            try {
+                $existingColumns = \think\facade\Db::query("SHOW COLUMNS FROM vidspark_production_files");
+                $columnNames = array_column($existingColumns, 'Field');
+                
+                $insertData = [];
+                foreach ($fileRecord as $key => $value) {
+                    if (in_array($key, $columnNames)) {
+                        $insertData[$key] = $value;
+                    }
+                }
+                
+                $fileId = \think\facade\Db::table('vidspark_production_files')->insertGetId($insertData);
+                
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                    'success' => true,
+                    'message' => 'Base64視頻上傳成功',
+                    'data' => [
+                        'file_id' => $fileId,
+                        'file_url' => $publicUrl,
+                        'original_name' => $originalName,
+                        'file_size' => $this->formatFileSize($fileSize),
+                        'upload_method' => 'base64',
+                        'upload_time' => date('Y-m-d H:i:s')
+                    ]
+                ], JSON_UNESCAPED_UNICODE));
+                
+            } catch (\Exception $e) {
+                // 數據庫操作失敗，但文件已上傳成功
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                    'success' => true,
+                    'message' => 'Base64視頻上傳成功（數據庫記錄失敗）',
+                    'data' => [
+                        'file_id' => 'temp_' . time(),
+                        'file_url' => $publicUrl,
+                        'original_name' => $originalName,
+                        'file_size' => $this->formatFileSize($fileSize),
+                        'upload_method' => 'base64',
+                        'upload_time' => date('Y-m-d H:i:s'),
+                        'db_error' => $e->getMessage()
+                    ]
+                ], JSON_UNESCAPED_UNICODE));
+            }
+            
+        } catch (\Throwable $e) {
+            return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                'success' => false,
+                'message' => 'Base64視頻上傳失敗',
+                'error' => $e->getMessage(),
+                'upload_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
      * 強制設置PHP配置（解決Zeabur環境變量問題）
      * 多重策略確保配置生效
      */

@@ -279,9 +279,10 @@ Route::get('/vidspark-upload/test', [app\controller\VidsparkFileUploadController
 Route::post('/vidspark-upload/audio', [app\controller\VidsparkFileUploadController::class, 'uploadAudio']);
 Route::post('/vidspark-upload/audio-base64', [app\controller\VidsparkFileUploadController::class, 'uploadAudioBase64']);
 Route::post('/vidspark-upload/video', [app\controller\VidsparkFileUploadController::class, 'uploadVideo']);
+Route::post('/vidspark-upload/video-base64', [app\controller\VidsparkFileUploadController::class, 'uploadVideoBase64']);
 Route::post('/vidspark-upload/save-generated-video', [app\controller\VidsparkFileUploadController::class, 'saveGeneratedVideo']);
 Route::get('/vidspark-upload/files', [app\controller\VidsparkFileUploadController::class, 'getFileList']);
-Route::get('/vidspark-upload/video-diagnosis', [app\controller\VidsparkFileUploadController::class, 'videoUploadDiagnosis']);
+Route::any('/vidspark-upload/video-diagnosis', [app\controller\VidsparkFileUploadController::class, 'videoUploadDiagnosis']);
 
 // Vidspark API連接測試路由
 Route::post('/vidspark-api-proxy/test-connection', [app\controller\VidsparkApiProxyController::class, 'testApiConnection']);
@@ -300,6 +301,10 @@ Route::get('/network-connectivity-test', function() {
 Route::get('/php-config-detailed-check', function() {
     return new \support\Response(200, [], file_get_contents(public_path() . '/php-config-detailed-check.html'));
 });
+
+// PHP配置現實檢查API
+Route::get('/vidspark-config/reality-check', [app\controller\VidsparkConfigRealityController::class, 'configRealityCheck']);
+Route::get('/vidspark-config/upload-reality', [app\controller\VidsparkConfigRealityController::class, 'uploadRealityCheck']);
 // Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
 // Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);
 // Route::post('/vidspark-api-test/eight-steps-workflow', [app\controller\VidsparkApiTestController::class, 'testEightStepsWorkflow']);
