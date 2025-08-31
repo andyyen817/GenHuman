@@ -400,6 +400,7 @@ Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
 // 🔧 CRITICAL: Vidspark存儲文件路由（解決視頻封面提取失敗問題）
 // 支持HEAD和GET請求
 Route::any('/vidspark/storage/{path:.+}', function ($request, $path) {
+    try {
     // 修復路徑匹配邏輯
     // URL格式: /vidspark/storage/video/2025/08/file.mp4
     // 轉換為: /public/vidspark/storage/2025/08/video/file.mp4
@@ -421,7 +422,9 @@ Route::any('/vidspark/storage/{path:.+}', function ($request, $path) {
     error_log("[Storage Route] 文件是否存在: " . (file_exists($filePath) ? '是' : '否'));
     
     if (file_exists($filePath)) {
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        // 獲取文件擴展名
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        
         $contentTypes = [
             'mp4' => 'video/mp4',
             'avi' => 'video/x-msvideo',
@@ -463,6 +466,12 @@ Route::any('/vidspark/storage/{path:.+}', function ($request, $path) {
         return response()->file($filePath, 200, $headers);
     }
     return response('Vidspark storage file not found: ' . $path, 404);
+    
+    } catch (Exception $e) {
+        error_log("[Storage Route] 處理文件請求時發生錯誤: " . $e->getMessage());
+        error_log("[Storage Route] 錯誤堆棧: " . $e->getTraceAsString());
+        return response('Internal Server Error processing file request: ' . $e->getMessage(), 500);
+    }
 });
 
 // Vidspark管理後台靜態資源路由
@@ -555,6 +564,47 @@ Route::get('/check-actual-files', function() {
     return new Response(200, [
         'Content-Type' => 'text/html; charset=utf-8'
     ], file_get_contents(runtime_path() . '/../public/check-actual-files.html'));
+});
+
+// 🆕 Vidspark簡單上傳系統（歸零重寫）
+Route::post('/vidspark-simple-upload/video', [app\controller\VidsparkSimpleUploadController::class, 'uploadVideo']);
+Route::get('/vidspark-simple-upload/test', [app\controller\VidsparkSimpleUploadController::class, 'test']);
+
+// 🆕 簡單文件存儲路由（與存儲結構完全匹配）
+Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $filename) {
+    try {
+        // 直接映射，無複雜邏輯
+        $filePath = base_path() . '/public/vidspark/files/' . $type . '/' . $filename;
+        
+        error_log("[SimpleStorage] 請求: {$type}/{$filename}");
+        error_log("[SimpleStorage] 路徑: {$filePath}");
+        error_log("[SimpleStorage] 存在: " . (file_exists($filePath) ? '是' : '否'));
+        
+        if (file_exists($filePath)) {
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $contentType = $ext === 'mp4' ? 'video/mp4' : 'application/octet-stream';
+            
+            if ($request->method() === 'HEAD') {
+                return response('', 200, [
+                    'Content-Type' => $contentType,
+                    'Content-Length' => filesize($filePath),
+                    'Access-Control-Allow-Origin' => '*'
+                ]);
+            }
+            
+            return response()->file($filePath, 200, [
+                'Content-Type' => $contentType,
+                'Access-Control-Allow-Origin' => '*',
+                'Cache-Control' => 'public, max-age=86400'
+            ]);
+        }
+        
+        return response('File not found: ' . $type . '/' . $filename, 404);
+        
+    } catch (Exception $e) {
+        error_log("[SimpleStorage] 錯誤: " . $e->getMessage());
+        return response('Storage error: ' . $e->getMessage(), 500);
+    }
 });
 
 // 舊的存儲管理路由（已被新系統替代）

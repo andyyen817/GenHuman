@@ -817,8 +817,7 @@ class VidsparkFileUploadController
 
             $query = Db::table('vidspark_production_files')
                 ->order('upload_time', 'desc')
-                ->limit($limit)
-                ->offset($offset);
+                ->limit($offset, $limit);
 
             if ($fileType !== 'all') {
                 $query->where('file_type', $fileType);

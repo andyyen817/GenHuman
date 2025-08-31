@@ -894,46 +894,30 @@
                         throw new Error('視頻文件太大，最大支持50MB');
                     }
                     
-                    showResult(3, '🔄 正在轉換為Base64編碼...', 'info');
+                    showResult(3, '📤 正在上傳視頻文件（FormData模式）...', 'info');
                     
-                    // 讀取文件為Base64
-                    const fileData = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(videoFile);
-                    });
+                    // 改用簡單FormData上傳，避免Base64轉換問題
+                    const formData = new FormData();
+                    formData.append('video', videoFile);
                     
-                    showResult(3, '📤 正在上傳視頻文件（Base64模式）...', 'info');
-                    
-                    // 使用Base64上傳端點（與音頻相同格式）
-                    const uploadData = {
-                        fileName: videoFile.name,
-                        fileData: fileData,
-                        fileSize: videoFile.size
-                    };
-                    
-                    const uploadResponse = await fetch('/vidspark-upload/video-base64', {
+                    const uploadResponse = await fetch('/vidspark-simple-upload/video', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(uploadData)
+                        body: formData
                     });
                     
                     showResult(3, `📤 上傳響應狀態: ${uploadResponse.status}`, 'info');
                     console.log(`[${new Date().toLocaleTimeString()}] 📤 視頻上傳響應: ${uploadResponse.status} ${uploadResponse.statusText}`);
                     const uploadResult = await uploadResponse.json();
                     showResult(3, `📋 上傳結果: ${JSON.stringify(uploadResult)}`, 'info');
-                    console.log(`[${new Date().toLocaleTimeString()}] 📋 上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.file_url}`);
+                    console.log(`[${new Date().toLocaleTimeString()}] 📋 上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.data?.file_url}`);
                     
                     if (!uploadResult.success) {
-                        throw new Error('Base64視頻上傳失敗: ' + uploadResult.message);
+                        throw new Error('視頻上傳失敗: ' + uploadResult.message);
                     }
                     
-                    videoUrl = uploadResult.file_url;
-                    showResult(3, `✅ 視頻上傳成功 (${fileSizeMB}MB, Base64模式)`, 'success');
-                    showResult(3, `📁 文件: ${uploadResult.original_name}`, 'success');
+                    videoUrl = uploadResult.data.file_url;
+                    showResult(3, `✅ 視頻上傳成功 (${fileSizeMB}MB, FormData模式)`, 'success');
+                    showResult(3, `📁 文件: ${uploadResult.data.original_name}`, 'success');
                 }
 
                 // 根據選擇的API類型調用不同接口
