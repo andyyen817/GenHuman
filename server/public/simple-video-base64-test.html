@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超級簡單視頻Base64上傳測試</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+            text-align: center;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            margin: 20px 0;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #0056b3;
+            background: #e7f3ff;
+        }
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-btn {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .upload-btn:hover {
+            background: #0056b3;
+        }
+        .upload-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1aeb5;
+        }
+        .status.processing {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .file-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: left;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #007bff;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        h1 { color: #333; }
+        .tip {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .result-url {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+            font-family: monospace;
+            margin: 10px 0;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 超級簡單視頻Base64上傳測試</h1>
+        <p><strong>目的</strong>：測試視頻文件Base64上傳功能（繞過PHP 2MB限制）</p>
+        
+        <div class="tip">
+            <h3>📋 使用說明</h3>
+            <ul>
+                <li><strong>支持格式</strong>：MP4, AVI, MOV, WMV（建議MP4）</li>
+                <li><strong>文件大小</strong>：理論最大50MB（建議10MB以內測試）</li>
+                <li><strong>上傳方式</strong>：Base64編碼，完全繞過PHP文件上傳限制</li>
+                <li><strong>測試建議</strong>：先用小文件（1-5MB）測試，成功後再試大文件</li>
+            </ul>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <h2>📁 選擇或拖拽視頻文件</h2>
+            <p>點擊選擇文件，或直接將視頻文件拖拽到這裡</p>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                📂 選擇視頻文件
+            </button>
+            <input type="file" id="fileInput" class="file-input" accept="video/*" onchange="handleFileSelect(event)">
+        </div>
+
+        <div id="fileInfo" style="display:none;" class="file-info">
+            <h3>📄 文件信息</h3>
+            <p><strong>文件名：</strong><span id="fileName"></span></p>
+            <p><strong>文件大小：</strong><span id="fileSize"></span></p>
+            <p><strong>文件類型：</strong><span id="fileType"></span></p>
+        </div>
+
+        <div id="uploadProgress" style="display:none;">
+            <h3>📊 上傳進度</h3>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p id="progressText">準備上傳...</p>
+        </div>
+
+        <button id="uploadBtn" class="upload-btn" style="display:none;" onclick="uploadFile()">
+            🚀 開始Base64上傳
+        </button>
+
+        <div id="status"></div>
+        
+        <div id="result" style="display:none;">
+            <h3>✅ 上傳成功結果</h3>
+            <div class="file-info">
+                <p><strong>文件ID：</strong><span id="resultFileId"></span></p>
+                <p><strong>文件URL：</strong></p>
+                <div class="result-url" id="resultFileUrl"></div>
+                <p><strong>上傳方式：</strong>Base64編碼</p>
+                <p><strong>上傳時間：</strong><span id="resultUploadTime"></span></p>
+            </div>
+            <button class="upload-btn" onclick="testFileAccess()">🔗 測試文件訪問</button>
+            <button class="upload-btn" onclick="location.reload()">🔄 重新測試</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        // 拖拽上傳功能
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('video/')) {
+                    selectedFile = file;
+                    showFileInfo(file);
+                } else {
+                    showStatus('請選擇視頻文件', 'error');
+                }
+            }
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('video/')) {
+                selectedFile = file;
+                showFileInfo(file);
+            } else {
+                showStatus('請選擇有效的視頻文件', 'error');
+            }
+        }
+
+        function showFileInfo(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileType').textContent = file.type;
+            
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('uploadBtn').style.display = 'inline-block';
+            
+            // 檢查文件大小
+            if (file.size > 50 * 1024 * 1024) { // 50MB
+                showStatus('⚠️ 文件太大（>50MB），可能上傳失敗，建議選擇較小的文件', 'error');
+            } else if (file.size > 10 * 1024 * 1024) { // 10MB
+                showStatus('⚠️ 文件較大（>10MB），上傳可能需要較長時間', 'processing');
+            } else {
+                showStatus('✅ 文件大小合適，可以開始上傳', 'success');
+            }
+        }
+
+        async function uploadFile() {
+            if (!selectedFile) {
+                showStatus('請先選擇文件', 'error');
+                return;
+            }
+
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('uploadProgress').style.display = 'block';
+            
+            try {
+                showStatus('🔄 正在讀取文件...', 'processing');
+                updateProgress(10, '讀取文件中...');
+                
+                // 讀取文件為Base64
+                const fileData = await readFileAsBase64(selectedFile);
+                updateProgress(50, 'Base64編碼完成，準備上傳...');
+                
+                showStatus('📤 正在上傳到服務器...', 'processing');
+                
+                // 準備上傳數據（使用與音頻完全相同的格式）
+                const uploadData = {
+                    fileName: selectedFile.name,
+                    fileData: fileData,  // 完整的base64數據（包含data:前綴）
+                    fileSize: selectedFile.size
+                };
+                
+                updateProgress(60, '發送到服務器...');
+                
+                // 發送到Base64視頻上傳端點
+                const response = await fetch('/vidspark-upload/video-base64', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(uploadData)
+                });
+                
+                updateProgress(80, '處理服務器響應...');
+                
+                const result = await response.json();
+                updateProgress(100, '上傳完成！');
+                
+                if (result.success) {
+                    showStatus('🎉 Base64視頻上傳成功！', 'success');
+                    showResult(result);
+                } else {
+                    showStatus(`❌ 上傳失敗: ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus(`❌ 上傳錯誤: ${error.message}`, 'error');
+                console.error('Upload error:', error);
+            } finally {
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        }
+
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updateProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResult(result) {
+            document.getElementById('resultFileId').textContent = result.file_id;
+            document.getElementById('resultFileUrl').textContent = result.file_url;
+            document.getElementById('resultUploadTime').textContent = result.upload_time;
+            document.getElementById('result').style.display = 'block';
+            
+            // 隱藏上傳進度
+            document.getElementById('uploadProgress').style.display = 'none';
+        }
+
+        function testFileAccess() {
+            const fileUrl = document.getElementById('resultFileUrl').textContent;
+            if (fileUrl) {
+                showStatus('🔗 正在測試文件訪問...', 'processing');
+                
+                // 在新窗口打開文件URL
+                const newWindow = window.open(fileUrl, '_blank');
+                
+                // 簡單的訪問測試
+                fetch(fileUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            showStatus('✅ 文件訪問正常，已在新窗口打開', 'success');
+                        } else {
+                            showStatus(`⚠️ 文件訪問異常，HTTP狀態: ${response.status}`, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showStatus(`❌ 文件訪問測試失敗: ${error.message}`, 'error');
+                    });
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 頁面載入提示
+        window.onload = function() {
+            showStatus('📋 請選擇視頻文件開始測試Base64上傳功能', 'processing');
+        };
+    </script>
+</body>
+</html>

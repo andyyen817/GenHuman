@@ -305,6 +305,11 @@ Route::get('/php-config-detailed-check', function() {
 // PHP配置現實檢查API
 Route::get('/vidspark-config/reality-check', [app\controller\VidsparkConfigRealityController::class, 'configRealityCheck']);
 Route::get('/vidspark-config/upload-reality', [app\controller\VidsparkConfigRealityController::class, 'uploadRealityCheck']);
+
+// 超級簡單視頻Base64測試工具
+Route::get('/simple-video-base64-test', function() {
+    return new \support\Response(200, [], file_get_contents(public_path() . '/simple-video-base64-test.html'));
+});
 // Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
 // Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);
 // Route::post('/vidspark-api-test/eight-steps-workflow', [app\controller\VidsparkApiTestController::class, 'testEightStepsWorkflow']);

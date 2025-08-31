@@ -809,129 +809,126 @@ class VidsparkFileUploadController
 
     /**
      * Base64視頻上傳（繞過PHP文件大小限制）
+     * 使用與音頻上傳完全相同的格式
      */
     public function uploadVideoBase64(Request $request): Response
     {
         try {
-            // 強制設置PHP配置
-            $this->forcePhpConfig();
+            error_log('[VidsparkUpload] 開始處理Base64視頻上傳');
             
-            $requestData = json_decode($request->rawBody(), true);
-            if (!$requestData || !isset($requestData['video_data']) || !isset($requestData['filename'])) {
-                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
-                    'success' => false,
-                    'message' => '缺少必要參數：video_data 和 filename'
-                ], JSON_UNESCAPED_UNICODE));
+            $input = json_decode($request->rawBody(), true);
+            $fileName = $input['fileName'] ?? 'video.mp4';
+            $fileData = $input['fileData'] ?? ''; // base64編碼的文件數據
+            $fileSize = $input['fileSize'] ?? 0;
+            
+            if (empty($fileData)) {
+                throw new Exception('沒有文件數據');
             }
             
-            $base64Data = $requestData['video_data'];
-            $filename = $requestData['filename'];
-            $originalName = $requestData['original_name'] ?? $filename;
-            
-            // 解析Base64數據
-            if (strpos($base64Data, ',') !== false) {
-                $base64Data = explode(',', $base64Data)[1]; // 移除data:video/mp4;base64,前綴
+            // 檢查文件大小（視頻允許更大，50MB）
+            if ($fileSize > 50 * 1024 * 1024) { // 50MB限制
+                throw new Exception('文件太大，最大支持50MB');
             }
             
-            $videoData = base64_decode($base64Data);
-            if ($videoData === false) {
-                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
-                    'success' => false,
-                    'message' => 'Base64解碼失敗'
-                ], JSON_UNESCAPED_UNICODE));
+            // 解碼base64數據（與音頻上傳相同邏輯）
+            $binaryData = base64_decode($fileData);
+            if ($binaryData === false) {
+                throw new Exception('文件數據解碼失敗');
             }
             
-            $fileSize = strlen($videoData);
+            // 驗證解碼後的大小
+            $actualSize = strlen($binaryData);
+            error_log('[VidsparkUpload] 視頻文件大小: ' . $actualSize . ' bytes');
             
-            // 生成存儲路徑
-            $datePath = date('Y/m');
-            $storagePath = public_path() . '/vidspark/storage/video/' . $datePath;
+            // 生成安全的文件名（與音頻上傳相同邏輯）
+            $extension = $this->getFileExtension($fileName);
+            $safeFileName = 'vidspark_video_' . date('Ymd_His') . '_' . uniqid() . '.' . $extension;
+            $relativePath = 'vidspark/storage/video/' . date('Y/m') . '/' . $safeFileName;
+            $fullPath = base_path() . '/public/' . $relativePath;
             
             // 確保目錄存在
-            if (!is_dir($storagePath)) {
-                mkdir($storagePath, 0755, true);
+            $directory = dirname($fullPath);
+            if (!is_dir($directory)) {
+                if (!mkdir($directory, 0755, true)) {
+                    throw new Exception('無法創建存儲目錄');
+                }
             }
-            
-            // 生成唯一文件名
-            $fileExtension = pathinfo($filename, PATHINFO_EXTENSION) ?: 'mp4';
-            $uniqueFileName = 'vidspark_video_' . date('Ymd_His') . '_' . substr(md5(uniqid()), 0, 8) . '.' . $fileExtension;
-            $fullPath = $storagePath . '/' . $uniqueFileName;
             
             // 保存文件
-            $result = file_put_contents($fullPath, $videoData);
-            if ($result === false) {
-                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
-                    'success' => false,
-                    'message' => '文件保存失敗'
-                ], JSON_UNESCAPED_UNICODE));
+            if (file_put_contents($fullPath, $binaryData) === false) {
+                throw new Exception('文件保存失敗');
             }
             
-            // 生成公開URL
-            $publicUrl = 'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/' . $datePath . '/' . $uniqueFileName;
+            error_log('[VidsparkUpload] Base64視頻文件保存成功: ' . $fullPath);
             
-            // 保存到數據庫
-            $fileRecord = [
-                'user_id' => 1,
-                'file_type' => 'video',
-                'original_name' => $originalName,
-                'file_name' => $uniqueFileName,
-                'file_path' => $fullPath,
-                'file_url' => $publicUrl,
-                'file_size' => $fileSize,
-                'mime_type' => 'video/' . $fileExtension,
-                'upload_time' => date('Y-m-d H:i:s'),
-                'user_ip' => $request->getRealIp()
-            ];
+            // 生成公開URL（與音頻相同格式）
+            $publicUrl = 'https://genhuman-digital-human.zeabur.app/' . $relativePath;
             
-            // 檢查表是否存在
+            // 記錄到數據庫（與音頻上傳相同邏輯）
             try {
-                $existingColumns = \think\facade\Db::query("SHOW COLUMNS FROM vidspark_production_files");
-                $columnNames = array_column($existingColumns, 'Field');
+                // 檢查數據庫表是否存在以及字段
+                $tableExists = false;
+                $columns = [];
                 
-                $insertData = [];
-                foreach ($fileRecord as $key => $value) {
-                    if (in_array($key, $columnNames)) {
-                        $insertData[$key] = $value;
-                    }
+                try {
+                    $existingColumns = \think\facade\Db::query("SHOW COLUMNS FROM vidspark_production_files");
+                    $columns = array_column($existingColumns, 'Field');
+                    $tableExists = true;
+                } catch (\Exception $e) {
+                    error_log('[VidsparkUpload] 數據庫表不存在或無法訪問: ' . $e->getMessage());
                 }
                 
-                $fileId = \think\facade\Db::table('vidspark_production_files')->insertGetId($insertData);
-                
-                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
-                    'success' => true,
-                    'message' => 'Base64視頻上傳成功',
-                    'data' => [
-                        'file_id' => $fileId,
+                if ($tableExists && !empty($columns)) {
+                    $recordData = [
+                        'user_id' => 1,
+                        'file_type' => 'video',
+                        'original_name' => $fileName,
+                        'file_name' => $safeFileName,
+                        'file_path' => $fullPath,
                         'file_url' => $publicUrl,
-                        'original_name' => $originalName,
-                        'file_size' => $this->formatFileSize($fileSize),
-                        'upload_method' => 'base64',
-                        'upload_time' => date('Y-m-d H:i:s')
-                    ]
-                ], JSON_UNESCAPED_UNICODE));
+                        'file_size' => $actualSize,
+                        'mime_type' => 'video/' . $extension,
+                        'upload_time' => date('Y-m-d H:i:s'),
+                        'user_ip' => $request->getRealIp()
+                    ];
+                    
+                    // 只插入表中存在的字段
+                    $insertData = [];
+                    foreach ($recordData as $key => $value) {
+                        if (in_array($key, $columns)) {
+                            $insertData[$key] = $value;
+                        }
+                    }
+                    
+                    $fileId = \think\facade\Db::table('vidspark_production_files')->insertGetId($insertData);
+                    error_log('[VidsparkUpload] 數據庫記錄創建成功，ID: ' . $fileId);
+                } else {
+                    $fileId = 'temp_' . time();
+                    error_log('[VidsparkUpload] 數據庫表不可用，使用臨時ID: ' . $fileId);
+                }
                 
             } catch (\Exception $e) {
-                // 數據庫操作失敗，但文件已上傳成功
-                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
-                    'success' => true,
-                    'message' => 'Base64視頻上傳成功（數據庫記錄失敗）',
-                    'data' => [
-                        'file_id' => 'temp_' . time(),
-                        'file_url' => $publicUrl,
-                        'original_name' => $originalName,
-                        'file_size' => $this->formatFileSize($fileSize),
-                        'upload_method' => 'base64',
-                        'upload_time' => date('Y-m-d H:i:s'),
-                        'db_error' => $e->getMessage()
-                    ]
-                ], JSON_UNESCAPED_UNICODE));
+                $fileId = 'temp_' . time();
+                error_log('[VidsparkUpload] 數據庫操作失敗: ' . $e->getMessage());
             }
             
+            return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                'success' => true,
+                'message' => 'Base64視頻上傳成功',
+                'file_id' => $fileId,
+                'file_url' => $publicUrl,
+                'original_name' => $fileName,
+                'file_size' => $this->formatFileSize($actualSize),
+                'upload_method' => 'base64',
+                'file_type' => 'video',
+                'upload_time' => date('Y-m-d H:i:s')
+            ], JSON_UNESCAPED_UNICODE));
+            
         } catch (\Throwable $e) {
+            error_log('[VidsparkUpload] Base64視頻上傳錯誤: ' . $e->getMessage());
             return new Response(200, ['Content-Type' => 'application/json'], json_encode([
                 'success' => false,
-                'message' => 'Base64視頻上傳失敗',
-                'error' => $e->getMessage(),
+                'message' => 'Base64視頻上傳失敗: ' . $e->getMessage(),
                 'upload_time' => date('Y-m-d H:i:s')
             ], JSON_UNESCAPED_UNICODE));
         }
