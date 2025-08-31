@@ -137,12 +137,12 @@ class VidsparkFileUploadController
                 'data' => [
                     'file_id' => 'temp_' . uniqid(),
                     'file_url' => $fileUrl,
-                    'original_name' => $file->getClientOriginalName(),
-                    'file_size' => $this->formatFileSize($file->getSize()),
+                    'original_name' => method_exists($file, 'getUploadName') ? $file->getUploadName() : 'unknown.file',
+                    'file_size' => $this->formatFileSize(method_exists($file, 'getSize') ? $file->getSize() : 0),
                     'upload_time' => date('Y-m-d H:i:s'),
                     'debug_info' => [
                         'mime_type' => $mimeType,
-                        'size_bytes' => $file->getSize(),
+                        'size_bytes' => method_exists($file, 'getSize') ? $file->getSize() : 0,
                         'extension' => $extension,
                         'saved_path' => $relativePath
                     ]
@@ -816,7 +816,7 @@ class VidsparkFileUploadController
             $offset = (int)$request->get('offset', 0);
 
             $query = Db::table('vidspark_production_files')
-                ->orderBy('upload_time', 'desc')
+                ->order('upload_time', 'desc')
                 ->limit($limit)
                 ->offset($offset);
 
