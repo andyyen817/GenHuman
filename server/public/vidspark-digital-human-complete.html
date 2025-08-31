@@ -907,7 +907,9 @@
                         body: JSON.stringify(uploadData)
                     });
                     
+                    showResult(3, `📤 上傳響應狀態: ${uploadResponse.status}`, 'info');
                     const uploadResult = await uploadResponse.json();
+                    showResult(3, `📋 上傳結果: ${JSON.stringify(uploadResult)}`, 'info');
                     
                     if (!uploadResult.success) {
                         throw new Error('Base64視頻上傳失敗: ' + uploadResult.message);
@@ -925,6 +927,8 @@
                 
                 const apiTypeName = workflowData.digitalHumanApiType === 'paid' ? '付費數字人克隆' : '免費數字人克隆';
                 showResult(3, `🏗️ 正在進行${apiTypeName}...`, 'info');
+                showResult(3, `📡 API端點: ${sceneApiEndpoint}`, 'info');
+                showResult(3, `📹 視頻URL: ${videoUrl}`, 'info');
 
                 const response = await fetch(sceneApiEndpoint, {
                     method: 'POST',
@@ -936,7 +940,9 @@
                     })
                 });
 
+                showResult(3, `📊 API響應狀態: ${response.status} ${response.statusText}`, 'info');
                 const result = await response.json();
+                showResult(3, `📄 API響應: ${JSON.stringify(result)}`, 'info');
                 showLoading(3, false);
 
                 if (result.code === 200 && result.data && result.data.scene_task_id) {
