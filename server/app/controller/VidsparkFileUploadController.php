@@ -24,6 +24,9 @@ class VidsparkFileUploadController
     public function uploadAudio(Request $request): Response
     {
         try {
+            // 強制設置PHP配置（解決Zeabur環境變量問題）
+            $this->forcePhpConfig();
+            
             // 詳細錯誤日誌
             error_log('[VidsparkUpload] 開始處理音頻上傳請求');
             
@@ -203,6 +206,9 @@ class VidsparkFileUploadController
     private function handleVideoUpload(Request $request): Response
     {
         try {
+            // 強制設置PHP配置（解決Zeabur環境變量問題）
+            $this->forcePhpConfig();
+            
             // 基本驗證
             if ($request->method() !== 'POST') {
                 throw new Exception('只支持POST請求');
@@ -796,5 +802,51 @@ class VidsparkFileUploadController
                 'query_time' => date('Y-m-d H:i:s')
             ], JSON_UNESCAPED_UNICODE));
         }
+    }
+
+    /**
+     * 強制設置PHP配置（解決Zeabur環境變量問題）
+     */
+    private function forcePhpConfig()
+    {
+        // 記錄原始配置
+        $original = [
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'memory_limit' => ini_get('memory_limit')
+        ];
+        
+        error_log('[VidsparkUpload] 原始PHP配置: ' . json_encode($original));
+        
+        // 強制設置新配置
+        $newSettings = [
+            'upload_max_filesize' => '1000M',
+            'post_max_size' => '1100M',
+            'memory_limit' => '2048M',
+            'max_execution_time' => '1800',
+            'max_input_time' => '1800',
+            'max_input_vars' => '10000',
+            'max_file_uploads' => '20'
+        ];
+        
+        foreach ($newSettings as $setting => $value) {
+            $result = ini_set($setting, $value);
+            if ($result === false) {
+                error_log("[VidsparkUpload] 無法設置 {$setting} = {$value}");
+            } else {
+                error_log("[VidsparkUpload] 成功設置 {$setting} = {$value}");
+            }
+        }
+        
+        // 記錄新配置
+        $updated = [
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'memory_limit' => ini_get('memory_limit'),
+            'max_execution_time' => ini_get('max_execution_time'),
+            'max_input_time' => ini_get('max_input_time')
+        ];
+        
+        error_log('[VidsparkUpload] 更新後PHP配置: ' . json_encode($updated));
     }
 }
