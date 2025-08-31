@@ -36,7 +36,7 @@ class VidsparkFileUploadController
             error_log('[VidsparkUpload] post_max_size: ' . ini_get('post_max_size') . ' (' . $postMaxSize . ' bytes)');
             
             // 檢查是否因為POST大小限制導致沒有接收到文件
-            $requestMethod = $_SERVER['REQUEST_METHOD'] ?? $request->getMethod();
+            $requestMethod = $_SERVER['REQUEST_METHOD'] ?? $request->method();
             if (empty($_FILES) && empty($_POST) && $requestMethod === 'POST') {
                 $contentLength = $_SERVER['CONTENT_LENGTH'] ?? 0;
                 error_log('[VidsparkUpload] 檢測到空POST，Content-Length: ' . $contentLength);
@@ -481,10 +481,6 @@ class VidsparkFileUploadController
                     'path' => $imagesStorageDir,
                     'exists' => is_dir($imagesStorageDir),
                     'writable' => is_dir($imagesStorageDir) ? is_writable($imagesStorageDir) : false
-                ],
-                'scan_info' => [
-                    'current_date_path' => $currentDatePath,
-                    'base_path' => $storageBasePath
                 ]
             ];
             
