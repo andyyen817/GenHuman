@@ -844,6 +844,16 @@
 
         // 步驟3：場景創建
         async function createScene() {
+            // 重新獲取Token，確保不為空
+            const token = document.getElementById('api-token').value.trim();
+            if (!token) {
+                showResult(3, '❌ 請先輸入API Token', 'error');
+                return;
+            }
+            
+            // 更新workflowData中的token
+            workflowData.token = token.startsWith('Bearer ') ? token.substring(7) : token;
+            
             const sceneName = document.getElementById('scene-name').value.trim();
             let videoUrl = document.getElementById('video-url').value.trim();
             const videoFile = document.getElementById('video-file').files[0];
@@ -942,6 +952,16 @@
 
         // 步驟4：數字人合成
         async function synthesizeAvatar() {
+            // 重新獲取Token，確保不為空
+            const token = document.getElementById('api-token').value.trim();
+            if (!token) {
+                showResult(4, '❌ 請先輸入API Token', 'error');
+                return;
+            }
+            
+            // 更新workflowData中的token
+            workflowData.token = token.startsWith('Bearer ') ? token.substring(7) : token;
+            
             // 獲取場景ID（優先使用手動輸入）
             const manualSceneId = document.getElementById('scene-task-id').value.trim();
             const sceneIdToUse = manualSceneId || workflowData.sceneTaskId;
