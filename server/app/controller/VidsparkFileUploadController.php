@@ -318,12 +318,15 @@ class VidsparkFileUploadController
             }
 
             // 生成可訪問的URL（修復路徑匹配）
-            $fileUrl = VidsparkStorageSystemController::getPublicUrl(date('Y/m') . '/video/' . $filename);
+            // 新格式: /vidspark/storage/video/2025/08/filename.mp4
+            // 對應實際存儲: /public/vidspark/storage/2025/08/video/filename.mp4
+            $fileUrl = 'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/' . date('Y/m') . '/' . $filename;
             
             // 記錄調試信息
             error_log('[VidsparkUpload] 文件保存路徑: ' . $fullPath);
             error_log('[VidsparkUpload] 生成的URL: ' . $fileUrl);
-            error_log('[VidsparkUpload] 期望的路由路徑: /vidspark/storage/' . date('Y/m') . '/video/' . $filename);
+            error_log('[VidsparkUpload] URL路徑格式: video/' . date('Y/m') . '/' . $filename);
+            error_log('[VidsparkUpload] 實際存儲路徑: ' . date('Y/m') . '/video/' . $filename);
 
             // 保存到數據庫（根據實際表結構動態調整）
             try {
@@ -866,8 +869,8 @@ class VidsparkFileUploadController
             
             error_log('[VidsparkUpload] Base64視頻文件保存成功: ' . $fullPath);
             
-            // 生成公開URL（與音頻相同格式）
-            $publicUrl = 'https://genhuman-digital-human.zeabur.app/' . $relativePath;
+            // 生成公開URL（修復路徑匹配）
+            $publicUrl = 'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/' . date('Y/m') . '/' . $safeFileName;
             
             // 記錄到數據庫（與音頻上傳相同邏輯）
             try {

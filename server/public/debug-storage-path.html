@@ -145,29 +145,37 @@ https://genhuman-digital-human.zeabur.app/vidspark/storage/video/2025/08/vidspar
         async function testFileAccess() {
             showResult('🔍 開始測試文件訪問...', 'info');
             
-            const testUrl = 'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/2025/08/vidspark_video_20250831_185142_68b4293e4838c.mp4';
+            // 測試新的路徑格式
+            const testUrls = [
+                'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/2025/08/vidspark_video_20250831_185142_68b4293e4838c.mp4',
+                'https://genhuman-digital-human.zeabur.app/vidspark/storage/video/2025/08/vidspark_video_20250831_191851_68b42f9b60e47.mp4'
+            ];
             
-            try {
-                // 測試HEAD請求
-                const headResponse = await fetch(testUrl, { method: 'HEAD' });
-                showResult(`HEAD請求: ${headResponse.status} ${headResponse.statusText}`, headResponse.ok ? 'success' : 'error');
+            for (const testUrl of testUrls) {
+                showResult(`測試URL: ${testUrl}`, 'info');
                 
-                if (headResponse.ok) {
-                    showResult(`Content-Type: ${headResponse.headers.get('content-type')}`, 'info');
-                    showResult(`Content-Length: ${headResponse.headers.get('content-length')} bytes`, 'info');
-                }
+                try {
+                    // 測試HEAD請求
+                    const headResponse = await fetch(testUrl, { method: 'HEAD' });
+                    showResult(`HEAD請求: ${headResponse.status} ${headResponse.statusText}`, headResponse.ok ? 'success' : 'error');
+                    
+                    if (headResponse.ok) {
+                        showResult(`Content-Type: ${headResponse.headers.get('content-type')}`, 'info');
+                        showResult(`Content-Length: ${headResponse.headers.get('content-length')} bytes`, 'info');
+                    }
 
-                // 測試GET請求
-                const getResponse = await fetch(testUrl);
-                showResult(`GET請求: ${getResponse.status} ${getResponse.statusText}`, getResponse.ok ? 'success' : 'error');
-                
-                if (!getResponse.ok) {
-                    const errorText = await getResponse.text();
-                    showResult(`錯誤內容: ${errorText}`, 'error');
-                }
+                    // 測試GET請求
+                    const getResponse = await fetch(testUrl);
+                    showResult(`GET請求: ${getResponse.status} ${getResponse.statusText}`, getResponse.ok ? 'success' : 'error');
+                    
+                    if (!getResponse.ok) {
+                        const errorText = await getResponse.text();
+                        showResult(`錯誤內容: ${errorText}`, 'error');
+                    }
 
-            } catch (error) {
-                showResult(`訪問錯誤: ${error.message}`, 'error');
+                } catch (error) {
+                    showResult(`訪問錯誤: ${error.message}`, 'error');
+                }
             }
         }
 

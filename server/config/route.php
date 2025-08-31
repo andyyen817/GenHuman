@@ -400,7 +400,19 @@ Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
 // 🔧 CRITICAL: Vidspark存儲文件路由（解決視頻封面提取失敗問題）
 // 支持HEAD和GET請求
 Route::any('/vidspark/storage/{path:.+}', function ($request, $path) {
-    $filePath = base_path() . '/public/vidspark/storage/' . $path;
+    // 修復路徑匹配邏輯
+    // URL格式: /vidspark/storage/video/2025/08/file.mp4
+    // 轉換為: /public/vidspark/storage/2025/08/video/file.mp4
+    
+    if (preg_match('/^(video|audio|images)\/(\d{4}\/\d{2})\/(.+)$/', $path, $matches)) {
+        $type = $matches[1];        // video
+        $yearMonth = $matches[2];   // 2025/08  
+        $filename = $matches[3];    // filename.mp4
+        $filePath = base_path() . '/public/vidspark/storage/' . $yearMonth . '/' . $type . '/' . $filename;
+    } else {
+        // 後備方案：直接拼接
+        $filePath = base_path() . '/public/vidspark/storage/' . $path;
+    }
     
     // 詳細調試日誌
     error_log("[Storage Route] 請求方法: {$request->method()}");
