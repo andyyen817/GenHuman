@@ -435,6 +435,9 @@ class VidsparkFileUploadController
     public function videoUploadDiagnosis(Request $request): Response
     {
         try {
+            // 強制設置PHP配置（確保診斷顯示正確值）
+            $this->forcePhpConfig();
+            
             $diagnostics = [
                 'timestamp' => date('Y-m-d H:i:s'),
                 'php_version' => PHP_VERSION,

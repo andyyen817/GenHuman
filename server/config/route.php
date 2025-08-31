@@ -290,6 +290,11 @@ Route::post('/vidspark-api-proxy/test-connection', [app\controller\VidsparkApiPr
 Route::get('/zeabur-config-check', function() {
     return new \support\Response(200, [], file_get_contents(public_path() . '/zeabur-config-check.html'));
 });
+
+// 網絡連接測試工具
+Route::get('/network-connectivity-test', function() {
+    return new \support\Response(200, [], file_get_contents(public_path() . '/network-connectivity-test.html'));
+});
 // Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
 // Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);
 // Route::post('/vidspark-api-test/eight-steps-workflow', [app\controller\VidsparkApiTestController::class, 'testEightStepsWorkflow']);
