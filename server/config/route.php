@@ -295,6 +295,11 @@ Route::get('/zeabur-config-check', function() {
 Route::get('/network-connectivity-test', function() {
     return new \support\Response(200, [], file_get_contents(public_path() . '/network-connectivity-test.html'));
 });
+
+// PHP配置詳細診斷工具
+Route::get('/php-config-detailed-check', function() {
+    return new \support\Response(200, [], file_get_contents(public_path() . '/php-config-detailed-check.html'));
+});
 // Route::post('/vidspark-api-test/voice-clone', [app\controller\VidsparkApiTestController::class, 'testVoiceClone']);
 // Route::get('/vidspark-api-test/task-status', [app\controller\VidsparkApiTestController::class, 'testTaskStatus']);
 // Route::post('/vidspark-api-test/eight-steps-workflow', [app\controller\VidsparkApiTestController::class, 'testEightStepsWorkflow']);

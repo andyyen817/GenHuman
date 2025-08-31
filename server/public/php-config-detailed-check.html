@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHP配置詳細診斷工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-item { margin: 15px 0; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .test-item.success { border-left-color: #28a745; background: #d4edda; }
+        .test-item.error { border-left-color: #dc3545; background: #f8d7da; }
+        .test-item.warning { border-left-color: #ffc107; background: #fff3cd; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 5px 0 0; }
+        .btn:hover { background: #0056b3; }
+        .btn.force { background: #dc3545; }
+        .btn.reload { background: #28a745; }
+        h1 { color: #333; text-align: center; }
+        h2 { color: #555; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
+        .config-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .config-table th, .config-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .config-table th { background: #f2f2f2; }
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .status-unknown { color: #ffc107; font-weight: bold; }
+        .log-section { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .log-content { max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 PHP配置詳細診斷工具</h1>
+        <p><strong>目的</strong>：深度診斷PHP配置設置問題，找出為什麼某些配置項無法生效</p>
+        
+        <button class="btn" onclick="checkPHPConfig()">🔍 檢查當前配置</button>
+        <button class="btn force" onclick="forceConfigUpdate()">⚡ 強制更新配置</button>
+        <button class="btn reload" onclick="location.reload()">🔄 刷新頁面</button>
+
+        <div id="results"></div>
+        
+        <div class="log-section">
+            <h3>📝 診斷日誌</h3>
+            <div id="logContent" class="log-content">點擊檢查按鈕開始診斷...</div>
+        </div>
+    </div>
+
+    <script>
+        let logMessages = [];
+
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logMessages.push(`[${timestamp}] ${message}`);
+            updateLogDisplay();
+        }
+
+        function updateLogDisplay() {
+            const logDiv = document.getElementById('logContent');
+            logDiv.innerHTML = logMessages.join('<br>');
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function checkPHPConfig() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>🔄 正在檢查PHP配置...</h2>';
+            logMessages = [];
+            addLog('開始PHP配置檢查');
+
+            try {
+                // 檢查當前配置
+                const response = await fetch('/vidspark-upload/video-diagnosis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                addLog(`診斷API響應狀態: ${response.status}`);
+                
+                if (data.diagnostics) {
+                    displayDetailedConfig(data.diagnostics);
+                    addLog('配置檢查完成');
+                } else {
+                    throw new Error('診斷數據格式錯誤');
+                }
+
+            } catch (error) {
+                addLog(`錯誤: ${error.message}`);
+                resultsDiv.innerHTML = `<div class="test-item error">❌ 檢查失敗: ${error.message}</div>`;
+            }
+        }
+
+        async function forceConfigUpdate() {
+            addLog('開始強制配置更新');
+            
+            try {
+                // 先觸發音頻上傳以執行forcePhpConfig
+                const formData = new FormData();
+                formData.append('audio', new Blob(['test'], {type: 'audio/mp3'}), 'test.mp3');
+                
+                const response = await fetch('/vidspark-upload/audio', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                addLog(`強制更新請求狀態: ${response.status}`);
+                
+                // 等待一秒後重新檢查
+                setTimeout(() => {
+                    addLog('重新檢查配置...');
+                    checkPHPConfig();
+                }, 1000);
+
+            } catch (error) {
+                addLog(`強制更新失敗: ${error.message}`);
+            }
+        }
+
+        function displayDetailedConfig(diagnostics) {
+            const expectedConfig = {
+                'upload_max_filesize': '1000M',
+                'post_max_size': '1100M', 
+                'memory_limit': '2048M',
+                'max_execution_time': '1800',
+                'max_input_time': '1800'
+            };
+
+            let html = '<h2>📊 PHP配置詳細報告</h2>';
+            
+            // 配置對比表
+            html += '<table class="config-table">';
+            html += '<tr><th>配置項</th><th>期望值</th><th>實際值</th><th>狀態</th><th>分析</th></tr>';
+            
+            for (const [key, expectedValue] of Object.entries(expectedConfig)) {
+                const actualValue = diagnostics[key] || 'Unknown';
+                let status = '';
+                let analysis = '';
+                
+                if (actualValue === 'Unknown') {
+                    status = '<span class="status-unknown">❓ 未知</span>';
+                    analysis = '配置項無法讀取，可能被系統限制';
+                } else if (actualValue === expectedValue) {
+                    status = '<span class="status-ok">✅ 正確</span>';
+                    analysis = '配置正確';
+                } else {
+                    status = '<span class="status-error">❌ 錯誤</span>';
+                    analysis = this.analyzeConfigIssue(key, expectedValue, actualValue);
+                }
+                
+                html += `<tr>
+                    <td><strong>${key}</strong></td>
+                    <td>${expectedValue}</td>
+                    <td>${actualValue}</td>
+                    <td>${status}</td>
+                    <td>${analysis}</td>
+                </tr>`;
+                
+                addLog(`${key}: 期望=${expectedValue}, 實際=${actualValue}`);
+            }
+            
+            html += '</table>';
+            
+            // 系統信息
+            html += '<div class="test-item">';
+            html += '<h3>🖥️ 系統信息</h3>';
+            html += `<p><strong>PHP版本:</strong> ${diagnostics.php_version || 'Unknown'}</p>`;
+            html += `<p><strong>Webman框架:</strong> ${diagnostics.webman_framework || 'Unknown'}</p>`;
+            html += `<p><strong>檢查時間:</strong> ${diagnostics.timestamp || 'Unknown'}</p>`;
+            html += '</div>';
+            
+            // 問題分析
+            const failedConfigs = Object.entries(expectedConfig).filter(([key, expected]) => {
+                const actual = diagnostics[key];
+                return actual !== expected && actual !== 'Unknown';
+            });
+            
+            if (failedConfigs.length > 0) {
+                html += '<div class="test-item error">';
+                html += '<h3>⚠️ 問題分析</h3>';
+                html += '<p><strong>失敗的配置項:</strong></p><ul>';
+                failedConfigs.forEach(([key, expected]) => {
+                    const actual = diagnostics[key];
+                    html += `<li><strong>${key}</strong>: ${actual} (應該是 ${expected})</li>`;
+                });
+                html += '</ul>';
+                html += '<p><strong>可能原因:</strong></p>';
+                html += '<ul>';
+                html += '<li>Docker容器限制了某些PHP配置的修改</li>';
+                html += '<li>Zeabur環境變量命名不正確</li>';
+                html += '<li>ini_set()函數被系統限制</li>';
+                html += '<li>容器需要重啟才能生效</li>';
+                html += '</ul>';
+                html += '</div>';
+            } else {
+                html += '<div class="test-item success">';
+                html += '<h3>✅ 配置正常</h3>';
+                html += '<p>所有PHP配置項都已正確設置</p>';
+                html += '</div>';
+            }
+            
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function analyzeConfigIssue(key, expected, actual) {
+            const issues = {
+                'upload_max_filesize': '文件上傳大小限制可能被Docker或系統限制',
+                'post_max_size': 'POST數據大小限制可能被Web服務器覆蓋',
+                'max_input_time': '輸入時間限制可能被系統安全策略限制',
+                'memory_limit': '內存限制通常可以通過ini_set修改',
+                'max_execution_time': '執行時間限制通常可以修改'
+            };
+            
+            return issues[key] || '配置項無法修改的原因需要進一步分析';
+        }
+
+        // 頁面載入時顯示說明
+        window.onload = function() {
+            document.getElementById('results').innerHTML = `
+                <div class="test-item">
+                    <h3>📋 使用說明</h3>
+                    <p>1. <strong>檢查當前配置</strong>：查看當前PHP配置狀態</p>
+                    <p>2. <strong>強制更新配置</strong>：觸發動態配置設置邏輯</p>
+                    <p>3. <strong>分析問題</strong>：根據診斷結果確定配置無法生效的原因</p>
+                    <p>4. <strong>查看日誌</strong>：監控診斷過程的詳細信息</p>
+                    <br>
+                    <p><strong>注意</strong>：某些PHP配置項可能受到Docker容器或系統安全策略限制，無法通過代碼修改。</p>
+                </div>
+            `;
+        };
+    </script>
+</body>
+</html>

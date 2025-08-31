@@ -809,6 +809,7 @@ class VidsparkFileUploadController
 
     /**
      * 強制設置PHP配置（解決Zeabur環境變量問題）
+     * 多重策略確保配置生效
      */
     private function forcePhpConfig()
     {
@@ -816,40 +817,88 @@ class VidsparkFileUploadController
         $original = [
             'upload_max_filesize' => ini_get('upload_max_filesize'),
             'post_max_size' => ini_get('post_max_size'),
-            'memory_limit' => ini_get('memory_limit')
-        ];
-        
-        error_log('[VidsparkUpload] 原始PHP配置: ' . json_encode($original));
-        
-        // 強制設置新配置
-        $newSettings = [
-            'upload_max_filesize' => '1000M',
-            'post_max_size' => '1100M',
-            'memory_limit' => '2048M',
-            'max_execution_time' => '1800',
-            'max_input_time' => '1800',
-            'max_input_vars' => '10000',
-            'max_file_uploads' => '20'
-        ];
-        
-        foreach ($newSettings as $setting => $value) {
-            $result = ini_set($setting, $value);
-            if ($result === false) {
-                error_log("[VidsparkUpload] 無法設置 {$setting} = {$value}");
-            } else {
-                error_log("[VidsparkUpload] 成功設置 {$setting} = {$value}");
-            }
-        }
-        
-        // 記錄新配置
-        $updated = [
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
             'memory_limit' => ini_get('memory_limit'),
             'max_execution_time' => ini_get('max_execution_time'),
             'max_input_time' => ini_get('max_input_time')
         ];
         
-        error_log('[VidsparkUpload] 更新後PHP配置: ' . json_encode($updated));
+        error_log('[VidsparkUpload] 原始PHP配置: ' . json_encode($original));
+        
+        // 策略1：標準ini_set
+        $standardSettings = [
+            'memory_limit' => '2048M',
+            'max_execution_time' => '1800',
+            'max_input_vars' => '10000',
+            'max_file_uploads' => '20'
+        ];
+        
+        foreach ($standardSettings as $setting => $value) {
+            $result = ini_set($setting, $value);
+            error_log("[VidsparkUpload] 標準設置 {$setting} = {$value}, 結果: " . ($result === false ? 'Failed' : 'Success'));
+        }
+        
+        // 策略2：針對上傳限制的特殊處理
+        $uploadSettings = [
+            'upload_max_filesize' => '1000M',
+            'post_max_size' => '1100M',
+            'max_input_time' => '1800'
+        ];
+        
+        foreach ($uploadSettings as $setting => $value) {
+            // 多次嘗試設置
+            for ($attempt = 1; $attempt <= 3; $attempt++) {
+                $result = ini_set($setting, $value);
+                $currentValue = ini_get($setting);
+                
+                error_log("[VidsparkUpload] 嘗試{$attempt}: {$setting} = {$value}, 結果: " . 
+                         ($result === false ? 'Failed' : 'Success') . ", 當前值: {$currentValue}");
+                
+                // 如果設置成功就跳出
+                if ($result !== false && $currentValue === $value) {
+                    break;
+                }
+                
+                // 等待一點時間再嘗試
+                usleep(100000); // 0.1秒
+            }
+        }
+        
+        // 策略3：使用Apache函數（如果可用）
+        if (function_exists('apache_setenv')) {
+            error_log('[VidsparkUpload] 嘗試Apache環境變量設置');
+            apache_setenv('PHP_UPLOAD_MAX_FILESIZE', '1000M');
+            apache_setenv('PHP_POST_MAX_SIZE', '1100M');
+            apache_setenv('PHP_MAX_INPUT_TIME', '1800');
+        }
+        
+        // 策略4：設置全局變量作為後備
+        $GLOBALS['VIDSPARK_UPLOAD_MAX_SIZE'] = 1000 * 1024 * 1024; // 1000MB in bytes
+        $GLOBALS['VIDSPARK_POST_MAX_SIZE'] = 1100 * 1024 * 1024;   // 1100MB in bytes
+        
+        // 最終驗證
+        $final = [
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'memory_limit' => ini_get('memory_limit'),
+            'max_execution_time' => ini_get('max_execution_time'),
+            'max_input_time' => ini_get('max_input_time'),
+            'max_input_vars' => ini_get('max_input_vars'),
+            'max_file_uploads' => ini_get('max_file_uploads')
+        ];
+        
+        error_log('[VidsparkUpload] 最終PHP配置: ' . json_encode($final));
+        
+        // 檢查哪些配置項設置失敗
+        $failedSettings = [];
+        if ($final['upload_max_filesize'] !== '1000M') $failedSettings[] = 'upload_max_filesize';
+        if ($final['post_max_size'] !== '1100M') $failedSettings[] = 'post_max_size';
+        if ($final['max_input_time'] !== '1800') $failedSettings[] = 'max_input_time';
+        
+        if (!empty($failedSettings)) {
+            error_log('[VidsparkUpload] 警告：以下配置項設置失敗: ' . implode(', ', $failedSettings));
+            error_log('[VidsparkUpload] 這可能是由於系統限制或Docker容器配置導致');
+        } else {
+            error_log('[VidsparkUpload] 所有PHP配置設置成功');
+        }
     }
 }
