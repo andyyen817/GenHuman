@@ -268,6 +268,9 @@
         <div class="header">
             <h1>🎬 Vidspark 數字人生成流程</h1>
             <p>完整的4步驟數字人製作流程 - 基於GenHuman免費API</p>
+            <div style="background: #28a745; color: white; padding: 5px 10px; border-radius: 4px; margin: 10px 0; font-size: 12px;">
+                ✅ 增強診斷版本 v2.0 - 詳細步驟日誌已啟用 (請強制刷新 Ctrl+F5)
+            </div>
         </div>
         
         <div class="workflow">
@@ -868,13 +871,24 @@
             updateStepStatus(3, 'processing', '處理中...');
 
             try {
+                // 開始詳細診斷
+                const startTime = new Date().toLocaleTimeString();
+                showResult(3, '🔍 === 開始詳細診斷日誌 ===', 'info');
+                showResult(3, `⏰ 時間: ${startTime}`, 'info');
+                
+                // 控制台條列式日誌開始
+                console.log(`[${startTime}] 🚀 第三步數字人克隆開始`);
+                console.log(`[${startTime}] 📋 API類型: ${workflowData.digitalHumanApiType}`);
+                
                 // 如果有文件上傳，使用Base64方式上傳（繞過2MB限制）
                 if (videoFile) {
                     showResult(3, '📤 正在處理視頻文件...', 'info');
+                    console.log(`[${new Date().toLocaleTimeString()}] 📤 開始處理本地視頻文件: ${videoFile.name}`);
                     
                     // 檢查文件大小
                     const fileSizeMB = (videoFile.size / (1024 * 1024)).toFixed(2);
                     showResult(3, `📊 視頻文件大小: ${fileSizeMB}MB`, 'info');
+                    console.log(`[${new Date().toLocaleTimeString()}] 📊 文件大小: ${fileSizeMB}MB (${videoFile.size} bytes)`);
                     
                     if (videoFile.size > 50 * 1024 * 1024) { // 50MB限制
                         throw new Error('視頻文件太大，最大支持50MB');
@@ -908,8 +922,10 @@
                     });
                     
                     showResult(3, `📤 上傳響應狀態: ${uploadResponse.status}`, 'info');
+                    console.log(`[${new Date().toLocaleTimeString()}] 📤 視頻上傳響應: ${uploadResponse.status} ${uploadResponse.statusText}`);
                     const uploadResult = await uploadResponse.json();
                     showResult(3, `📋 上傳結果: ${JSON.stringify(uploadResult)}`, 'info');
+                    console.log(`[${new Date().toLocaleTimeString()}] 📋 上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.file_url}`);
                     
                     if (!uploadResult.success) {
                         throw new Error('Base64視頻上傳失敗: ' + uploadResult.message);
@@ -929,6 +945,9 @@
                 showResult(3, `🏗️ 正在進行${apiTypeName}...`, 'info');
                 showResult(3, `📡 API端點: ${sceneApiEndpoint}`, 'info');
                 showResult(3, `📹 視頻URL: ${videoUrl}`, 'info');
+                console.log(`[${new Date().toLocaleTimeString()}] 📡 準備調用GenHuman API: ${sceneApiEndpoint}`);
+                console.log(`[${new Date().toLocaleTimeString()}] 📹 視頻URL: ${videoUrl}`);
+                console.log(`[${new Date().toLocaleTimeString()}] 🏷️ 場景名稱: ${sceneName}`);
 
                 const response = await fetch(sceneApiEndpoint, {
                     method: 'POST',
@@ -941,8 +960,10 @@
                 });
 
                 showResult(3, `📊 API響應狀態: ${response.status} ${response.statusText}`, 'info');
+                console.log(`[${new Date().toLocaleTimeString()}] 📊 GenHuman API響應: ${response.status} ${response.statusText}`);
                 const result = await response.json();
                 showResult(3, `📄 API響應: ${JSON.stringify(result)}`, 'info');
+                console.log(`[${new Date().toLocaleTimeString()}] 📄 API響應內容:`, result);
                 showLoading(3, false);
 
                 if (result.code === 200 && result.data && result.data.scene_task_id) {

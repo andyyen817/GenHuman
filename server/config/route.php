@@ -397,31 +397,36 @@ Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
     return response('Vidspark asset not found: ' . $path, 404);
 });
 
-// 🚨 關鍵修復：Vidspark存儲文件路由
+// 🔧 CRITICAL: Vidspark存儲文件路由（解決視頻封面提取失敗問題）
 Route::get('/vidspark/storage/{path:.+}', function ($request, $path) {
     $filePath = base_path() . '/public/vidspark/storage/' . $path;
     if (file_exists($filePath)) {
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
         $contentTypes = [
+            'mp4' => 'video/mp4',
+            'avi' => 'video/x-msvideo',
+            'mov' => 'video/quicktime',
+            'wmv' => 'video/x-ms-wmv',
+            'flv' => 'video/x-flv',
+            'webm' => 'video/webm',
             'mp3' => 'audio/mpeg',
             'wav' => 'audio/wav',
-            'm4a' => 'audio/mp4',
-            'mp4' => 'video/mp4',
-            'mov' => 'video/quicktime',
-            'avi' => 'video/x-msvideo',
-            'png' => 'image/png',
+            'ogg' => 'audio/ogg',
+            'aac' => 'audio/aac',
             'jpg' => 'image/jpeg',
             'jpeg' => 'image/jpeg',
-            'gif' => 'image/gif'
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp'
         ];
         $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
         
         return response()->file($filePath, 200, [
             'Content-Type' => $contentType,
-            'Cache-Control' => 'public, max-age=86400', // 1天緩存
-            'Access-Control-Allow-Origin' => '*', // 允許跨域訪問
+            'Cache-Control' => 'public, max-age=86400', // 24小時緩存
+            'Access-Control-Allow-Origin' => '*', // 允許GenHuman API訪問
             'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type'
+            'Access-Control-Allow-Headers' => 'Content-Type, Authorization'
         ]);
     }
     return response('Vidspark storage file not found: ' . $path, 404);
