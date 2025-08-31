@@ -303,18 +303,58 @@ class VidsparkFileUploadController
 
             // 保存文件（兼容不同的文件對象類型）
             $fileSaved = false;
+            
+            // 記錄詳細的文件對象信息
+            error_log('[VidsparkUpload] 文件對象類型: ' . get_class($file));
+            error_log('[VidsparkUpload] 文件對象方法: ' . implode(', ', get_class_methods($file)));
+            
             if (method_exists($file, 'move')) {
                 // Webman UploadFile對象
+                error_log('[VidsparkUpload] 準備使用Webman方法移動文件');
+                error_log('[VidsparkUpload] 源文件路徑: ' . (method_exists($file, 'getPathname') ? $file->getPathname() : '未知'));
+                error_log('[VidsparkUpload] 目標路徑: ' . $fullPath);
+                
                 $fileSaved = $file->move($fullPath);
-                error_log('[VidsparkUpload] 使用Webman方法保存文件: ' . ($fileSaved ? '成功' : '失敗'));
+                error_log('[VidsparkUpload] Webman方法結果: ' . ($fileSaved ? '成功' : '失敗'));
+                
+                // 驗證文件是否真的存在
+                $fileExists = file_exists($fullPath);
+                error_log('[VidsparkUpload] 文件移動後存在性檢查: ' . ($fileExists ? '存在' : '不存在'));
+                
+                if ($fileSaved && !$fileExists) {
+                    error_log('[VidsparkUpload] 警告：move()返回成功但文件不存在！');
+                }
+                
             } elseif (!empty($_FILES['video']['tmp_name'])) {
                 // 使用原生PHP方法
+                error_log('[VidsparkUpload] 準備使用原生PHP方法');
+                error_log('[VidsparkUpload] 臨時文件: ' . $_FILES['video']['tmp_name']);
+                error_log('[VidsparkUpload] 臨時文件是否存在: ' . (file_exists($_FILES['video']['tmp_name']) ? '是' : '否'));
+                
                 $fileSaved = move_uploaded_file($_FILES['video']['tmp_name'], $fullPath);
-                error_log('[VidsparkUpload] 使用原生PHP方法保存文件: ' . ($fileSaved ? '成功' : '失敗'));
+                error_log('[VidsparkUpload] 原生PHP方法結果: ' . ($fileSaved ? '成功' : '失敗'));
+                
+                // 驗證文件是否真的存在
+                $fileExists = file_exists($fullPath);
+                error_log('[VidsparkUpload] 文件移動後存在性檢查: ' . ($fileExists ? '存在' : '不存在'));
             }
             
             if (!$fileSaved) {
                 throw new Exception('文件保存失敗，請檢查目錄權限');
+            }
+            
+            // 最終驗證：文件是否真的存在且可讀
+            if (!file_exists($fullPath)) {
+                error_log('[VidsparkUpload] 致命錯誤：文件保存報告成功但文件不存在！');
+                throw new Exception('文件保存失敗：文件未出現在目標位置');
+            }
+            
+            $finalFileSize = filesize($fullPath);
+            error_log('[VidsparkUpload] 最終驗證：文件存在，大小: ' . $finalFileSize . ' bytes');
+            
+            if ($finalFileSize === 0) {
+                error_log('[VidsparkUpload] 警告：文件大小為0，可能保存不完整');
+                throw new Exception('文件保存失敗：文件大小為0');
             }
 
             // 生成可訪問的URL（修復路徑匹配）

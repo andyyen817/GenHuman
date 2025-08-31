@@ -550,6 +550,13 @@ Route::get('/debug-storage-path', function() {
     ], file_get_contents(runtime_path() . '/../public/debug-storage-path.html'));
 });
 
+// 🔍 實際文件檢查工具
+Route::get('/check-actual-files', function() {
+    return new Response(200, [
+        'Content-Type' => 'text/html; charset=utf-8'
+    ], file_get_contents(runtime_path() . '/../public/check-actual-files.html'));
+});
+
 // 舊的存儲管理路由（已被新系統替代）
 // Route::get('/vidspark-storage-status-old', [app\controller\VidsparkStorageController::class, 'status']);
 
