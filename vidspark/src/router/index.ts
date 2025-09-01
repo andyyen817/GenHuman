@@ -40,72 +40,45 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/audio',
-    name: 'Audio',
-    component: () => import('@/views/AudioView.vue'),
+    path: '/voice-clone',
+    name: 'VoiceClone',
+    component: () => import('@/views/VoiceClone.vue'),
     meta: {
-      title: '聲音庫 - Vidspark',
+      title: '聲音克隆 - Vidspark',
       requiresAuth: true
     }
   },
   {
-    path: '/video',
-    name: 'Video',
-    component: () => import('@/views/VideoView.vue'),
+    path: '/create-video',
+    name: 'CreateVideo',
+    component: () => import('@/views/CreateVideo.vue'),
     meta: {
       title: '影片創作 - Vidspark',
       requiresAuth: true
     }
   },
   {
-    path: '/files',
-    name: 'Files',
-    component: () => import('@/views/FilesView.vue'),
+    path: '/my-videos',
+    name: 'MyVideos',
+    component: () => import('@/views/MyVideos.vue'),
     meta: {
-      title: '媒體庫 - Vidspark',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/credits',
-    name: 'Credits',
-    component: () => import('@/views/CreditsView.vue'),
-    meta: {
-      title: '積分中心 - Vidspark',
+      title: '我的影片 - Vidspark',
       requiresAuth: true
     }
   },
   {
     path: '/settings',
     name: 'Settings',
-    component: () => import('@/views/SettingsView.vue'),
+    component: () => import('@/views/Settings.vue'),
     meta: {
       title: '設置 - Vidspark',
       requiresAuth: true
     }
   },
   {
-    path: '/projects',
-    name: 'Projects',
-    component: () => import('@/views/ProjectsView.vue'),
-    meta: {
-      title: '我的項目 - Vidspark',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/avatars',
-    name: 'Avatars',
-    component: () => import('@/views/AvatarsView.vue'),
-    meta: {
-      title: '數字人庫 - Vidspark',
-      requiresAuth: true
-    }
-  },
-  {
     path: '/templates',
     name: 'Templates',
-    component: () => import('@/views/TemplatesView.vue'),
+    component: () => import('@/views/Templates.vue'),
     meta: {
       title: '模板庫 - Vidspark',
       requiresAuth: true
@@ -114,7 +87,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('@/views/NotFoundView.vue')
+    component: () => import('@/views/NotFound.vue')
   }
 ];
 

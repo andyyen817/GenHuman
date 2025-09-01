@@ -156,32 +156,104 @@
             </router-link>
           </p>
         </div>
+
+        <!-- 免費功能提示 -->
+        <div class="mt-8 p-4 bg-purple-50 rounded-lg">
+          <h3 class="text-sm font-medium text-purple-800 mb-2">註冊即可享受：</h3>
+          <ul class="text-sm text-purple-700 space-y-1">
+            <li class="flex items-center">
+              <i class="fas fa-check-circle mr-2"></i>
+              每日 3 次免費數字人影片生成
+            </li>
+            <li class="flex items-center">
+              <i class="fas fa-check-circle mr-2"></i>
+              1 次免費聲音克隆體驗
+            </li>
+            <li class="flex items-center">
+              <i class="fas fa-check-circle mr-2"></i>
+              5 個高質量數字人形象
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <!-- 右側圖片區域 -->
+    <!-- 右側動態背景區域 -->
     <div class="hidden lg:block relative w-0 flex-1">
-      <div class="absolute inset-0 gradient-bg flex items-center justify-center">
-        <div class="text-center text-white p-8">
-          <div class="avatar-float mb-8">
-            <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto backdrop-blur-sm">
-              <i class="fas fa-user-tie text-6xl text-white"></i>
+      <!-- 背景漸變 -->
+      <div class="absolute inset-0 gradient-bg"></div>
+      
+      <!-- 浮動數字人頭像 -->
+      <div class="absolute inset-0 flex items-center justify-center overflow-hidden">
+        <!-- 數字人頭像群組 -->
+        <div class="relative w-full h-full flex items-center justify-center">
+          <!-- 中心大頭像 -->
+          <div class="avatar-float relative z-10">
+            <div class="w-32 h-32 bg-white rounded-full p-2 shadow-2xl">
+              <img 
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
+                alt="AI數字人"
+                class="w-full h-full rounded-full object-cover"
+              >
+            </div>
+            <!-- 說話泡泡 -->
+            <div class="absolute -top-8 -right-4 bg-white rounded-lg p-2 shadow-lg">
+              <p class="text-xs text-gray-600">AI 生成中...</p>
+              <div class="absolute bottom-0 left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-white"></div>
             </div>
           </div>
-          <h3 class="text-3xl font-bold mb-4">數位分身，由您創造</h3>
-          <p class="text-xl opacity-90 max-w-md mx-auto">
-            加入數千位創作者，使用 AI 技術打造屬於您的專業影片內容
-          </p>
-          <div class="mt-8 flex justify-center space-x-4">
-            <div class="flex items-center">
-              <i class="fas fa-star text-yellow-400 mr-1"></i>
-              <span class="text-sm">4.9 評分</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-users mr-1"></i>
-              <span class="text-sm">10,000+ 用戶</span>
+
+          <!-- 環繞小頭像 -->
+          <div class="absolute top-20 left-20 avatar-float" style="animation-delay: 0.5s;">
+            <div class="w-16 h-16 bg-white rounded-full p-1 shadow-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&crop=face" 
+                alt="AI數字人"
+                class="w-full h-full rounded-full object-cover"
+              >
             </div>
           </div>
+
+          <div class="absolute top-32 right-24 avatar-float" style="animation-delay: 1s;">
+            <div class="w-20 h-20 bg-white rounded-full p-1 shadow-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" 
+                alt="AI數字人"
+                class="w-full h-full rounded-full object-cover"
+              >
+            </div>
+          </div>
+
+          <div class="absolute bottom-32 left-32 avatar-float" style="animation-delay: 1.5s;">
+            <div class="w-18 h-18 bg-white rounded-full p-1 shadow-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=90&h=90&fit=crop&crop=face" 
+                alt="AI數字人"
+                class="w-full h-full rounded-full object-cover"
+              >
+            </div>
+          </div>
+
+          <div class="absolute bottom-20 right-20 avatar-float" style="animation-delay: 2s;">
+            <div class="w-14 h-14 bg-white rounded-full p-1 shadow-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=70&h=70&fit=crop&crop=face" 
+                alt="AI數字人"
+                class="w-full h-full rounded-full object-cover"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- 裝飾元素 -->
+        <div class="absolute top-10 right-10 w-4 h-4 bg-yellow-300 rounded-full opacity-60"></div>
+        <div class="absolute bottom-16 left-16 w-3 h-3 bg-pink-300 rounded-full opacity-60"></div>
+        <div class="absolute top-1/3 left-10 w-2 h-2 bg-blue-300 rounded-full opacity-60"></div>
+        
+        <!-- 文字覆層 -->
+        <div class="absolute bottom-8 left-8 right-8 text-center">
+          <h3 class="text-2xl font-bold text-white mb-2">加入創作者社群</h3>
+          <p class="text-white/80">數萬名創作者正在使用 Vidspark 創造精彩內容</p>
         </div>
       </div>
     </div>
