@@ -131,10 +131,11 @@ Route::get('/static/{path:.+}', function ($request, $path) {
             ];
             $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
             
-            return response()->file($filePath, 200, [
+            // 🚨 Webman語法：new Response()
+            return (new Response(200, [
                 'Content-Type' => $contentType,
                 'Cache-Control' => 'public, max-age=31536000'
-            ]);
+            ]))->file($filePath);
         }
     }
     // 🚨 Webman語法：new Response()
@@ -163,7 +164,8 @@ Route::get('/admin/static/{path:.+}', function ($request, $path) {
         ];
         $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
         
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+            return (new Response(200, [
             'Content-Type' => $contentType,
             'Cache-Control' => 'public, max-age=31536000' // 1年緩存
         ]);
@@ -178,12 +180,14 @@ Route::get('/h5/static/{path:.+}', [app\controller\StaticController::class, 'sta
 Route::get('/h5/login-fix.js', function () {
     $filePath = base_path() . '/public/h5/login-fix.js';
     if (file_exists($filePath)) {
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => 'application/javascript; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ]))->file($filePath);
     }
-    return response('Login fix script not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Login fix script not found', 404);
 });
 Route::get('/h5/{filename}', [app\controller\StaticController::class, 'file']);
 
@@ -200,7 +204,8 @@ Route::get('/vidspark-i18n-test.html', function () {
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]))->file($filePath);
     }
-    return response('Vidspark test page not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Vidspark test page not found', 404);
 });
 
 // Vidspark數據庫初始化腳本路由（使用專用控制器）
@@ -210,53 +215,62 @@ Route::get('/vidspark-database-init.php', [app\controller\VidsparkController::cl
 Route::get('/vidspark-token-test', function () {
     $filePath = base_path() . '/public/vidspark-token-test.html';
     if (file_exists($filePath)) {
-        return response(file_get_contents($filePath), 200, [
+        // 🚨 Webman語法：new Response()
+    return new Response(file_get_contents($filePath), 200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]);
     }
-    return response('Token test page not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Token test page not found', 404);
 });
 
 // Vidspark完整數字人生成流程頁面
 Route::get('/vidspark-digital-human-complete', function () {
     $filePath = base_path() . '/public/vidspark-digital-human-complete.html';
     if (file_exists($filePath)) {
-        return response(file_get_contents($filePath), 200, [
+        // 🚨 Webman語法：new Response()
+    return new Response(file_get_contents($filePath), 200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]);
     }
-    return response('Complete workflow page not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Complete workflow page not found', 404);
 });
 
 // 修復：支持用戶常見的拼寫錯誤
 Route::get('/vidspark-digital-human-completet', function () {
-    return response('', 301, ['Location' => '/vidspark-digital-human-complete']);
+    // 🚨 Webman語法：new Response()
+    return new Response('', 301, ['Location' => '/vidspark-digital-human-complete']);
 });
 
 // Vidspark PHP配置問題診斷頁面
 Route::get('/vidspark-php-config-info', function () {
     $filePath = base_path() . '/public/vidspark-php-config-info.html';
     if (file_exists($filePath)) {
-        return response(file_get_contents($filePath), 200, [
+        // 🚨 Webman語法：new Response()
+    return new Response(file_get_contents($filePath), 200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]);
     }
-    return response('PHP config info page not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('PHP config info page not found', 404);
 });
 
 // Zeabur配置解決方案指南
 Route::get('/zeabur-config-guide', function () {
     $filePath = base_path() . '/public/zeabur-config-guide.html';
     if (file_exists($filePath)) {
-        return response(file_get_contents($filePath), 200, [
+        // 🚨 Webman語法：new Response()
+    return new Response(file_get_contents($filePath), 200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]);
     }
-    return response('Zeabur config guide not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Zeabur config guide not found', 404);
 });
 
 // Vidspark API代理路由（解決CORS問題）
@@ -363,7 +377,8 @@ Route::get('/vidspark-admin', function () {
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]))->file($filePath);
     }
-    return response('Vidspark admin not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Vidspark admin not found', 404);
 });
 
 // Vidspark管理後台路由（帶斜槓）
@@ -376,7 +391,8 @@ Route::get('/vidspark-admin/', function () {
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]))->file($filePath);
     }
-    return response('Vidspark admin not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Vidspark admin not found', 404);
 });
 
 // Vidspark靜態資源路由
@@ -406,7 +422,8 @@ Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
             'Cache-Control' => 'public, max-age=31536000'
         ]))->file($filePath);
     }
-    return response('Vidspark asset not found: ' . $path, 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Vidspark asset not found: ' . $path, 404);
 });
 
 // 🔧 CRITICAL: Vidspark存儲文件路由（解決視頻封面提取失敗問題）
@@ -470,19 +487,23 @@ Route::any('/vidspark/storage/{path:.+}', function ($request, $path) {
         // HEAD請求只返回頭信息
         if ($request->method() === 'HEAD') {
             error_log("[Storage Route] HEAD請求，返回頭信息，文件大小: {$fileSize}");
-            return response('', 200, $headers);
+            // 🚨 Webman語法：new Response()
+    return new Response('', 200, $headers);
         }
         
         // GET請求返回文件內容
         error_log("[Storage Route] GET請求，返回文件內容，文件大小: {$fileSize}");
-        return response()->file($filePath, 200, $headers);
+        // 🚨 Webman語法：new Response()
+    return new Response()->file($filePath, 200, $headers);
     }
-    return response('Vidspark storage file not found: ' . $path, 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Vidspark storage file not found: ' . $path, 404);
     
     } catch (Exception $e) {
         error_log("[Storage Route] 處理文件請求時發生錯誤: " . $e->getMessage());
         error_log("[Storage Route] 錯誤堆棧: " . $e->getTraceAsString());
-        return response('Internal Server Error processing file request: ' . $e->getMessage(), 500);
+        // 🚨 Webman語法：new Response()
+    return new Response('Internal Server Error processing file request: ' . $e->getMessage(), 500);
     }
 });
 
@@ -513,7 +534,8 @@ Route::get('/vidspark-admin/assets/{path:.+}', function ($request, $path) {
             'Cache-Control' => 'public, max-age=31536000'
         ]))->file($filePath);
     }
-    return response('Vidspark admin asset not found: ' . $path, 404);
+    // 🚨 Webman語法：new Response()
+    return new Response('Vidspark admin asset not found: ' . $path, 404);
 });
 
 // Vidspark聲音克隆Debug頁面
@@ -742,10 +764,11 @@ Route::get('/vidspark/{path:.+}', function ($request, $path) {
             ];
             $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
             
-            return response()->file($filePath, 200, [
+            // 🚨 Webman語法：new Response()
+            return (new Response(200, [
                 'Content-Type' => $contentType,
                 'Cache-Control' => 'public, max-age=31536000'
-            ]);
+            ]))->file($filePath);
         }
     }
     
