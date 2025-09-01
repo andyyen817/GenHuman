@@ -1,83 +1,51 @@
 <template>
-  <el-dropdown @command="handleLanguageChange" placement="bottom-end">
-    <el-button type="text" class="language-trigger">
-      <span class="flag">{{ currentLanguageInfo?.flag }}</span>
-      <span class="name">{{ currentLanguageInfo?.name }}</span>
-      <el-icon><ArrowDown /></el-icon>
-    </el-button>
-    
+  <el-dropdown @command="handleLanguageChange">
+    <span class="el-dropdown-link">
+      <el-icon><Globe /></el-icon>
+      {{ currentLanguageLabel }}
+      <el-icon class="el-icon--right"><arrow-down /></el-icon>
+    </span>
     <template #dropdown>
       <el-dropdown-menu>
-        <el-dropdown-item 
-          v-for="lang in supportedLanguages" 
-          :key="lang.code"
-          :command="lang.code"
-          :class="{ active: currentLanguage === lang.code }"
-        >
-          <span class="flag">{{ lang.flag }}</span>
-          <span class="name">{{ lang.name }}</span>
-          <el-icon v-if="currentLanguage === lang.code" class="check"><Check /></el-icon>
-        </el-dropdown-item>
+        <el-dropdown-item command="en">English</el-dropdown-item>
+        <el-dropdown-item command="zh-TW">繁體中文</el-dropdown-item>
+        <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
       </el-dropdown-menu>
     </template>
   </el-dropdown>
 </template>
 
 <script setup lang="ts">
-import { ArrowDown, Check } from '@element-plus/icons-vue'
-import { useI18nStore } from '@/stores/i18n'
-import { storeToRefs } from 'pinia'
-import type { SupportedLanguage } from '@/i18n'
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { Globe, ArrowDown } from '@element-plus/icons-vue';
+import { setLanguage } from '@/i18n';
 
-const i18nStore = useI18nStore()
-const { currentLanguage, supportedLanguages } = storeToRefs(i18nStore)
+const { locale } = useI18n();
 
-// 獲取當前語言信息
-const currentLanguageInfo = computed(() => i18nStore.getCurrentLanguageInfo())
+const languageLabels = {
+  'en': 'English',
+  'zh-TW': '繁體中文',
+  'zh-CN': '简体中文'
+};
 
-// 處理語言切換
-function handleLanguageChange(language: SupportedLanguage) {
-  i18nStore.switchLanguage(language)
-}
+const currentLanguageLabel = computed(() => {
+  return languageLabels[locale.value as keyof typeof languageLabels] || 'English';
+});
+
+const handleLanguageChange = (command: string) => {
+  setLanguage(command as 'en' | 'zh-TW' | 'zh-CN');
+};
 </script>
 
 <style scoped>
-.language-trigger {
+.el-dropdown-link {
+  cursor: pointer;
+  color: var(--el-color-primary);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
 }
-
-.language-trigger:hover {
-  background-color: #f5f5f5;
-}
-
-.flag {
-  font-size: 16px;
-}
-
-.name {
-  font-size: 14px;
-  color: #333;
-}
-
-.el-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-}
-
-.el-dropdown-item.active {
-  background-color: #f0f0ff;
-  color: #5D5FEF;
-}
-
-.check {
-  margin-left: auto;
-  color: #5D5FEF;
+.el-dropdown-link:hover {
+  color: var(--el-color-primary-light-3);
 }
 </style>

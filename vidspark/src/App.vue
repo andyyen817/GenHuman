@@ -1,40 +1,141 @@
 <template>
-  <div id="app">
-    <RouterView />
+  <div id="vidspark-app">
+    <el-container>
+      <el-header class="vidspark-header">
+        <div class="logo">Vidspark</div>
+        <div class="header-right">
+          <LanguageSwitcher />
+          <CreditsWidget />
+          <el-button type="primary" @click="goToLogin">{{ $t('user.login') }}</el-button>
+        </div>
+      </el-header>
+      <el-container class="vidspark-main-container">
+        <el-aside width="200px" class="vidspark-sidebar">
+          <el-menu :default-active="activeMenu" class="el-menu-vertical-demo" @select="handleMenuSelect">
+            <el-menu-item index="/dashboard">
+              <el-icon><House /></el-icon>
+              <span>{{ $t('menu.dashboard') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/audio">
+              <el-icon><Microphone /></el-icon>
+              <span>{{ $t('menu.audio') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/video">
+              <el-icon><VideoCamera /></el-icon>
+              <span>{{ $t('menu.video') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/files">
+              <el-icon><Folder /></el-icon>
+              <span>{{ $t('menu.files') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/credits">
+              <el-icon><Coin /></el-icon>
+              <span>{{ $t('menu.credits') }}</span>
+            </el-menu-item>
+            <el-menu-item index="/settings">
+              <el-icon><Setting /></el-icon>
+              <span>{{ $t('menu.settings') }}</span>
+            </el-menu-item>
+          </el-menu>
+        </el-aside>
+        <el-main class="vidspark-content">
+          <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </el-main>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import { onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useI18nStore } from '@/stores/i18n'
+import { ref, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import LanguageSwitcher from './components/LanguageSwitcher.vue';
+import CreditsWidget from './components/CreditsWidget.vue';
+import {
+  House,
+  Microphone,
+  VideoCamera,
+  Folder,
+  Coin,
+  Setting,
+} from '@element-plus/icons-vue';
 
-const { locale } = useI18n()
-const i18nStore = useI18nStore()
+const router = useRouter();
+const route = useRoute();
+const { t } = useI18n();
 
-onMounted(() => {
-  // 初始化語言設置
-  i18nStore.initializeLanguage()
-  locale.value = i18nStore.currentLanguage
-})
+const activeMenu = ref(route.path);
+
+watch(
+  () => route.path,
+  (newPath) => {
+    activeMenu.value = newPath;
+  }
+);
+
+const handleMenuSelect = (key: string) => {
+  router.push(key);
+};
+
+const goToLogin = () => {
+  router.push('/login');
+};
 </script>
 
-<style>
-#app {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+<style lang="scss">
+#vidspark-app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.vidspark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  padding: 0 20px;
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
-body {
-  background-color: #f5f5f5;
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.vidspark-main-container {
+  flex: 1;
+}
+
+.vidspark-sidebar {
+  background-color: var(--el-color-info-light-9);
+  padding-top: 20px;
+  border-right: 1px solid var(--el-border-color-light);
+}
+
+.vidspark-content {
+  padding: 20px;
+  background-color: var(--el-bg-color-page);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

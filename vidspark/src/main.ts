@@ -1,30 +1,17 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+import { createPinia } from 'pinia';
+import { i18n } from './i18n';
+import 'element-plus/dist/index.css'; // Element Plus 樣式
+import './styles/global.scss'; // 全局樣式
 
-import App from './App.vue'
-import router from './router'
-import { setupI18n } from './i18n'
+const app = createApp(App);
+const pinia = createPinia();
 
-const app = createApp(App)
+app.use(pinia);
+app.use(router);
+app.use(i18n);
+app.mount('#app');
 
-// Pinia store
-app.use(createPinia())
-
-// Vue Router
-app.use(router)
-
-// Element Plus
-app.use(ElementPlus)
-
-// Element Plus Icons
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
-
-// Vue I18n
-setupI18n(app)
-
-app.mount('#app')
+console.log(`[${new Date().toLocaleTimeString()}] Vidspark Frontend App Mounted!`);
