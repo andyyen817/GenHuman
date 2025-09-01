@@ -3,6 +3,24 @@
     "title": "Vidspark Admin",
     "welcome": "Welcome to Vidspark Admin Dashboard"
   },
+  "admin": {
+    "login": {
+      "title": "Admin Portal",
+      "username": "Admin Username",
+      "usernamePlaceholder": "Enter admin username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password",
+      "rememberMe": "Remember me",
+      "loginButton": "Login to Admin",
+      "loggingIn": "Logging in...",
+      "securityNote": "This is admin-only login page. Please keep your credentials secure.",
+      "errors": {
+        "emptyFields": "Please fill in all required fields",
+        "invalidCredentials": "Invalid admin username or password",
+        "serverError": "Server error, please try again later"
+      }
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "users": "User Management",

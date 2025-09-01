@@ -1,5 +1,5 @@
 <template>
-  <div class="landing-page">
+  <div class="bg-white">
     <!-- 導航欄 -->
     <nav class="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,7 +28,13 @@
           <!-- 右側按鈕 -->
           <div class="flex items-center space-x-4">
             <!-- 語言切換 -->
-            <LanguageSwitcher />
+            <div class="relative">
+              <select class="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option>繁體中文</option>
+                <option>简体中文</option>
+                <option>English</option>
+              </select>
+            </div>
             <router-link to="/login" class="text-gray-600 hover:text-purple-600 px-3 py-2 text-sm font-medium transition-colors">登入</router-link>
             <router-link to="/register" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">免費註冊</router-link>
           </div>
@@ -66,9 +72,9 @@
             <router-link to="/register" class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
               <i class="fas fa-rocket mr-2"></i>免費開始創作
             </router-link>
-            <button @click="playDemo" class="bg-white hover:bg-gray-50 text-gray-700 px-8 py-4 rounded-xl text-lg font-semibold border-2 border-gray-200 transition-all duration-300">
+            <a href="#demo" class="bg-white hover:bg-gray-50 text-gray-700 px-8 py-4 rounded-xl text-lg font-semibold border-2 border-gray-200 transition-all duration-300">
               <i class="fas fa-play mr-2"></i>觀看演示
-            </button>
+            </a>
           </div>
 
           <!-- 免費標籤 -->
@@ -154,44 +160,145 @@
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-3">AI 聲音克隆</h3>
             <p class="text-gray-600 mb-4">
-              60秒錄音即可創建您的專屬 AI 聲音。支持多種語言和情感表達，讓您的數字人說話更自然。
+              只需60秒錄音，即可創建您的專屬 AI 聲音。支持多種情感表達，讓數字人說出您的聲音。
             </p>
-            <div class="flex items-center text-sm text-blue-600 font-medium">
-              <i class="fas fa-clock mr-2"></i>
-              僅需60秒錄音
+            <div class="flex items-center text-sm text-purple-600 font-medium">
+              <i class="fas fa-magic mr-2"></i>
+              AI 技術驅動
             </div>
           </div>
 
-          <!-- 模板庫 -->
+          <!-- 智能模板 -->
           <div class="bg-white rounded-xl p-8 shadow-lg card-hover border border-gray-200">
             <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-6">
               <i class="fas fa-layer-group text-green-600 text-2xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">海量影片模板</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">智能影片模板</h3>
             <p class="text-gray-600 mb-4">
-              營銷、教育、娛樂等各種場景模板。一鍵套用，快速生成專業影片，節省大量創作時間。
+              50+ 專業模板，涵蓋營銷、教育、娛樂等場景。一鍵套用，快速生成符合品牌風格的影片。
             </p>
-            <div class="flex items-center text-sm text-green-600 font-medium">
-              <i class="fas fa-infinity mr-2"></i>
-              持續更新
+            <div class="flex items-center text-sm text-orange-600 font-medium">
+              <i class="fas fa-rocket mr-2"></i>
+              快速創作
+            </div>
+          </div>
+
+          <!-- 多平台適配 -->
+          <div class="bg-white rounded-xl p-8 shadow-lg card-hover border border-gray-200">
+            <div class="w-16 h-16 bg-pink-100 rounded-xl flex items-center justify-center mb-6">
+              <i class="fas fa-mobile-alt text-pink-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">多平台適配</h3>
+            <p class="text-gray-600 mb-4">
+              自動生成適合 TikTok、YouTube、Instagram 等平台的不同尺寸版本，一次創作多處使用。
+            </p>
+            <div class="flex items-center text-sm text-blue-600 font-medium">
+              <i class="fas fa-globe mr-2"></i>
+              全平台覆蓋
+            </div>
+          </div>
+
+          <!-- 批量創作 -->
+          <div class="bg-white rounded-xl p-8 shadow-lg card-hover border border-gray-200">
+            <div class="w-16 h-16 bg-yellow-100 rounded-xl flex items-center justify-center mb-6">
+              <i class="fas fa-copy text-yellow-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">批量生成</h3>
+            <p class="text-gray-600 mb-4">
+              批量導入文本內容，自動生成多個影片。完美適合電商產品介紹、課程內容等批量需求。
+            </p>
+            <div class="flex items-center text-sm text-red-600 font-medium">
+              <i class="fas fa-tachometer-alt mr-2"></i>
+              高效批量
+            </div>
+          </div>
+
+          <!-- 多語言支持 -->
+          <div class="bg-white rounded-xl p-8 shadow-lg card-hover border border-gray-200">
+            <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center mb-6">
+              <i class="fas fa-language text-indigo-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">多語言支持</h3>
+            <p class="text-gray-600 mb-4">
+              支援繁體中文、簡體中文、英文等多種語言。全球用戶都能享受本地化的創作體驗。
+            </p>
+            <div class="flex items-center text-sm text-purple-600 font-medium">
+              <i class="fas fa-world mr-2"></i>
+              全球化體驗
             </div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- CTA區域 -->
+    <section class="py-20 hero-gradient">
+      <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <h2 class="text-4xl font-bold text-white mb-6">
+          準備好創造驚人的影片了嗎？
+        </h2>
+        <p class="text-xl text-white/90 mb-10">
+          加入數萬名創作者，使用 Vidspark 將您的想法轉化為專業影片
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <router-link to="/register" class="bg-white hover:bg-gray-100 text-purple-600 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105">
+            立即免費開始
+          </router-link>
+          <a href="#contact" class="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300">
+            聯繫銷售團隊
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- 頁腳 -->
-    <footer class="bg-gray-900 text-white py-16">
+    <footer class="bg-gray-900 text-white py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <div class="flex items-center justify-center mb-6">
-            <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center mr-3">
-              <i class="fas fa-video text-white text-sm"></i>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Logo與描述 -->
+          <div class="col-span-1 md:col-span-2">
+            <div class="flex items-center mb-4">
+              <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center mr-3">
+                <i class="fas fa-video text-white text-sm"></i>
+              </div>
+              <h3 class="text-xl font-bold">Vidspark</h3>
             </div>
-            <h3 class="text-xl font-bold">Vidspark</h3>
+            <p class="text-gray-400 mb-4 max-w-md">
+              讓每個人都能輕鬆創作專業級 AI 營銷影片。通過 AI 技術降低影片創作門檻，點亮創意靈感。
+            </p>
+            <div class="flex space-x-4">
+              <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook"></i></a>
+              <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin"></i></a>
+              <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube"></i></a>
+            </div>
           </div>
-          <p class="text-gray-400 mb-6">讓 AI 助力您的創意，打造令人驚豔的影片內容</p>
-          <p class="text-gray-500 text-sm">© 2025 Vidspark. 設計遵循HeyGen風格指南.</p>
+          
+          <!-- 產品連結 -->
+          <div>
+            <h4 class="font-semibold mb-4">產品</h4>
+            <ul class="space-y-2 text-gray-400">
+              <li><a href="#" class="hover:text-white">AI 數字人</a></li>
+              <li><a href="#" class="hover:text-white">聲音克隆</a></li>
+              <li><a href="#" class="hover:text-white">影片模板</a></li>
+              <li><a href="#" class="hover:text-white">API 文檔</a></li>
+            </ul>
+          </div>
+          
+          <!-- 支援連結 -->
+          <div>
+            <h4 class="font-semibold mb-4">支援</h4>
+            <ul class="space-y-2 text-gray-400">
+              <li><a href="#" class="hover:text-white">幫助中心</a></li>
+              <li><a href="#" class="hover:text-white">聯繫我們</a></li>
+              <li><a href="#" class="hover:text-white">隱私政策</a></li>
+              <li><a href="#" class="hover:text-white">服務條款</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <p>&copy; 2025 Vidspark. 版權所有.</p>
         </div>
       </div>
     </footer>
@@ -199,15 +306,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
-
-const router = useRouter();
-
-const playDemo = () => {
-  // TODO: 實現演示功能
-  console.log('播放演示影片');
-};
+// 暫時不需要複雜的邏輯
 </script>
 
 <style scoped>

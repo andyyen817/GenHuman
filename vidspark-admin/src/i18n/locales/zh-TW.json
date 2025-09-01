@@ -3,6 +3,24 @@
     "title": "Vidspark 管理後台",
     "welcome": "歡迎使用 Vidspark 管理後台"
   },
+  "admin": {
+    "login": {
+      "title": "管理後台",
+      "username": "管理員帳號",
+      "usernamePlaceholder": "請輸入管理員帳號",
+      "password": "密碼",
+      "passwordPlaceholder": "請輸入密碼",
+      "rememberMe": "記住登入狀態",
+      "loginButton": "登入管理後台",
+      "loggingIn": "登入中...",
+      "securityNote": "此為管理員專用登入頁面，請妥善保管您的帳號密碼",
+      "errors": {
+        "emptyFields": "請填寫所有必填欄位",
+        "invalidCredentials": "管理員帳號或密碼錯誤",
+        "serverError": "伺服器錯誤，請稍後再試"
+      }
+    }
+  },
   "nav": {
     "dashboard": "控制台",
     "users": "用戶管理",

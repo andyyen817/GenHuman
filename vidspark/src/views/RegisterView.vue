@@ -1,5 +1,5 @@
 <template>
-  <div class="register-page bg-gray-50 min-h-screen flex">
+  <div class="bg-gray-50 min-h-screen flex">
     <!-- 左側表單區域 -->
     <div class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
       <div class="mx-auto w-full max-w-sm lg:w-96">
@@ -18,7 +18,7 @@
         </div>
 
         <!-- 註冊表單 -->
-        <form @submit.prevent="handleRegister" class="space-y-6">
+        <form class="space-y-6" @submit.prevent="handleRegister">
           <!-- Email -->
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
@@ -27,11 +27,11 @@
             <div class="relative">
               <input
                 id="email"
-                v-model="registerForm.email"
                 name="email"
                 type="email"
                 autocomplete="email"
                 required
+                v-model="registerForm.email"
                 class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg input-focus focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10"
                 placeholder="輸入您的 Email"
               >
@@ -49,36 +49,29 @@
             <div class="relative">
               <input
                 id="password"
-                v-model="registerForm.password"
                 name="password"
                 :type="showPassword ? 'text' : 'password'"
                 autocomplete="new-password"
                 required
+                v-model="registerForm.password"
+                @input="calculatePasswordStrength"
                 class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg input-focus focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10"
                 placeholder="8位以上，包含字母數字"
-                @input="checkPasswordStrength"
               >
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <i 
-                  :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"
-                  class="text-gray-400 cursor-pointer hover:text-gray-600"
-                  @click="showPassword = !showPassword"
-                ></i>
+                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                   class="text-gray-400 cursor-pointer hover:text-gray-600" 
+                   @click="showPassword = !showPassword"></i>
               </div>
             </div>
             <!-- 密碼強度指示器 -->
             <div class="mt-2">
               <div class="flex space-x-1">
-                <div 
-                  v-for="(level, index) in 3" 
-                  :key="index"
-                  :class="passwordStrength > index ? 'bg-green-500' : 'bg-gray-200'"
-                  class="h-1 flex-1 rounded transition-colors"
-                ></div>
+                <div :class="passwordStrength >= 1 ? 'bg-red-500' : 'bg-gray-200'" class="h-1 flex-1 rounded"></div>
+                <div :class="passwordStrength >= 2 ? 'bg-yellow-500' : 'bg-gray-200'" class="h-1 flex-1 rounded"></div>
+                <div :class="passwordStrength >= 3 ? 'bg-green-500' : 'bg-gray-200'" class="h-1 flex-1 rounded"></div>
               </div>
-              <p class="text-xs text-gray-500 mt-1">
-                密碼強度：{{ passwordStrengthText }}
-              </p>
+              <p class="text-xs text-gray-500 mt-1">密碼強度：{{ getPasswordStrengthText() }}</p>
             </div>
           </div>
 
@@ -87,10 +80,10 @@
             <div class="flex items-center h-5">
               <input
                 id="terms"
-                v-model="registerForm.acceptTerms"
                 name="terms"
                 type="checkbox"
                 required
+                v-model="registerForm.acceptTerms"
                 class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
               >
             </div>
@@ -108,13 +101,13 @@
           <div>
             <button
               type="submit"
-              :disabled="isLoading"
-              class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="loading || !canSubmit"
+              class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
             >
               <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                 <i class="fas fa-rocket text-purple-500 group-hover:text-purple-400"></i>
               </span>
-              {{ isLoading ? '註冊中...' : '立即註冊' }}
+              {{ loading ? '註冊中...' : '立即註冊' }}
             </button>
           </div>
 
@@ -133,29 +126,31 @@
             <button
               type="button"
               class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+              disabled
             >
-              <i class="fab fa-google text-red-500 mr-2"></i>
-              Google
+              <i class="fab fa-google text-lg"></i>
+              <span class="ml-2">Google</span>
             </button>
             <button
               type="button"
               class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+              disabled
             >
-              <i class="fab fa-github mr-2"></i>
-              GitHub
+              <i class="fab fa-apple text-lg"></i>
+              <span class="ml-2">Apple</span>
             </button>
           </div>
-        </form>
 
-        <!-- 登入連結 -->
-        <div class="mt-6 text-center">
-          <p class="text-sm text-gray-600">
-            已經有帳戶了？
-            <router-link to="/login" class="font-medium text-purple-600 hover:text-purple-500">
-              立即登入
-            </router-link>
-          </p>
-        </div>
+          <!-- 登入鏈接 -->
+          <div class="text-center">
+            <span class="text-sm text-gray-600">
+              已有帳戶？ 
+              <router-link to="/login" class="font-medium text-purple-600 hover:text-purple-500">
+                立即登入
+              </router-link>
+            </span>
+          </div>
+        </form>
 
         <!-- 免費功能提示 -->
         <div class="mt-8 p-4 bg-purple-50 rounded-lg">
@@ -263,55 +258,73 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 
+// 表單數據
 const registerForm = ref({
   email: '',
   password: '',
   acceptTerms: false
 });
 
-const isLoading = ref(false);
 const showPassword = ref(false);
+const loading = ref(false);
 const passwordStrength = ref(0);
 
-const passwordStrengthText = computed(() => {
-  const strength = passwordStrength.value;
-  if (strength === 0) return '請輸入密碼';
-  if (strength === 1) return '弱';
-  if (strength === 2) return '中等';
-  return '強';
+// 計算是否可以提交
+const canSubmit = computed(() => {
+  return registerForm.value.email && 
+         registerForm.value.password.length >= 8 && 
+         registerForm.value.acceptTerms;
 });
 
-const checkPasswordStrength = () => {
+// 計算密碼強度
+const calculatePasswordStrength = () => {
   const password = registerForm.value.password;
   let strength = 0;
   
   if (password.length >= 8) strength++;
   if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
-  if (/\d/.test(password)) strength++;
+  if (/\d/.test(password) && /[!@#$%^&*]/.test(password)) strength++;
   
   passwordStrength.value = strength;
 };
 
+// 獲取密碼強度文字
+const getPasswordStrengthText = () => {
+  if (registerForm.value.password === '') return '請輸入密碼';
+  
+  switch (passwordStrength.value) {
+    case 0:
+    case 1:
+      return '弱';
+    case 2:
+      return '中等';
+    case 3:
+      return '強';
+    default:
+      return '請輸入密碼';
+  }
+};
+
+// 註冊處理
 const handleRegister = async () => {
+  loading.value = true;
+  
   try {
-    isLoading.value = true;
+    // TODO: 實現實際的註冊邏輯
+    console.log('註冊資料:', registerForm.value);
     
-    // TODO: 實現註冊邏輯
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // 模擬註冊延遲
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    ElMessage.success('註冊成功！歡迎加入 Vidspark');
+    // 註冊成功後跳轉到儀表板
     router.push('/dashboard');
-    
-    console.log(`[${new Date().toLocaleTimeString()}] ✅ 用戶註冊成功:`, registerForm.value.email);
   } catch (error) {
     console.error('註冊失敗:', error);
-    ElMessage.error('註冊失敗，請稍後再試');
   } finally {
-    isLoading.value = false;
+    loading.value = false;
   }
 };
 </script>

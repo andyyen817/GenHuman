@@ -1,8 +1,8 @@
 <template>
-  <div class="dashboard-layout bg-gray-50 h-screen flex">
-    <!-- Left Sidebar -->
+  <div class="bg-gray-50 h-screen flex">
+    <!-- 左側導航欄 -->
     <div class="w-64 sidebar-dark flex flex-col">
-      <!-- Logo Area -->
+      <!-- Logo區域 -->
       <div class="p-6 border-b border-gray-700">
         <div class="flex items-center">
           <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center mr-3">
@@ -12,94 +12,67 @@
         </div>
       </div>
 
-      <!-- Create Button -->
+      <!-- 創建按鈕 -->
       <div class="p-4">
-        <button 
-          @click="showCreateMenu = !showCreateMenu"
-          class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
-        >
+        <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
           <i class="fas fa-plus mr-2"></i>
           創建影片
         </button>
       </div>
 
-      <!-- Main Navigation -->
+      <!-- 主導航 -->
       <nav class="flex-1 px-4">
         <ul class="space-y-2">
           <li>
-            <router-link 
-              to="/dashboard" 
-              class="flex items-center px-4 py-3 text-white bg-purple-600 rounded-lg"
-            >
+            <a href="#" class="flex items-center px-4 py-3 text-white bg-purple-600 rounded-lg">
               <i class="fas fa-home mr-3"></i>
               首頁
-            </router-link>
+            </a>
           </li>
           <li>
-            <router-link 
-              to="/projects" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
+            <router-link to="/projects" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
               <i class="fas fa-folder mr-3"></i>
               我的項目
             </router-link>
           </li>
           <li>
-            <router-link 
-              to="/avatars" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
+            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
               <i class="fas fa-user-tie mr-3"></i>
               數字人庫
-            </router-link>
+            </a>
           </li>
           <li>
-            <router-link 
-              to="/voices" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
+            <router-link to="/voice-clone" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
               <i class="fas fa-microphone mr-3"></i>
               聲音庫
             </router-link>
           </li>
           <li>
-            <router-link 
-              to="/templates" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
+            <router-link to="/templates" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
               <i class="fas fa-layer-group mr-3"></i>
               模板庫
             </router-link>
           </li>
           <li>
-            <router-link 
-              to="/media" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
+            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
               <i class="fas fa-images mr-3"></i>
               媒體庫
-            </router-link>
+            </a>
           </li>
         </ul>
 
-        <!-- Divider -->
+        <!-- 分隔線 -->
         <div class="my-6 border-t border-gray-600"></div>
 
         <ul class="space-y-2">
           <li>
-            <router-link 
-              to="/settings" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
+            <router-link to="/settings" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
               <i class="fas fa-cog mr-3"></i>
               應用設定
             </router-link>
           </li>
           <li>
-            <a 
-              href="#" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
+            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
               <i class="fas fa-users mr-3"></i>
               創建團隊
             </a>
@@ -107,9 +80,9 @@
         </ul>
       </nav>
 
-      <!-- Bottom User Info -->
+      <!-- 底部用戶信息 -->
       <div class="p-4 border-t border-gray-700">
-        <!-- Upgrade Button -->
+        <!-- 升級按鈕 -->
         <div class="mb-4">
           <button class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 px-4 rounded-lg font-medium text-sm hover:from-yellow-600 hover:to-orange-600 transition-all">
             <i class="fas fa-crown mr-2"></i>
@@ -117,45 +90,47 @@
           </button>
         </div>
         
-        <!-- User Avatar -->
+        <!-- 用戶頭像 -->
         <div class="flex items-center">
-          <img 
-            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
-            alt="用戶頭像" 
-            class="w-10 h-10 rounded-full"
-          >
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
+               alt="用戶頭像" 
+               class="w-10 h-10 rounded-full">
           <div class="ml-3 flex-1">
-            <p class="text-white text-sm font-medium">{{ userName }}</p>
+            <p class="text-white text-sm font-medium">張小明</p>
             <p class="text-gray-400 text-xs">免費會員</p>
           </div>
-          <button class="text-gray-400 hover:text-white" @click="showUserMenu = !showUserMenu">
+          <button class="text-gray-400 hover:text-white">
             <i class="fas fa-ellipsis-v"></i>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Right Main Content Area -->
+    <!-- 右側主內容區 -->
     <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- Top Header -->
+      <!-- 頂部欄 -->
       <header class="bg-white border-b border-gray-200 px-6 py-4">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">歡迎回來，{{ userName }}！</h1>
+            <h1 class="text-2xl font-bold text-gray-900">歡迎回來，張小明！</h1>
             <p class="text-gray-600">準備創建您的下一個精彩影片了嗎？</p>
           </div>
           
           <div class="flex items-center space-x-4">
-            <!-- Language Switcher -->
-            <LanguageSwitcher />
+            <!-- 語言切換 -->
+            <select class="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option>繁體中文</option>
+              <option>简体中文</option>
+              <option>English</option>
+            </select>
             
-            <!-- Notification Button -->
+            <!-- 通知按鈕 -->
             <button class="relative p-2 text-gray-500 hover:text-gray-700">
               <i class="fas fa-bell text-xl"></i>
               <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             
-            <!-- Help Button -->
+            <!-- 幫助按鈕 -->
             <button class="p-2 text-gray-500 hover:text-gray-700">
               <i class="fas fa-question-circle text-xl"></i>
             </button>
@@ -163,9 +138,9 @@
         </div>
       </header>
 
-      <!-- Main Content Scroll Area -->
+      <!-- 主內容滾動區域 -->
       <main class="flex-1 overflow-y-auto p-6">
-        <!-- Top Banner -->
+        <!-- 頂部橫幅 -->
         <div class="gradient-border mb-8">
           <div class="p-6">
             <div class="flex items-center justify-between">
@@ -173,24 +148,21 @@
                 <h2 class="text-xl font-bold text-gray-900 mb-2">專屬數字人，全新升級</h2>
                 <p class="text-gray-600">立即用您的數字分身，為您的腳本帶來生命力</p>
               </div>
-              <button 
-                @click="startCustomAvatar"
-                class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
+              <button class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
                 立即試用 →
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Creation Entry Section -->
+        <!-- 創作入口區塊 -->
         <section class="mb-8">
           <h2 class="text-xl font-bold text-gray-900 mb-6">開始創作</h2>
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Free Digital Human Video -->
+            <!-- 免費數字人影片 -->
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 card-hover relative">
-              <!-- Free Badge -->
+              <!-- 免費標籤 -->
               <div class="absolute top-4 right-4">
                 <span class="free-badge text-white text-xs font-bold px-2 py-1 rounded-full">FREE</span>
               </div>
@@ -207,16 +179,13 @@
                   <i class="fas fa-gift mr-1"></i>
                   每日 3 次免費
                 </span>
-                <button 
-                  @click="startFreeVideo"
-                  class="text-purple-600 hover:text-purple-700 font-medium"
-                >
+                <button class="text-purple-600 hover:text-purple-700 font-medium">
                   開始 →
                 </button>
               </div>
             </div>
 
-            <!-- Text to Video -->
+            <!-- 文字轉影片 -->
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 card-hover">
               <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
                 <i class="fas fa-file-alt text-blue-600 text-xl"></i>
@@ -230,18 +199,15 @@
                   <i class="fas fa-magic mr-1"></i>
                   AI 智能轉換
                 </span>
-                <button 
-                  @click="startTextToVideo"
-                  class="text-purple-600 hover:text-purple-700 font-medium"
-                >
+                <button class="text-purple-600 hover:text-purple-700 font-medium">
                   開始 →
                 </button>
               </div>
             </div>
 
-            <!-- Voice Cloning Experience -->
+            <!-- 聲音克隆體驗 -->
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 card-hover relative">
-              <!-- Free Badge -->
+              <!-- 免費標籤 -->
               <div class="absolute top-4 right-4">
                 <span class="free-badge text-white text-xs font-bold px-2 py-1 rounded-full">FREE</span>
               </div>
@@ -258,16 +224,13 @@
                   <i class="fas fa-gift mr-1"></i>
                   1 次免費體驗
                 </span>
-                <button 
-                  @click="startVoiceCloning"
-                  class="text-purple-600 hover:text-purple-700 font-medium"
-                >
+                <router-link to="/voice-clone" class="text-purple-600 hover:text-purple-700 font-medium">
                   開始 →
-                </button>
+                </router-link>
               </div>
             </div>
 
-            <!-- Mimic Video -->
+            <!-- 模仿影片 -->
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 card-hover">
               <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
                 <i class="fas fa-link text-yellow-600 text-xl"></i>
@@ -281,16 +244,13 @@
                   <i class="fas fa-robot mr-1"></i>
                   AI 風格學習
                 </span>
-                <button 
-                  @click="startMimicVideo"
-                  class="text-purple-600 hover:text-purple-700 font-medium"
-                >
+                <button class="text-purple-600 hover:text-purple-700 font-medium">
                   開始 →
                 </button>
               </div>
             </div>
 
-            <!-- PPT/PDF Explanation -->
+            <!-- PPT/PDF 講解 -->
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 card-hover">
               <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
                 <i class="fas fa-presentation text-red-600 text-xl"></i>
@@ -304,16 +264,13 @@
                   <i class="fas fa-chalkboard-teacher mr-1"></i>
                   教育專用
                 </span>
-                <button 
-                  @click="startPresentationVideo"
-                  class="text-purple-600 hover:text-purple-700 font-medium"
-                >
+                <button class="text-purple-600 hover:text-purple-700 font-medium">
                   開始 →
                 </button>
               </div>
             </div>
 
-            <!-- Create Your Digital Human -->
+            <!-- 創建您的數字人 -->
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 card-hover">
               <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
                 <i class="fas fa-video text-indigo-600 text-xl"></i>
@@ -327,10 +284,7 @@
                   <i class="fas fa-crown mr-1"></i>
                   高級功能
                 </span>
-                <button 
-                  @click="startCustomDigitalHuman"
-                  class="text-purple-600 hover:text-purple-700 font-medium"
-                >
+                <button class="text-purple-600 hover:text-purple-700 font-medium">
                   開始 →
                 </button>
               </div>
@@ -338,7 +292,7 @@
           </div>
         </section>
 
-        <!-- Recent Creations -->
+        <!-- 最近的創作 -->
         <section>
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-bold text-gray-900">最近的創作</h2>
@@ -346,14 +300,11 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Project Card 1 -->
+            <!-- 項目卡片 1 -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
               <div class="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=160&fit=crop" 
-                  alt="影片縮圖" 
-                  class="w-full h-32 object-cover"
-                >
+                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=160&fit=crop" 
+                     alt="影片縮圖" class="w-full h-32 object-cover">
                 <div class="absolute inset-0 flex items-center justify-center">
                   <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
                     <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
@@ -377,14 +328,11 @@
               </div>
             </div>
 
-            <!-- Project Card 2 -->
+            <!-- 項目卡片 2 -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
               <div class="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=300&h=160&fit=crop" 
-                  alt="影片縮圖" 
-                  class="w-full h-32 object-cover"
-                >
+                <img src="https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=300&h=160&fit=crop" 
+                     alt="影片縮圖" class="w-full h-32 object-cover">
                 <div class="absolute inset-0 flex items-center justify-center">
                   <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
                     <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
@@ -408,14 +356,11 @@
               </div>
             </div>
 
-            <!-- Project Card 3 -->
+            <!-- 項目卡片 3 -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
               <div class="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=160&fit=crop" 
-                  alt="影片縮圖" 
-                  class="w-full h-32 object-cover"
-                >
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=160&fit=crop" 
+                     alt="影片縮圖" class="w-full h-32 object-cover">
                 <div class="absolute inset-0 flex items-center justify-center">
                   <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
                     <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
@@ -439,14 +384,11 @@
               </div>
             </div>
 
-            <!-- Project Card 4 -->
+            <!-- 項目卡片 4 -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
               <div class="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=160&fit=crop" 
-                  alt="影片縮圖" 
-                  class="w-full h-32 object-cover"
-                >
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=160&fit=crop" 
+                     alt="影片縮圖" class="w-full h-32 object-cover">
                 <div class="absolute inset-0 flex items-center justify-center">
                   <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
                     <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
@@ -477,52 +419,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
-
-const router = useRouter();
-
-// State
-const showCreateMenu = ref(false);
-const showUserMenu = ref(false);
-const userName = ref('張小明');
-
-// Navigation Methods
-const startFreeVideo = () => {
-  console.log('🎬 開始免費數字人影片創作');
-  router.push('/create/free-video');
-};
-
-const startTextToVideo = () => {
-  console.log('📝 開始文字轉影片');
-  router.push('/create/text-to-video');
-};
-
-const startVoiceCloning = () => {
-  console.log('🎤 開始聲音克隆');
-  router.push('/create/voice-cloning');
-};
-
-const startMimicVideo = () => {
-  console.log('🔗 開始模仿影片創作');
-  router.push('/create/mimic-video');
-};
-
-const startPresentationVideo = () => {
-  console.log('📊 開始PPT/PDF講解');
-  router.push('/create/presentation');
-};
-
-const startCustomDigitalHuman = () => {
-  console.log('👤 開始創建自定義數字人');
-  router.push('/create/custom-avatar');
-};
-
-const startCustomAvatar = () => {
-  console.log('⭐ 開始專屬數字人試用');
-  router.push('/premium/custom-avatar');
-};
+// 儀表板邏輯
 </script>
 
 <style scoped>
