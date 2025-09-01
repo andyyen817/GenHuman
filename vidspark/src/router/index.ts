@@ -1,112 +1,149 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
 
 // 路由配置
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/dashboard'
-  },
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/views/Dashboard.vue'),
+    name: 'Landing',
+    component: () => import('@/views/LandingView.vue'),
     meta: {
-      title: 'navigation.dashboard',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/create',
-    name: 'CreateVideo',
-    component: () => import('@/views/CreateVideo.vue'),
-    meta: {
-      title: 'navigation.create_video',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/videos',
-    name: 'MyVideos',
-    component: () => import('@/views/MyVideos.vue'),
-    meta: {
-      title: 'navigation.my_videos',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/voice-clone',
-    name: 'VoiceClone',
-    component: () => import('@/views/VoiceClone.vue'),
-    meta: {
-      title: 'navigation.voice_clone',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/templates',
-    name: 'Templates',
-    component: () => import('@/views/Templates.vue'),
-    meta: {
-      title: 'navigation.templates',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/settings',
-    name: 'Settings',
-    component: () => import('@/views/Settings.vue'),
-    meta: {
-      title: 'navigation.settings',
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/Login.vue'),
-    meta: {
-      title: 'auth.login',
+      title: 'Vidspark - AI影片創作平台',
       requiresAuth: false
     }
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/Register.vue'),
+    component: () => import('@/views/RegisterView.vue'),
     meta: {
-      title: 'auth.register',
+      title: '註冊 - Vidspark',
       requiresAuth: false
+    }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: {
+      title: '登入 - Vidspark',
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('@/views/DashboardView.vue'),
+    meta: {
+      title: '主控台 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/audio',
+    name: 'Audio',
+    component: () => import('@/views/AudioView.vue'),
+    meta: {
+      title: '聲音庫 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/video',
+    name: 'Video',
+    component: () => import('@/views/VideoView.vue'),
+    meta: {
+      title: '影片創作 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/files',
+    name: 'Files',
+    component: () => import('@/views/FilesView.vue'),
+    meta: {
+      title: '媒體庫 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/credits',
+    name: 'Credits',
+    component: () => import('@/views/CreditsView.vue'),
+    meta: {
+      title: '積分中心 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/views/SettingsView.vue'),
+    meta: {
+      title: '設置 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/projects',
+    name: 'Projects',
+    component: () => import('@/views/ProjectsView.vue'),
+    meta: {
+      title: '我的項目 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/avatars',
+    name: 'Avatars',
+    component: () => import('@/views/AvatarsView.vue'),
+    meta: {
+      title: '數字人庫 - Vidspark',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/templates',
+    name: 'Templates',
+    component: () => import('@/views/TemplatesView.vue'),
+    meta: {
+      title: '模板庫 - Vidspark',
+      requiresAuth: true
     }
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('@/views/NotFound.vue')
+    component: () => import('@/views/NotFoundView.vue')
   }
-]
+];
 
 // 創建路由實例
 const router = createRouter({
-  history: createWebHashHistory('/vidspark/'),
+  history: createWebHistory('/vidspark/'),
   routes
-})
+});
 
 // 路由守衛
 router.beforeEach((to, from, next) => {
   // 檢查認證
-  const token = localStorage.getItem('vidspark_token')
-  const requiresAuth = to.meta.requiresAuth
+  const token = localStorage.getItem('vidspark_user_token');
+  const requiresAuth = to.meta.requiresAuth;
 
   if (requiresAuth && !token) {
     // 需要認證但未登入，跳轉到登入頁
-    next('/login')
+    next('/login');
   } else if (!requiresAuth && token && (to.name === 'Login' || to.name === 'Register')) {
     // 已登入但訪問登入/註冊頁，跳轉到控制台
-    next('/dashboard')
+    next('/dashboard');
   } else {
-    next()
+    next();
   }
-})
+  
+  // 設置頁面標題
+  if (to.meta.title) {
+    document.title = to.meta.title as string;
+  }
+});
 
-export default router
+export default router;
