@@ -646,17 +646,28 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
         // 處理OPTIONS預檢請求
         if ($request->method() === 'OPTIONS') {
             error_log("[SimpleStorage] OPTIONS預檢請求");
-            return response('', 200, [
+            return new Response(200, [
                 'Access-Control-Allow-Origin' => '*',
                 'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
                 'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
                 'Access-Control-Max-Age' => '86400'
-            ]);
+            ], '');
         }
         
         if (file_exists($filePath)) {
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-            $contentType = $ext === 'mp4' ? 'video/mp4' : 'application/octet-stream';
+            $contentType = 'application/octet-stream';
+            if ($ext === 'mp4') {
+                $contentType = 'video/mp4';
+            } elseif ($ext === 'mp3') {
+                $contentType = 'audio/mpeg';
+            } elseif ($ext === 'wav') {
+                $contentType = 'audio/wav';
+            } elseif ($ext === 'm4a') {
+                $contentType = 'audio/x-m4a';
+            } elseif ($ext === 'aac') {
+                $contentType = 'audio/aac';
+            }
             
             // 安全獲取文件大小
             $fileSize = @filesize($filePath);
@@ -677,18 +688,18 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
             
             if ($request->method() === 'HEAD') {
                 error_log("[SimpleStorage] HEAD請求，返回頭信息");
-                return response('', 200, $headers);
+                return new Response(200, $headers, '');
             }
             
             error_log("[SimpleStorage] GET請求，返回文件內容");
-            return response()->file($filePath, 200, $headers);
+            return (new Response(200, $headers))->file($filePath);
         }
         
-        return response('File not found: ' . $type . '/' . $filename, 404);
+        return new Response(404, ['Content-Type' => 'text/plain'], 'File not found: ' . $type . '/' . $filename);
         
     } catch (Exception $e) {
         error_log("[SimpleStorage] 錯誤: " . $e->getMessage());
-        return response('Storage error: ' . $e->getMessage(), 500);
+        return new Response(500, ['Content-Type' => 'text/plain'], 'Storage error: ' . $e->getMessage());
     }
 });
 
