@@ -1,0 +1,1 @@
+import{d as s,c as t,a as o,t as n,o as d,_ as i}from"./index.js";const r={class:"my-videos"},_=s({__name:"MyVideos",setup(c){return(a,e)=>(d(),t("div",r,[o("h1",null,n(a.$t("navigation.my_videos")),1),e[0]||(e[0]=o("p",null,"Placeholder for video management interface",-1))]))}}),p=i(_,[["__scopeId","data-v-5bef9ad7"]]);export{p as default};

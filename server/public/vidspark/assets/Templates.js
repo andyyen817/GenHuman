@@ -1,0 +1,1 @@
+import{d as s,c as o,a as t,t as l,o as n,_ as p}from"./index.js";const r={class:"templates"},c=s({__name:"Templates",setup(_){return(a,e)=>(n(),o("div",r,[t("h1",null,l(a.$t("navigation.templates")),1),e[0]||(e[0]=t("p",null,"Placeholder for templates library",-1))]))}}),i=p(c,[["__scopeId","data-v-96bc470f"]]);export{i as default};

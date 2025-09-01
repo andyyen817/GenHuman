@@ -1,0 +1,1 @@
+import{d as s,c as t,a as o,t as c,o as n,_ as a}from"./index.js";const i={class:"voice-clone"},l=s({__name:"VoiceClone",setup(r){return(e,_)=>(n(),t("div",i,[o("h1",null,c(e.$t("voice.cloneVoice")),1),o("p",null,c(e.$t("voice.instructions")),1)]))}}),d=a(l,[["__scopeId","data-v-c9850b00"]]);export{d as default};

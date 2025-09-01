@@ -81,12 +81,14 @@ Route::get('/user-api/dashboard', [app\controller\UserApiController::class, 'das
 Route::get('/admin', function () {
     $filePath = base_path() . '/public/admin/index.html';
     if (file_exists($filePath)) {
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ]))->file($filePath);
     }
-    return response('Admin page not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Admin page not found');
 });
 
 // API配置管理路由
@@ -135,7 +137,8 @@ Route::get('/static/{path:.+}', function ($request, $path) {
             ]);
         }
     }
-    return response('Static file not found: ' . $path, 404);
+    // 🚨 Webman語法：new Response()
+return new Response(404, ['Content-Type' => 'text/plain'], 'Static file not found: ' . $path);
 });
 
 // Admin管理後台靜態資源路由
@@ -165,7 +168,8 @@ Route::get('/admin/static/{path:.+}', function ($request, $path) {
             'Cache-Control' => 'public, max-age=31536000' // 1年緩存
         ]);
     }
-    return response('Static file not found: ' . $path, 404);
+    // 🚨 Webman語法：new Response()
+return new Response(404, ['Content-Type' => 'text/plain'], 'Static file not found: ' . $path);
 });
 
 // H5靜態資源路由 - 使用專用控制器
@@ -190,10 +194,11 @@ Route::get('/h5', [app\controller\StaticController::class, 'index']);
 Route::get('/vidspark-i18n-test.html', function () {
     $filePath = base_path() . '/public/vidspark-i18n-test.html';
     if (file_exists($filePath)) {
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ]))->file($filePath);
     }
     return response('Vidspark test page not found', 404);
 });
@@ -324,34 +329,39 @@ Route::get('/retrieve-audio-by-id', function() {
 Route::get('/vidspark', function () {
     $filePath = base_path() . '/public/vidspark/index.html';
     if (file_exists($filePath)) {
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ]))->file($filePath);
     }
-    return response('Vidspark app not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark app not found');
 });
 
 // Vidspark前端應用路由（帶斜槓）
 Route::get('/vidspark/', function () {
     $filePath = base_path() . '/public/vidspark/index.html';
     if (file_exists($filePath)) {
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ]))->file($filePath);
     }
-    return response('Vidspark app not found', 404);
+    // 🚨 Webman語法：new Response()
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark app not found');
 });
 
 // Vidspark管理後台路由
 Route::get('/vidspark-admin', function () {
     $filePath = base_path() . '/public/vidspark-admin/index.html';
     if (file_exists($filePath)) {
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ]))->file($filePath);
     }
     return response('Vidspark admin not found', 404);
 });
@@ -360,10 +370,11 @@ Route::get('/vidspark-admin', function () {
 Route::get('/vidspark-admin/', function () {
     $filePath = base_path() . '/public/vidspark-admin/index.html';
     if (file_exists($filePath)) {
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ]))->file($filePath);
     }
     return response('Vidspark admin not found', 404);
 });
@@ -389,10 +400,11 @@ Route::get('/vidspark/assets/{path:.+}', function ($request, $path) {
         ];
         $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
         
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => $contentType,
             'Cache-Control' => 'public, max-age=31536000'
-        ]);
+        ]))->file($filePath);
     }
     return response('Vidspark asset not found: ' . $path, 404);
 });
@@ -495,10 +507,11 @@ Route::get('/vidspark-admin/assets/{path:.+}', function ($request, $path) {
         ];
         $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
         
-        return response()->file($filePath, 200, [
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
             'Content-Type' => $contentType,
             'Cache-Control' => 'public, max-age=31536000'
-        ]);
+        ]))->file($filePath);
     }
     return response('Vidspark admin asset not found: ' . $path, 404);
 });
@@ -706,8 +719,53 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
 // 舊的存儲管理路由（已被新系統替代）
 // Route::get('/vidspark-storage-status-old', [app\controller\VidsparkStorageController::class, 'status']);
 
+// 🚨 CRITICAL: Vidspark SPA路由支持（所有/vidspark/*路由都返回index.html）
+Route::get('/vidspark/{path:.+}', function ($request, $path) {
+    // 如果是靜態資源，先檢查是否存在
+    if (strpos($path, 'assets/') === 0) {
+        $filePath = base_path() . '/public/vidspark/' . $path;
+        if (file_exists($filePath)) {
+            $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+            $contentTypes = [
+                'css' => 'text/css; charset=utf-8',
+                'js' => 'application/javascript; charset=utf-8', 
+                'png' => 'image/png',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                'ico' => 'image/x-icon',
+                'woff' => 'font/woff',
+                'woff2' => 'font/woff2',
+                'ttf' => 'font/ttf',
+                'otf' => 'font/otf'
+            ];
+            $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+            
+            return response()->file($filePath, 200, [
+                'Content-Type' => $contentType,
+                'Cache-Control' => 'public, max-age=31536000'
+            ]);
+        }
+    }
+    
+    // 所有其他路由都返回index.html（SPA路由支持）
+    $filePath = base_path() . '/public/vidspark/index.html';
+    if (file_exists($filePath)) {
+        // 🚨 Webman語法：new Response()
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    
+    // 🚨 Webman語法：new Response()
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark app not found');
+});
+
 // 靜態文件處理（如果需要）
 Route::fallback(function(){
-    return response('API endpoint not found', 404);
+    // 🚨 Webman語法：new Response()
+return new Response(404, ['Content-Type' => 'text/plain'], 'API endpoint not found');
 });
 ?>

@@ -1,0 +1,1 @@
+import{d as n,c as a,a as e,t as o,o as i,_ as r}from"./index.js";const l={class:"settings"},p=n({__name:"Settings",setup(_){return(s,t)=>(i(),a("div",l,[e("h1",null,o(s.$t("navigation.settings")),1),t[0]||(t[0]=e("p",null,"Placeholder for settings page",-1))]))}}),d=r(p,[["__scopeId","data-v-53b95359"]]);export{d as default};
