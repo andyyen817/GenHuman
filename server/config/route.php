@@ -630,6 +630,7 @@ Route::any('/vidspark-admin/api/callback', function ($request) {
 
 // 🆕 Vidspark簡單上傳系統（歸零重寫）
 Route::post('/vidspark-simple-upload/video', [app\controller\VidsparkSimpleUploadController::class, 'uploadVideo']);
+Route::post('/vidspark-simple-upload/audio', [app\controller\VidsparkSimpleUploadController::class, 'uploadAudio']);
 Route::get('/vidspark-simple-upload/test', [app\controller\VidsparkSimpleUploadController::class, 'test']);
 
 // 🆕 簡單文件存儲路由（與存儲結構完全匹配）

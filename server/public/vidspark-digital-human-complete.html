@@ -660,7 +660,7 @@
                         const formData = new FormData();
                         formData.append('audio', audioFile);
                         
-                        const uploadResponse = await fetch('/vidspark-upload/audio', {
+                        const uploadResponse = await fetch('/vidspark-simple-upload/audio', {
                             method: 'POST',
                             body: formData
                         });
@@ -1061,7 +1061,7 @@
                     const formData = new FormData();
                     formData.append('audio', audioFile);
                     
-                    const uploadResponse = await fetch('/vidspark-upload/audio', {
+                    const uploadResponse = await fetch('/vidspark-simple-upload/audio', {
                         method: 'POST',
                         body: formData
                     });
