@@ -636,32 +636,20 @@
                     
                     let uploadResult;
                     
-                    // 嘗試Base64上傳方式（繞過PHP上傳限制）
+                    // 🔧 關鍵修復：直接使用新的簡單上傳系統（避免URL格式問題）
                     try {
-                        showResult(1, '📤 使用Base64方式上傳...', 'info');
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 嘗試Base64上傳方式...`);
+                        showResult(1, '📤 使用新的簡單上傳系統...', 'info');
+                        console.log(`[${new Date().toLocaleTimeString()}] 📤 使用新的簡單上傳系統 /vidspark-simple-upload/audio`);
                         
-                        // 將文件轉換為Base64
-                        const fileData = await new Promise((resolve, reject) => {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                const base64 = reader.result.split(',')[1]; // 移除data:audio/...;base64,前綴
-                                resolve(base64);
-                            };
-                            reader.onerror = reject;
-                            reader.readAsDataURL(audioFile);
-                        });
+                        // 直接使用FormData上傳到新系統
+                        const formData = new FormData();
+                        formData.append('audio', audioFile);
                         
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 發送Base64上傳請求到: /vidspark-upload/audio-base64`);
+                        console.log(`[${new Date().toLocaleTimeString()}] 📤 發送到新的簡單上傳系統: /vidspark-simple-upload/audio`);
                         
-                        const uploadResponse = await fetch('/vidspark-upload/audio-base64', {
+                        const uploadResponse = await fetch('/vidspark-simple-upload/audio', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                fileName: audioFile.name,
-                                fileData: fileData,
-                                fileSize: audioFile.size
-                            })
+                            body: formData
                         });
                         
                         console.log(`[${new Date().toLocaleTimeString()}] 📤 音頻上傳響應: ${uploadResponse.status} ${uploadResponse.statusText}`);
@@ -669,37 +657,53 @@
                         console.log(`[${new Date().toLocaleTimeString()}] 📋 上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.data?.file_url}`);
                         
                         if (!uploadResult.success) {
-                            throw new Error('Base64上傳失敗: ' + uploadResult.message);
+                            throw new Error('簡單上傳失敗: ' + uploadResult.message);
                         }
                         
                         audioUrl = uploadResult.data.file_url;
-                        showResult(1, `📤 文件上傳成功 (Base64): ${uploadResult.data.original_name}`, 'success');
+                        showResult(1, `📤 文件上傳成功 (新系統): ${uploadResult.data.original_name}`, 'success');
                         
-                    } catch (base64Error) {
-                        console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Base64上傳失敗，嘗試標準上傳:`, base64Error);
-                        showResult(1, '📤 嘗試標準文件上傳...', 'info');
+                    } catch (simpleUploadError) {
+                        console.error(`[${new Date().toLocaleTimeString()}] ❌ 新系統上傳失敗:`, simpleUploadError);
                         
-                        // 回退到標準上傳方式
-                        const formData = new FormData();
-                        formData.append('audio', audioFile);
-                        
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 發送標準上傳請求到: /vidspark-simple-upload/audio`);
-                        
-                        const uploadResponse = await fetch('/vidspark-simple-upload/audio', {
-                            method: 'POST',
-                            body: formData
-                        });
-                        
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 標準上傳響應: ${uploadResponse.status} ${uploadResponse.statusText}`);
-                        uploadResult = await uploadResponse.json();
-                        console.log(`[${new Date().toLocaleTimeString()}] 📋 標準上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.data?.file_url}`);
-                        
-                        if (!uploadResult.success) {
-                            throw new Error('文件上傳失敗: ' + uploadResult.message);
+                        // 🔧 如果新系統失敗，嘗試舊的Base64系統作為備用
+                        try {
+                            showResult(1, '📤 新系統失敗，嘗試Base64備用系統...', 'info');
+                            console.log(`[${new Date().toLocaleTimeString()}] 📤 嘗試Base64備用系統...`);
+                            
+                            // 將文件轉換為Base64
+                            const fileData = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                    const base64 = reader.result.split(',')[1];
+                                    resolve(base64);
+                                };
+                                reader.onerror = reject;
+                                reader.readAsDataURL(audioFile);
+                            });
+                            
+                            const uploadResponse = await fetch('/vidspark-upload/audio-base64', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fileName: audioFile.name,
+                                    fileData: fileData,
+                                    fileSize: audioFile.size
+                                })
+                            });
+                            
+                            uploadResult = await uploadResponse.json();
+                            
+                            if (!uploadResult.success) {
+                                throw new Error('Base64備用上傳失敗: ' + uploadResult.message);
+                            }
+                            
+                            audioUrl = uploadResult.data.file_url;
+                            showResult(1, `📤 文件上傳成功 (Base64備用): ${uploadResult.data.original_name}`, 'success');
+                            
+                        } catch (base64Error) {
+                            throw new Error('所有上傳方式都失敗: ' + base64Error.message);
                         }
-                        
-                        audioUrl = uploadResult.data.file_url;
-                        showResult(1, `📤 文件上傳成功: ${uploadResult.data.original_name}`, 'success');
                     }
                 }
 
@@ -1132,70 +1136,74 @@
                     
                     let uploadResult;
                     
-                    // 🔧 關鍵修復：添加Base64備用上傳（解決2M限制）
+                    // 🔧 關鍵修復：直接使用新的簡單上傳系統（解決URL格式問題）
                     try {
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 嘗試Base64上傳方式...`);
-                        showResult(4, '📤 使用Base64方式上傳...', 'info');
+                        console.log(`[${new Date().toLocaleTimeString()}] 📤 使用新的簡單上傳系統...`);
+                        showResult(4, '📤 使用新的簡單上傳系統...', 'info');
                         
-                        // 將文件轉換為Base64
-                        const fileData = await new Promise((resolve, reject) => {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                const base64 = reader.result.split(',')[1]; // 移除data:audio/...;base64,前綴
-                                resolve(base64);
-                            };
-                            reader.onerror = reject;
-                            reader.readAsDataURL(audioFile);
-                        });
-                        
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 發送Base64上傳請求到: /vidspark-upload/audio-base64`);
-                        
-                        const uploadResponse = await fetch('/vidspark-upload/audio-base64', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                fileName: audioFile.name,
-                                fileData: fileData,
-                                fileSize: audioFile.size
-                            })
-                        });
-                        
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 Base64上傳響應: ${uploadResponse.status} ${uploadResponse.statusText}`);
-                        uploadResult = await uploadResponse.json();
-                        console.log(`[${new Date().toLocaleTimeString()}] 📋 Base64上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.data?.file_url}`);
-                        
-                        if (!uploadResult.success) {
-                            throw new Error('Base64上傳失敗: ' + uploadResult.message);
-                        }
-                        
-                        audioUrlToUse = uploadResult.data.file_url;
-                        showResult(4, `📤 音頻上傳成功 (Base64): ${uploadResult.data.original_name}`, 'success');
-                        
-                    } catch (base64Error) {
-                        console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Base64上傳失敗，嘗試標準上傳:`, base64Error);
-                        showResult(4, '📤 嘗試標準文件上傳...', 'info');
-                        
-                        // 回退到標準上傳方式
+                        // 直接使用FormData上傳到新系統
                         const formData = new FormData();
                         formData.append('audio', audioFile);
                         
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 發送標準上傳請求到: /vidspark-simple-upload/audio`);
+                        console.log(`[${new Date().toLocaleTimeString()}] 📤 發送到新的簡單上傳系統: /vidspark-simple-upload/audio`);
                         
                         const uploadResponse = await fetch('/vidspark-simple-upload/audio', {
                             method: 'POST',
                             body: formData
                         });
                         
-                        console.log(`[${new Date().toLocaleTimeString()}] 📤 標準上傳響應: ${uploadResponse.status} ${uploadResponse.statusText}`);
+                        console.log(`[${new Date().toLocaleTimeString()}] 📤 音頻上傳響應: ${uploadResponse.status} ${uploadResponse.statusText}`);
                         uploadResult = await uploadResponse.json();
-                        console.log(`[${new Date().toLocaleTimeString()}] 📋 標準上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.data?.file_url}`);
+                        console.log(`[${new Date().toLocaleTimeString()}] 📋 上傳結果: 成功=${uploadResult.success}, URL=${uploadResult.data?.file_url}`);
                         
                         if (!uploadResult.success) {
-                            throw new Error('音頻文件上傳失敗: ' + uploadResult.message);
+                            throw new Error('簡單上傳失敗: ' + uploadResult.message);
                         }
                         
                         audioUrlToUse = uploadResult.data.file_url;
-                        showResult(4, `📤 音頻上傳成功: ${uploadResult.data.original_name}`, 'success');
+                        showResult(4, `📤 音頻上傳成功 (新系統): ${uploadResult.data.original_name}`, 'success');
+                        
+                    } catch (simpleUploadError) {
+                        console.error(`[${new Date().toLocaleTimeString()}] ❌ 新系統上傳失敗:`, simpleUploadError);
+                        
+                        // 🔧 如果新系統失敗，嘗試舊的Base64系統作為備用
+                        try {
+                            showResult(4, '📤 新系統失敗，嘗試Base64備用系統...', 'info');
+                            console.log(`[${new Date().toLocaleTimeString()}] 📤 嘗試Base64備用系統...`);
+                            
+                            // 將文件轉換為Base64
+                            const fileData = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                    const base64 = reader.result.split(',')[1];
+                                    resolve(base64);
+                                };
+                                reader.onerror = reject;
+                                reader.readAsDataURL(audioFile);
+                            });
+                            
+                            const uploadResponse = await fetch('/vidspark-upload/audio-base64', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fileName: audioFile.name,
+                                    fileData: fileData,
+                                    fileSize: audioFile.size
+                                })
+                            });
+                            
+                            uploadResult = await uploadResponse.json();
+                            
+                            if (!uploadResult.success) {
+                                throw new Error('Base64備用上傳失敗: ' + uploadResult.message);
+                            }
+                            
+                            audioUrlToUse = uploadResult.data.file_url;
+                            showResult(4, `📤 音頻上傳成功 (Base64備用): ${uploadResult.data.original_name}`, 'success');
+                            
+                        } catch (base64Error) {
+                            throw new Error('所有上傳方式都失敗: ' + base64Error.message);
+                        }
                     }
                 } catch (error) {
                     showLoading(4, false);
