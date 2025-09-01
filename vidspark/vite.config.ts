@@ -1,41 +1,45 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/vidspark/',
-  plugins: [
-    vue(),
-    VueI18nPlugin({
-      include: resolve(__dirname, './src/i18n/locales/**')
-    })
-  ],
+  plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   build: {
-    outDir: '../server/public/vidspark',
+    outDir: '../server/public/vidspark', // 構建到後端public目錄
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['vue', 'vue-router', 'pinia'],
-          elementplus: ['element-plus']
-        }
-      }
-    }
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: `assets/[name].[ext]`,
+      },
+    },
   },
   server: {
-    port: 3001,
+    port: 3000,
     proxy: {
-      '/api': {
-        target: 'http://localhost:7070',
-        changeOrigin: true
-      }
-    }
-  }
-})
+      '/vidspark-api-proxy': {
+        target: 'http://localhost:8787', // 後端Webman服務地址
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/vidspark-api-proxy/, '/vidspark-api-proxy'),
+      },
+      '/vidspark-simple-upload': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/vidspark-simple-upload/, '/vidspark-simple-upload'),
+      },
+      '/vidspark/files': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/vidspark\/files/, '/vidspark/files'),
+      },
+    },
+  },
+});

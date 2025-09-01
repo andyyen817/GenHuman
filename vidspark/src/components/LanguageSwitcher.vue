@@ -1,51 +1,42 @@
 <template>
-  <el-dropdown @command="handleLanguageChange">
-    <span class="el-dropdown-link">
-      <el-icon><Globe /></el-icon>
-      {{ currentLanguageLabel }}
-      <el-icon class="el-icon--right"><arrow-down /></el-icon>
-    </span>
-    <template #dropdown>
-      <el-dropdown-menu>
-        <el-dropdown-item command="en">English</el-dropdown-item>
-        <el-dropdown-item command="zh-TW">繁體中文</el-dropdown-item>
-        <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
-      </el-dropdown-menu>
-    </template>
-  </el-dropdown>
+  <div class="relative">
+    <select 
+      v-model="selectedLanguage"
+      @change="handleLanguageChange"
+      class="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent cursor-pointer"
+    >
+      <option value="zh-TW">繁體中文</option>
+      <option value="zh-CN">简体中文</option>
+      <option value="en">English</option>
+    </select>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Globe, ArrowDown } from '@element-plus/icons-vue';
 import { setLanguage } from '@/i18n';
 
 const { locale } = useI18n();
+const selectedLanguage = ref(locale.value);
 
-const languageLabels = {
-  'en': 'English',
-  'zh-TW': '繁體中文',
-  'zh-CN': '简体中文'
+const handleLanguageChange = () => {
+  setLanguage(selectedLanguage.value as 'en' | 'zh-TW' | 'zh-CN');
+  console.log(`[${new Date().toLocaleTimeString()}] 🌍 語言切換為: ${selectedLanguage.value}`);
 };
 
-const currentLanguageLabel = computed(() => {
-  return languageLabels[locale.value as keyof typeof languageLabels] || 'English';
+onMounted(() => {
+  selectedLanguage.value = locale.value;
 });
-
-const handleLanguageChange = (command: string) => {
-  setLanguage(command as 'en' | 'zh-TW' | 'zh-CN');
-};
 </script>
 
 <style scoped>
-.el-dropdown-link {
-  cursor: pointer;
-  color: var(--el-color-primary);
-  display: flex;
-  align-items: center;
-}
-.el-dropdown-link:hover {
-  color: var(--el-color-primary-light-3);
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
 }
 </style>
