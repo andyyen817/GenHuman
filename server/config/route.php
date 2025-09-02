@@ -165,10 +165,10 @@ Route::get('/admin/static/{path:.+}', function ($request, $path) {
         $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
         
         // 🚨 Webman語法：new Response()
-            return (new Response(200, [
+        return (new Response(200, [
             'Content-Type' => $contentType,
             'Cache-Control' => 'public, max-age=31536000' // 1年緩存
-        ]);
+        ]))->file($filePath);
     }
     // 🚨 Webman語法：new Response()
 return new Response(404, ['Content-Type' => 'text/plain'], 'Static file not found: ' . $path);
@@ -187,7 +187,7 @@ Route::get('/h5/login-fix.js', function () {
         ]))->file($filePath);
     }
     // 🚨 Webman語法：new Response()
-    return new Response('Login fix script not found', 404);
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Login fix script not found');
 });
 Route::get('/h5/{filename}', [app\controller\StaticController::class, 'file']);
 
@@ -222,7 +222,7 @@ Route::get('/vidspark-token-test', function () {
         ]);
     }
     // 🚨 Webman語法：new Response()
-    return new Response('Token test page not found', 404);
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Token test page not found');
 });
 
 // Vidspark完整數字人生成流程頁面
@@ -230,13 +230,13 @@ Route::get('/vidspark-digital-human-complete', function () {
     $filePath = base_path() . '/public/vidspark-digital-human-complete.html';
     if (file_exists($filePath)) {
         // 🚨 Webman語法：new Response()
-    return new Response(file_get_contents($filePath), 200, [
+        return new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
-        ]);
+        ], file_get_contents($filePath));
     }
     // 🚨 Webman語法：new Response()
-    return new Response('Complete workflow page not found', 404);
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Complete workflow page not found');
 });
 
 // 修復：支持用戶常見的拼寫錯誤
