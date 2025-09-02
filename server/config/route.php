@@ -488,22 +488,22 @@ Route::any('/vidspark/storage/{path:.+}', function ($request, $path) {
         if ($request->method() === 'HEAD') {
             error_log("[Storage Route] HEAD請求，返回頭信息，文件大小: {$fileSize}");
             // 🚨 Webman語法：new Response()
-    return new Response('', 200, $headers);
+            return new Response(200, $headers, '');
         }
         
         // GET請求返回文件內容
         error_log("[Storage Route] GET請求，返回文件內容，文件大小: {$fileSize}");
         // 🚨 Webman語法：new Response()
-    return new Response()->file($filePath, 200, $headers);
+        return (new Response(200, $headers))->file($filePath);
     }
     // 🚨 Webman語法：new Response()
-    return new Response('Vidspark storage file not found: ' . $path, 404);
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark storage file not found: ' . $path);
     
     } catch (Exception $e) {
         error_log("[Storage Route] 處理文件請求時發生錯誤: " . $e->getMessage());
         error_log("[Storage Route] 錯誤堆棧: " . $e->getTraceAsString());
         // 🚨 Webman語法：new Response()
-    return new Response('Internal Server Error processing file request: ' . $e->getMessage(), 500);
+        return new Response(500, ['Content-Type' => 'text/plain'], 'Internal Server Error processing file request: ' . $e->getMessage());
     }
 });
 
@@ -535,7 +535,7 @@ Route::get('/vidspark-admin/assets/{path:.+}', function ($request, $path) {
         ]))->file($filePath);
     }
     // 🚨 Webman語法：new Response()
-    return new Response('Vidspark admin asset not found: ' . $path, 404);
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark admin asset not found: ' . $path);
 });
 
 // Vidspark聲音克隆Debug頁面
