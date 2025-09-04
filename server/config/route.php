@@ -867,6 +867,103 @@ Route::group('/vidspark-v2/api/i18n', function () {
     });
 });
 
+// 🆕 Vidspark v2.0 靜態頁面路由（門面頁面）
+Route::get('/vidspark-v2/landing.html', function () {
+    $filePath = base_path() . '/public/vidspark-v2/landing.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Landing page not found');
+});
+
+Route::get('/vidspark-v2/login.html', function () {
+    $filePath = base_path() . '/public/vidspark-v2/login.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Login page not found');
+});
+
+Route::get('/vidspark-v2/register.html', function () {
+    $filePath = base_path() . '/public/vidspark-v2/register.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Register page not found');
+});
+
+Route::get('/vidspark-v2/about.html', function () {
+    $filePath = base_path() . '/public/vidspark-v2/about.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'About page not found');
+});
+
+Route::get('/vidspark-v2/pricing.html', function () {
+    $filePath = base_path() . '/public/vidspark-v2/pricing.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Pricing page not found');
+});
+
+// 🆕 Vidspark v2.0 管理後台路由
+Route::get('/vidspark-v2/admin/i18n-manager-pages.html', function () {
+    $filePath = base_path() . '/public/vidspark-v2/admin/i18n-manager-pages.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'I18n manager not found');
+});
+
+// 🆕 Vidspark v2.0 靜態資源路由（CSS、JS、圖片等）
+Route::get('/vidspark-v2/assets/{path:.+}', function ($request, $path) {
+    $filePath = base_path() . '/public/vidspark-v2/assets/' . $path;
+    if (file_exists($filePath)) {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $contentTypes = [
+            'css' => 'text/css; charset=utf-8',
+            'js' => 'application/javascript; charset=utf-8', 
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'ico' => 'image/x-icon',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'otf' => 'font/otf'
+        ];
+        $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+        
+        return (new Response(200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=31536000'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark v2 asset not found: ' . $path);
+});
+
 Route::fallback(function(){
     // 🚨 Webman語法：new Response()
 return new Response(404, ['Content-Type' => 'text/plain'], 'API endpoint not found');
