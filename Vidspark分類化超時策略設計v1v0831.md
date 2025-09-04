@@ -178,3 +178,5 @@ VIDSPARK_API_TIMEOUT_VIDEO_SYNTHESIS=180
 **優先級**：高
 **預計實施時間**：3週
 **維護者**：Vidspark技術團隊
+
+

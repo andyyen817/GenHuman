@@ -14,7 +14,10 @@
 
       <!-- 創建按鈕 -->
       <div class="p-4">
-        <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
+        <button 
+          @click="createVideo"
+          class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+        >
           <i class="fas fa-plus mr-2"></i>
           創建影片
         </button>
@@ -24,40 +27,64 @@
       <nav class="flex-1 px-4">
         <ul class="space-y-2">
           <li>
-            <a href="#" class="flex items-center px-4 py-3 text-white bg-purple-600 rounded-lg">
+            <router-link 
+              to="/dashboard" 
+              class="flex items-center px-4 py-3 text-white bg-purple-600 rounded-lg"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-home mr-3"></i>
               首頁
-            </a>
+            </router-link>
           </li>
           <li>
-            <router-link to="/projects" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+            <router-link 
+              to="/projects" 
+              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-folder mr-3"></i>
               我的項目
             </router-link>
           </li>
           <li>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+            <router-link 
+              to="/avatars" 
+              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-user-tie mr-3"></i>
               數字人庫
-            </a>
+            </router-link>
           </li>
           <li>
-            <router-link to="/voice-clone" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+            <router-link 
+              to="/voices" 
+              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-microphone mr-3"></i>
               聲音庫
             </router-link>
           </li>
           <li>
-            <router-link to="/templates" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+            <router-link 
+              to="/templates" 
+              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-layer-group mr-3"></i>
               模板庫
             </router-link>
           </li>
           <li>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+            <router-link 
+              to="/media" 
+              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-images mr-3"></i>
               媒體庫
-            </a>
+            </router-link>
           </li>
         </ul>
 
@@ -66,16 +93,24 @@
 
         <ul class="space-y-2">
           <li>
-            <router-link to="/settings" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+            <router-link 
+              to="/settings" 
+              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-cog mr-3"></i>
               應用設定
             </router-link>
           </li>
           <li>
-            <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+            <router-link 
+              to="/team" 
+              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              active-class="bg-purple-600 text-white"
+            >
               <i class="fas fa-users mr-3"></i>
               創建團隊
-            </a>
+            </router-link>
           </li>
         </ul>
       </nav>
@@ -84,7 +119,10 @@
       <div class="p-4 border-t border-gray-700">
         <!-- 升級按鈕 -->
         <div class="mb-4">
-          <button class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 px-4 rounded-lg font-medium text-sm hover:from-yellow-600 hover:to-orange-600 transition-all">
+          <button 
+            @click="upgradePlan"
+            class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 px-4 rounded-lg font-medium text-sm hover:from-yellow-600 hover:to-orange-600 transition-all"
+          >
             <i class="fas fa-crown mr-2"></i>
             升級方案
           </button>
@@ -92,12 +130,14 @@
         
         <!-- 用戶頭像 -->
         <div class="flex items-center">
-          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
-               alt="用戶頭像" 
-               class="w-10 h-10 rounded-full">
+          <img 
+            :src="userInfo.avatar" 
+            :alt="userInfo.name" 
+            class="w-10 h-10 rounded-full"
+          >
           <div class="ml-3 flex-1">
-            <p class="text-white text-sm font-medium">張小明</p>
-            <p class="text-gray-400 text-xs">免費會員</p>
+            <p class="text-white text-sm font-medium">{{ userInfo.name }}</p>
+            <p class="text-gray-400 text-xs">{{ userInfo.plan }}</p>
           </div>
           <button class="text-gray-400 hover:text-white">
             <i class="fas fa-ellipsis-v"></i>
@@ -112,16 +152,19 @@
       <header class="bg-white border-b border-gray-200 px-6 py-4">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">歡迎回來，張小明！</h1>
+            <h1 class="text-2xl font-bold text-gray-900">歡迎回來，{{ userInfo.name }}！</h1>
             <p class="text-gray-600">準備創建您的下一個精彩影片了嗎？</p>
           </div>
           
           <div class="flex items-center space-x-4">
             <!-- 語言切換 -->
-            <select class="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-              <option>繁體中文</option>
-              <option>简体中文</option>
-              <option>English</option>
+            <select 
+              v-model="selectedLanguage"
+              class="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="zh-TW">繁體中文</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="en">English</option>
             </select>
             
             <!-- 通知按鈕 -->
@@ -148,7 +191,10 @@
                 <h2 class="text-xl font-bold text-gray-900 mb-2">專屬數字人，全新升級</h2>
                 <p class="text-gray-600">立即用您的數字分身，為您的腳本帶來生命力</p>
               </div>
-              <button class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+              <button 
+                @click="tryDigitalHuman"
+                class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              >
                 立即試用 →
               </button>
             </div>
@@ -179,7 +225,10 @@
                   <i class="fas fa-gift mr-1"></i>
                   每日 3 次免費
                 </span>
-                <button class="text-purple-600 hover:text-purple-700 font-medium">
+                <button 
+                  @click="startFreeVideo"
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
                   開始 →
                 </button>
               </div>
@@ -199,7 +248,10 @@
                   <i class="fas fa-magic mr-1"></i>
                   AI 智能轉換
                 </span>
-                <button class="text-purple-600 hover:text-purple-700 font-medium">
+                <button 
+                  @click="startTextToVideo"
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
                   開始 →
                 </button>
               </div>
@@ -224,13 +276,16 @@
                   <i class="fas fa-gift mr-1"></i>
                   1 次免費體驗
                 </span>
-                <router-link to="/voice-clone" class="text-purple-600 hover:text-purple-700 font-medium">
+                <button 
+                  @click="startVoiceClone"
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
                   開始 →
-                </router-link>
+                </button>
               </div>
             </div>
 
-            <!-- 模仿影片 -->
+            <!-- 模仿影片創作 -->
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 card-hover">
               <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
                 <i class="fas fa-link text-yellow-600 text-xl"></i>
@@ -244,7 +299,10 @@
                   <i class="fas fa-robot mr-1"></i>
                   AI 風格學習
                 </span>
-                <button class="text-purple-600 hover:text-purple-700 font-medium">
+                <button 
+                  @click="startImitateVideo"
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
                   開始 →
                 </button>
               </div>
@@ -264,7 +322,10 @@
                   <i class="fas fa-chalkboard-teacher mr-1"></i>
                   教育專用
                 </span>
-                <button class="text-purple-600 hover:text-purple-700 font-medium">
+                <button 
+                  @click="startPPTVideo"
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
                   開始 →
                 </button>
               </div>
@@ -284,7 +345,10 @@
                   <i class="fas fa-crown mr-1"></i>
                   高級功能
                 </span>
-                <button class="text-purple-600 hover:text-purple-700 font-medium">
+                <button 
+                  @click="startCustomDigitalHuman"
+                  class="text-purple-600 hover:text-purple-700 font-medium"
+                >
                   開始 →
                 </button>
               </div>
@@ -296,114 +360,46 @@
         <section>
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-bold text-gray-900">最近的創作</h2>
-            <router-link to="/projects" class="text-purple-600 hover:text-purple-700 font-medium">查看全部</router-link>
+            <router-link 
+              to="/projects" 
+              class="text-purple-600 hover:text-purple-700 font-medium"
+            >
+              查看全部
+            </router-link>
           </div>
-
+          
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- 項目卡片 1 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
+            <div 
+              v-for="project in recentProjects" 
+              :key="project.id"
+              @click="openProject(project)"
+              class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover cursor-pointer"
+            >
               <div class="relative">
-                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=160&fit=crop" 
-                     alt="影片縮圖" class="w-full h-32 object-cover">
+                <img 
+                  :src="project.thumbnail" 
+                  :alt="project.title" 
+                  class="w-full h-32 object-cover"
+                >
                 <div class="absolute inset-0 flex items-center justify-center">
                   <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
                     <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
                   </div>
                 </div>
                 <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5 rounded">
-                  01:24
+                  {{ project.duration }}
                 </div>
               </div>
               <div class="p-4">
-                <h3 class="font-medium text-gray-900 mb-1">產品介紹影片</h3>
-                <p class="text-sm text-gray-500 mb-2">2小時前</p>
+                <h3 class="font-medium text-gray-900 mb-1">{{ project.title }}</h3>
+                <p class="text-sm text-gray-500 mb-2">{{ project.createdAt }}</p>
                 <div class="flex items-center justify-between">
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    已完成
-                  </span>
-                  <button class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-ellipsis-h"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- 項目卡片 2 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=300&h=160&fit=crop" 
-                     alt="影片縮圖" class="w-full h-32 object-cover">
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                    <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
-                  </div>
-                </div>
-                <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5 rounded">
-                  00:45
-                </div>
-              </div>
-              <div class="p-4">
-                <h3 class="font-medium text-gray-900 mb-1">課程宣傳片</h3>
-                <p class="text-sm text-gray-500 mb-2">昨天</p>
-                <div class="flex items-center justify-between">
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    處理中
-                  </span>
-                  <button class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-ellipsis-h"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- 項目卡片 3 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=160&fit=crop" 
-                     alt="影片縮圖" class="w-full h-32 object-cover">
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                    <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
-                  </div>
-                </div>
-                <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5 rounded">
-                  02:15
-                </div>
-              </div>
-              <div class="p-4">
-                <h3 class="font-medium text-gray-900 mb-1">團隊介紹</h3>
-                <p class="text-sm text-gray-500 mb-2">3天前</p>
-                <div class="flex items-center justify-between">
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    已完成
-                  </span>
-                  <button class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-ellipsis-h"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- 項目卡片 4 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
-              <div class="relative">
-                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=160&fit=crop" 
-                     alt="影片縮圖" class="w-full h-32 object-cover">
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                    <i class="fas fa-play text-purple-600 text-sm ml-0.5"></i>
-                  </div>
-                </div>
-                <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5 rounded">
-                  01:58
-                </div>
-              </div>
-              <div class="p-4">
-                <h3 class="font-medium text-gray-900 mb-1">市場分析報告</h3>
-                <p class="text-sm text-gray-500 mb-2">1週前</p>
-                <div class="flex items-center justify-between">
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                    草稿
+                  <span 
+                    :class="getStatusClass(project.status)"
+                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                  >
+                    {{ getStatusText(project.status) }}
                   </span>
                   <button class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-ellipsis-h"></i>
@@ -419,7 +415,124 @@
 </template>
 
 <script setup lang="ts">
-// 儀表板邏輯
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// 響應式數據
+const selectedLanguage = ref('zh-TW')
+
+// 用戶信息
+const userInfo = reactive({
+  name: '張小明',
+  plan: '免費會員',
+  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+})
+
+// 最近項目
+const recentProjects = ref([
+  {
+    id: 1,
+    title: '產品介紹影片',
+    thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=160&fit=crop',
+    duration: '01:24',
+    createdAt: '2小時前',
+    status: 'completed'
+  },
+  {
+    id: 2,
+    title: '課程宣傳片',
+    thumbnail: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=300&h=160&fit=crop',
+    duration: '00:45',
+    createdAt: '昨天',
+    status: 'processing'
+  },
+  {
+    id: 3,
+    title: '團隊介紹',
+    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=160&fit=crop',
+    duration: '02:15',
+    createdAt: '3天前',
+    status: 'completed'
+  },
+  {
+    id: 4,
+    title: '市場分析報告',
+    thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=160&fit=crop',
+    duration: '01:58',
+    createdAt: '1週前',
+    status: 'draft'
+  }
+])
+
+const getStatusClass = computed(() => (status: string) => {
+  const classes = {
+    completed: 'bg-green-100 text-green-800',
+    processing: 'bg-blue-100 text-blue-800',
+    draft: 'bg-gray-100 text-gray-800'
+  }
+  return classes[status as keyof typeof classes] || 'bg-gray-100 text-gray-800'
+})
+
+const getStatusText = computed(() => (status: string) => {
+  const texts = {
+    completed: '已完成',
+    processing: '處理中',
+    draft: '草稿'
+  }
+  return texts[status as keyof typeof texts] || '未知'
+})
+
+// 方法
+const createVideo = () => {
+  console.log('創建影片')
+  // 跳轉到創建頁面
+}
+
+const upgradePlan = () => {
+  console.log('升級方案')
+  // 跳轉到定價頁面
+  window.open('/vidspark-v2/pricing.html', '_blank')
+}
+
+const tryDigitalHuman = () => {
+  console.log('試用專屬數字人')
+}
+
+const startFreeVideo = () => {
+  console.log('開始免費數字人影片')
+}
+
+const startTextToVideo = () => {
+  console.log('開始文字轉影片')
+}
+
+const startVoiceClone = () => {
+  console.log('開始聲音克隆')
+}
+
+const startImitateVideo = () => {
+  console.log('開始模仿影片創作')
+}
+
+const startPPTVideo = () => {
+  console.log('開始PPT/PDF講解')
+}
+
+const startCustomDigitalHuman = () => {
+  console.log('創建自定義數字人')
+}
+
+const openProject = (project: any) => {
+  console.log('打開項目:', project)
+  // 跳轉到項目詳情或編輯頁面
+}
+
+// 生命週期
+onMounted(() => {
+  console.log('Dashboard 組件已掛載')
+})
 </script>
 
 <style scoped>

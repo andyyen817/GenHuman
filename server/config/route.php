@@ -787,6 +787,86 @@ Route::get('/vidspark/{path:.+}', function ($request, $path) {
 });
 
 // 靜態文件處理（如果需要）
+// 🆕 Vidspark管理後台 - 多語言管理API (更新路徑)
+Route::group('/vidspark-v2/api/i18n', function () {
+    // 獲取完整字典
+    Route::get('/dictionary', function ($request) {
+        $i18nService = new \app\service\I18nService();
+        $dictionary = $i18nService->getDictionary();
+        
+        // 🚨 Webman語法：new Response()
+        return new Response(200, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode([
+            'success' => true,
+            'data' => $dictionary
+        ], JSON_UNESCAPED_UNICODE));
+    });
+    
+    // 獲取統計信息
+    Route::get('/statistics', function ($request) {
+        $i18nService = new \app\service\I18nService();
+        $stats = $i18nService->getStatistics();
+        
+        return new Response(200, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode([
+            'success' => true,
+            'data' => $stats
+        ], JSON_UNESCAPED_UNICODE));
+    });
+    
+    // 新增/更新翻譯
+    Route::post('/translation', function ($request) {
+        $i18nService = new \app\service\I18nService();
+        $data = json_decode($request->rawBody(), true);
+        
+        if (!isset($data['key']) || !isset($data['translations'])) {
+            return new Response(400, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'message' => 'Missing required fields: key, translations'
+            ], JSON_UNESCAPED_UNICODE));
+        }
+        
+        $success = $i18nService->setTranslation($data['key'], $data['translations']);
+        
+        return new Response(200, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode([
+            'success' => $success,
+            'message' => $success ? 'Translation updated successfully' : 'Failed to update translation'
+        ], JSON_UNESCAPED_UNICODE));
+    });
+    
+    // 刪除翻譯
+    Route::delete('/translation/{key}', function ($request, $key) {
+        $i18nService = new \app\service\I18nService();
+        $success = $i18nService->deleteTranslation($key);
+        
+        return new Response(200, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode([
+            'success' => $success,
+            'message' => $success ? 'Translation deleted successfully' : 'Failed to delete translation'
+        ], JSON_UNESCAPED_UNICODE));
+    });
+    
+    // 獲取支援語言列表
+    Route::get('/languages', function ($request) {
+        $i18nService = new \app\service\I18nService();
+        $languages = $i18nService->getSupportedLanguages();
+        
+        return new Response(200, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode([
+            'success' => true,
+            'data' => $languages
+        ], JSON_UNESCAPED_UNICODE));
+    });
+});
+
 Route::fallback(function(){
     // 🚨 Webman語法：new Response()
 return new Response(404, ['Content-Type' => 'text/plain'], 'API endpoint not found');

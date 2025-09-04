@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊 - Vidspark</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* 動態粒子系統樣式 */
+        .pulse-glow {
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2);
+                transform: scale(1.05);
+            }
+        }
+        
+        .animate-spin-slow {
+            animation: spin 20s linear infinite;
+        }
+        
+        .animate-spin-reverse-slow {
+            animation: spin 15s linear infinite reverse;
+        }
+        
+        /* 粒子流動動畫 */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #8B5CF6, #3B82F6);
+            opacity: 0.7;
+        }
+        
+        .particle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        /* 從上方流入 */
+        .from-top .particle {
+            animation: flowFromTop 6s linear infinite;
+        }
+        
+        @keyframes flowFromTop {
+            0% { 
+                top: -10px; 
+                left: calc(20% + var(--random-offset, 0px)); 
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            20% { opacity: 0.7; transform: scale(1); }
+            80% { opacity: 0.8; }
+            100% { 
+                top: 50%; 
+                left: 50%; 
+                opacity: 0;
+                transform: scale(0.2);
+            }
+        }
+        
+        /* 從右方流入 */
+        .from-right .particle {
+            animation: flowFromRight 6s linear infinite;
+        }
+        
+        @keyframes flowFromRight {
+            0% { 
+                right: -10px; 
+                top: calc(20% + var(--random-offset, 0px)); 
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            20% { opacity: 0.7; transform: scale(1); }
+            80% { opacity: 0.8; }
+            100% { 
+                right: 50%; 
+                top: 50%; 
+                opacity: 0;
+                transform: scale(0.2);
+            }
+        }
+        
+        /* 從下方流入 */
+        .from-bottom .particle {
+            animation: flowFromBottom 6s linear infinite;
+        }
+        
+        @keyframes flowFromBottom {
+            0% { 
+                bottom: -10px; 
+                left: calc(20% + var(--random-offset, 0px)); 
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            20% { opacity: 0.7; transform: scale(1); }
+            80% { opacity: 0.8; }
+            100% { 
+                bottom: 50%; 
+                left: 50%; 
+                opacity: 0;
+                transform: scale(0.2);
+            }
+        }
+        
+        /* 從左方流入 */
+        .from-left .particle {
+            animation: flowFromLeft 6s linear infinite;
+        }
+        
+        @keyframes flowFromLeft {
+            0% { 
+                left: -10px; 
+                top: calc(20% + var(--random-offset, 0px)); 
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            20% { opacity: 0.7; transform: scale(1); }
+            80% { opacity: 0.8; }
+            100% { 
+                left: 50%; 
+                top: 50%; 
+                opacity: 0;
+                transform: scale(0.2);
+            }
+        }
+        
+        /* 粒子大小變化 */
+        .particle-1 { width: 8px; height: 8px; animation-delay: 0s; }
+        .particle-2 { width: 6px; height: 6px; animation-delay: 0.5s; }
+        .particle-3 { width: 10px; height: 10px; animation-delay: 1s; }
+        .particle-4 { width: 4px; height: 4px; animation-delay: 1.5s; }
+        .particle-5 { width: 7px; height: 7px; animation-delay: 2s; }
+        .particle-6 { width: 9px; height: 9px; animation-delay: 0.2s; }
+        .particle-7 { width: 5px; height: 5px; animation-delay: 0.7s; }
+        .particle-8 { width: 8px; height: 8px; animation-delay: 1.2s; }
+        .particle-9 { width: 6px; height: 6px; animation-delay: 1.7s; }
+        .particle-10 { width: 11px; height: 11px; animation-delay: 2.2s; }
+        .particle-11 { width: 7px; height: 7px; animation-delay: 0.3s; }
+        .particle-12 { width: 4px; height: 4px; animation-delay: 0.8s; }
+        .particle-13 { width: 9px; height: 9px; animation-delay: 1.3s; }
+        .particle-14 { width: 6px; height: 6px; animation-delay: 1.8s; }
+        .particle-15 { width: 8px; height: 8px; animation-delay: 2.3s; }
+        .particle-16 { width: 5px; height: 5px; animation-delay: 0.4s; }
+        .particle-17 { width: 10px; height: 10px; animation-delay: 0.9s; }
+        .particle-18 { width: 7px; height: 7px; animation-delay: 1.4s; }
+        .particle-19 { width: 4px; height: 4px; animation-delay: 1.9s; }
+        .particle-20 { width: 9px; height: 9px; animation-delay: 2.4s; }
+        
+        /* 舊樣式保留 */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(93, 95, 239, 0.15);
+        }
+        
+        /* 數字計數器動畫 */
+        .counter-display {
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+    <!-- 左側表單區域 -->
+    <div class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
+        <div class="mx-auto w-full max-w-sm lg:w-96">
+            <!-- Logo -->
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-video text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">Vidspark</h1>
+            </div>
+
+            <!-- 標題 -->
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">創建您的帳戶</h2>
+                <p class="text-gray-600">開始您的 AI 影片創作之旅</p>
+            </div>
+
+            <!-- 註冊表單 -->
+            <form class="space-y-6" onsubmit="return handleRegister(event)">
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        電子郵件地址
+                    </label>
+                    <div class="relative">
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            autocomplete="email"
+                            required
+                            class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg input-focus focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10"
+                            placeholder="輸入您的 Email"
+                        >
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 密碼 -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        設定密碼
+                    </label>
+                    <div class="relative">
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                            class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg input-focus focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10"
+                            placeholder="8位以上，包含字母數字"
+                        >
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fas fa-eye text-gray-400 cursor-pointer hover:text-gray-600" onclick="togglePassword()"></i>
+                        </div>
+                    </div>
+                    <!-- 密碼強度指示器 -->
+                    <div class="mt-2">
+                        <div class="flex space-x-1">
+                            <div class="h-1 flex-1 bg-gray-200 rounded"></div>
+                            <div class="h-1 flex-1 bg-gray-200 rounded"></div>
+                            <div class="h-1 flex-1 bg-gray-200 rounded"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">密碼強度：請輸入密碼</p>
+                    </div>
+                </div>
+
+                <!-- 服務條款 -->
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        <input
+                            id="terms"
+                            name="terms"
+                            type="checkbox"
+                            required
+                            class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
+                        >
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="terms" class="text-gray-600">
+                            我同意
+                            <a href="#" class="text-purple-600 hover:text-purple-500">服務條款</a>
+                            和
+                            <a href="#" class="text-purple-600 hover:text-purple-500">隱私政策</a>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 提交按鈕 -->
+                <div>
+                    <button
+                        type="submit"
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 transform hover:scale-105"
+                    >
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-rocket text-purple-500 group-hover:text-purple-400"></i>
+                        </span>
+                        立即註冊
+                    </button>
+                </div>
+
+                <!-- 登入連結 -->
+                <div class="text-center">
+                    <span class="text-sm text-gray-600">
+                        已有帳戶？
+                        <a href="login.html" class="font-medium text-purple-600 hover:text-purple-500">
+                            立即登入
+                        </a>
+                    </span>
+                </div>
+            </form>
+
+            <!-- 免費功能提示 -->
+            <div class="mt-8 p-4 bg-purple-50 rounded-lg">
+                <h3 class="text-sm font-medium text-purple-800 mb-2">註冊即可享受：</h3>
+                <ul class="text-sm text-purple-700 space-y-1">
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        每日 3 次免費數字人影片生成
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        1 次免費聲音克隆體驗
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        5 個高質量數字人形象
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右側動態背景區域 -->
+    <div class="hidden lg:block relative w-0 flex-1">
+        <!-- 背景漸變 -->
+        <div class="absolute inset-0 gradient-bg"></div>
+
+        <!-- 動態用戶流動網絡 -->
+        <div class="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <!-- 中央核心節點 -->
+            <div class="relative w-full h-full flex items-center justify-center">
+                <!-- 中央主要節點 - Vidspark平台核心 -->
+                <div class="relative z-20">
+                    <!-- 主核心圓圈 -->
+                    <div class="w-40 h-40 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full flex items-center justify-center shadow-2xl pulse-glow">
+                        <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center">
+                            <div class="text-purple-600 text-2xl font-bold">
+                                <i class="fas fa-video mr-2"></i>
+                                <div class="text-sm font-medium">Vidspark</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 圍繞核心的環形軌道 -->
+                    <div class="absolute inset-0 animate-spin-slow">
+                        <div class="w-full h-full border-2 border-purple-300 border-opacity-30 rounded-full"></div>
+                    </div>
+                    <div class="absolute inset-0 animate-spin-reverse-slow" style="animation-delay: 1s;">
+                        <div class="w-full h-full border border-blue-300 border-opacity-20 rounded-full"></div>
+                    </div>
+                </div>
+
+                <!-- 動態流動粒子系統 -->
+                <div class="absolute inset-0 particle-system">
+                    <!-- 從四個方向流入的粒子流 -->
+                    <!-- 上方流入 -->
+                    <div class="particle-stream from-top">
+                        <div class="particle particle-1"></div>
+                        <div class="particle particle-2"></div>
+                        <div class="particle particle-3"></div>
+                        <div class="particle particle-4"></div>
+                        <div class="particle particle-5"></div>
+                    </div>
+                    
+                    <!-- 右方流入 -->
+                    <div class="particle-stream from-right">
+                        <div class="particle particle-6"></div>
+                        <div class="particle particle-7"></div>
+                        <div class="particle particle-8"></div>
+                        <div class="particle particle-9"></div>
+                        <div class="particle particle-10"></div>
+                    </div>
+                    
+                    <!-- 下方流入 -->
+                    <div class="particle-stream from-bottom">
+                        <div class="particle particle-11"></div>
+                        <div class="particle particle-12"></div>
+                        <div class="particle particle-13"></div>
+                        <div class="particle particle-14"></div>
+                        <div class="particle particle-15"></div>
+                    </div>
+                    
+                    <!-- 左方流入 -->
+                    <div class="particle-stream from-left">
+                        <div class="particle particle-16"></div>
+                        <div class="particle particle-17"></div>
+                        <div class="particle particle-18"></div>
+                        <div class="particle particle-19"></div>
+                        <div class="particle particle-20"></div>
+                    </div>
+                </div>
+
+                <!-- 數據統計顯示 -->
+                <div class="absolute top-8 right-8 bg-white bg-opacity-90 rounded-lg p-3 shadow-lg counter-display">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600 counter" data-target="24567">0</div>
+                        <div class="text-xs text-gray-600">活躍創作者</div>
+                    </div>
+                </div>
+
+
+
+                <!-- 周圍大量小頭像 - 數萬名創作者 -->
+                <!-- 第一圈 - 大頭像 -->
+                <div class="absolute top-20 left-20 avatar-float" style="animation-delay: 0.5s;">
+                    <div class="w-20 h-20 bg-white rounded-full p-1 shadow-xl">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-32 right-24 avatar-float" style="animation-delay: 1s;">
+                    <div class="w-24 h-24 bg-white rounded-full p-1 shadow-xl">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-32 left-32 avatar-float" style="animation-delay: 1.5s;">
+                    <div class="w-18 h-18 bg-white rounded-full p-1 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=90&h=90&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-20 right-20 avatar-float" style="animation-delay: 2s;">
+                    <div class="w-16 h-16 bg-white rounded-full p-1 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 第二圈 - 中等頭像 -->
+                <div class="absolute top-12 left-48 avatar-float" style="animation-delay: 0.8s;">
+                    <div class="w-14 h-14 bg-white rounded-full p-1 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=70&h=70&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-48 right-12 avatar-float" style="animation-delay: 1.3s;">
+                    <div class="w-12 h-12 bg-white rounded-full p-1 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-48 left-16 avatar-float" style="animation-delay: 1.8s;">
+                    <div class="w-16 h-16 bg-white rounded-full p-1 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-40 right-40 avatar-float" style="animation-delay: 2.3s;">
+                    <div class="w-14 h-14 bg-white rounded-full p-1 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=70&h=70&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 第三圈 - 小頭像群組 -->
+                <div class="absolute top-8 left-72 avatar-float" style="animation-delay: 0.3s;">
+                    <div class="w-10 h-10 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=50&h=50&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-16 right-8 avatar-float" style="animation-delay: 0.7s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-36 left-8 avatar-float" style="animation-delay: 1.1s;">
+                    <div class="w-12 h-12 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=60&h=60&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-52 right-32 avatar-float" style="animation-delay: 1.6s;">
+                    <div class="w-10 h-10 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=50&h=50&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-64 left-40 avatar-float" style="animation-delay: 2.1s;">
+                    <div class="w-14 h-14 bg-white rounded-full p-1 shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=70&h=70&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-16 left-48 avatar-float" style="animation-delay: 2.6s;">
+                    <div class="w-12 h-12 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=60&h=60&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 第四圈 - 更多小頭像 -->
+                <div class="absolute top-28 right-4 avatar-float" style="animation-delay: 0.4s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1463453091185-61582044d556?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-44 left-4 avatar-float" style="animation-delay: 0.9s;">
+                    <div class="w-10 h-10 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=50&h=50&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-72 right-16 avatar-float" style="animation-delay: 1.4s;">
+                    <div class="w-12 h-12 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=60&h=60&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-28 right-8 avatar-float" style="animation-delay: 1.9s;">
+                    <div class="w-10 h-10 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=50&h=50&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-36 left-8 avatar-float" style="animation-delay: 2.4s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1512310604669-443f26c35f52?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 第五圈 - 微小頭像裝飾 -->
+                <div class="absolute top-4 left-32 avatar-float" style="animation-delay: 0.2s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-24 right-2 avatar-float" style="animation-delay: 0.6s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-40 left-2 avatar-float" style="animation-delay: 1.2s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-56 right-2 avatar-float" style="animation-delay: 1.7s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-68 left-12 avatar-float" style="animation-delay: 2.2s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-12 right-2 avatar-float" style="animation-delay: 2.7s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1521119989659-a83eee488004?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-8 left-2 avatar-float" style="animation-delay: 3s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 更多邊緣微小頭像 -->
+                <div class="absolute top-80 right-12 avatar-float" style="animation-delay: 0.1s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1499952127939-9bbf5af6c51c?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-4 left-24 avatar-float" style="animation-delay: 2.8s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1504593811423-6dd665756598?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-6 right-36 avatar-float" style="animation-delay: 3.2s;">
+                    <div class="w-10 h-10 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1506634572416-48cdfe530110?w=50&h=50&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 額外裝飾頭像 -->
+                <div class="absolute top-6 right-44 avatar-float" style="animation-delay: 0.3s;">
+                    <div class="w-7 h-7 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=35&h=35&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-84 left-36 avatar-float" style="animation-delay: 2.9s;">
+                    <div class="w-9 h-9 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=45&h=45&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 第六層 - 額外20個頭像填滿空間 -->
+                <div class="absolute top-14 left-60 avatar-float" style="animation-delay: 0.15s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-26 right-52 avatar-float" style="animation-delay: 0.45s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-38 left-64 avatar-float" style="animation-delay: 0.75s;">
+                    <div class="w-7 h-7 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=35&h=35&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-50 right-44 avatar-float" style="animation-delay: 1.05s;">
+                    <div class="w-9 h-9 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=45&h=45&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-62 left-52 avatar-float" style="animation-delay: 1.35s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-74 right-28 avatar-float" style="animation-delay: 1.65s;">
+                    <div class="w-10 h-10 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=50&h=50&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-86 left-24 avatar-float" style="animation-delay: 1.95s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-44 left-64 avatar-float" style="animation-delay: 2.25s;">
+                    <div class="w-7 h-7 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1594736797933-d0403ba07fdc?w=35&h=35&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-52 right-16 avatar-float" style="animation-delay: 2.55s;">
+                    <div class="w-9 h-9 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1615109398623-88346a601842?w=45&h=45&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-60 left-28 avatar-float" style="animation-delay: 2.85s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 第七層 - 更多邊緣頭像 -->
+                <div class="absolute top-22 left-12 avatar-float" style="animation-delay: 0.25s;">
+                    <div class="w-5 h-5 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1622434641406-a158123450f9?w=25&h=25&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-34 right-6 avatar-float" style="animation-delay: 0.55s;">
+                    <div class="w-7 h-7 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=35&h=35&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-46 left-6 avatar-float" style="animation-delay: 0.85s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1639149888905-fb39731f2e6c?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-58 right-10 avatar-float" style="animation-delay: 1.15s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1614289371518-722f2615943d?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-70 left-10 avatar-float" style="animation-delay: 1.45s;">
+                    <div class="w-5 h-5 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=25&h=25&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-82 right-6 avatar-float" style="animation-delay: 1.75s;">
+                    <div class="w-7 h-7 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1664575602276-acd073f104c1?w=35&h=35&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-68 left-6 avatar-float" style="animation-delay: 2.05s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1665686374006-b8f04cf62d57?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-56 right-4 avatar-float" style="animation-delay: 2.35s;">
+                    <div class="w-8 h-8 bg-white rounded-full p-1 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1669041388748-fa1b2c50a8ae?w=40&h=40&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-44 right-52 avatar-float" style="animation-delay: 2.65s;">
+                    <div class="w-5 h-5 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1681233586885-b842fb1bcd05?w=25&h=25&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-32 left-56 avatar-float" style="animation-delay: 2.95s;">
+                    <div class="w-7 h-7 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1682955705244-90b8c6398e95?w=35&h=35&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 第八層 - 填滿剩餘空間的微小頭像 -->
+                <div class="absolute top-18 right-64 avatar-float" style="animation-delay: 0.35s;">
+                    <div class="w-4 h-4 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1695653421999-64e633c4c7c4?w=20&h=20&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-30 left-68 avatar-float" style="animation-delay: 0.65s;">
+                    <div class="w-5 h-5 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1698678684354-70f84b2d2c67?w=25&h=25&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-42 right-68 avatar-float" style="animation-delay: 0.95s;">
+                    <div class="w-4 h-4 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1705081887797-2deb33a4c93f?w=20&h=20&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-54 left-76 avatar-float" style="animation-delay: 1.25s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1709884735626-63e92727d8b6?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-66 right-72 avatar-float" style="animation-delay: 1.55s;">
+                    <div class="w-4 h-4 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1729169134297-4b41da1ad901?w=20&h=20&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute top-78 left-68 avatar-float" style="animation-delay: 1.85s;">
+                    <div class="w-5 h-5 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1727969143681-dd55d7eafaa8?w=25&h=25&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-72 right-60 avatar-float" style="animation-delay: 2.15s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1731059055923-6cbb2b3a3c4b?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-64 left-72 avatar-float" style="animation-delay: 2.45s;">
+                    <div class="w-4 h-4 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1541271696563-3be2f555fc4e?w=20&h=20&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-48 left-68 avatar-float" style="animation-delay: 2.75s;">
+                    <div class="w-5 h-5 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1548142813-c348350df52b?w=25&h=25&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+
+                <div class="absolute bottom-40 right-64 avatar-float" style="animation-delay: 3.05s;">
+                    <div class="w-6 h-6 bg-white rounded-full p-0.5 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=30&h=30&fit=crop&crop=face" alt="創作者" class="w-full h-full rounded-full object-cover">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文字覆蓋 -->
+            <div class="absolute bottom-8 left-8 right-8 text-center">
+                <h3 class="text-2xl font-bold text-white mb-2">加入創作者社群</h3>
+                <p class="text-white/80">數萬名創作者正在準備使用 Vidspark 創造精彩內容</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.querySelector('.fa-eye');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const terms = document.getElementById('terms').checked;
+            
+            if (!terms) {
+                alert('請同意服務條款和隱私政策');
+                return false;
+            }
+            
+            // 這裡可以添加註冊邏輯
+            console.log('註冊嘗試:', { email, password });
+            
+            // 示例：註冊成功後跳轉到Vue應用
+            alert('註冊成功！即將跳轉到儀表板...');
+            window.location.href = '/vidspark-v2/#/dashboard';
+            
+            return false;
+        }
+
+        // 數字計數器動畫
+        function animateCounter() {
+            const counter = document.querySelector('.counter');
+            if (!counter) return;
+            
+            const target = parseInt(counter.getAttribute('data-target'));
+            const increment = target / 200; // 200步達到目標
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current).toLocaleString();
+            }, 20);
+        }
+
+        // 頁面載入時啟動所有動畫
+        document.addEventListener('DOMContentLoaded', function() {
+            // 啟動計數器動畫（延遲1秒）
+            setTimeout(animateCounter, 1000);
+            
+            // 為粒子添加隨機偏移
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach((particle, index) => {
+                const randomOffset = (Math.random() - 0.5) * 100; // -50px 到 +50px
+                particle.style.setProperty('--random-offset', randomOffset + 'px');
+            });
+        });
+    </script>
+</body>
+</html>

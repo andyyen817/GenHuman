@@ -1,0 +1,62 @@
+# 🛡️ Vidspark 新項目安全防護機制
+
+## 🚨 重要警告
+
+**這是全新的 Vidspark 項目！**
+
+### 📍 項目路徑確認
+- ✅ **當前項目**: `D:\genhuman\genhuman\vidspark\` (新項目)
+- ❌ **舊項目備份**: `D:\genhuman\genhuman\vidspark-backup-old\` (請勿修改)
+
+### 🎯 構建目標確認
+- ✅ **新項目構建到**: `../server/public/vidspark-v2/`
+- ❌ **舊項目路徑**: `../server/public/vidspark/` (請勿修改)
+
+### 🔗 訪問URL確認
+- ✅ **新項目URL**: `https://domain.com/vidspark-v2/`
+- ❌ **舊項目URL**: `https://domain.com/vidspark/` (保留作為備份)
+
+### 🚀 開發端口確認
+- ✅ **新項目端口**: `5174`
+- ❌ **舊項目端口**: `5173` (已停用)
+
+## 🛡️ 四重防護機制
+
+### 1. 目錄隔離
+- 新項目: `vidspark/`
+- 舊項目: `vidspark-backup-old/`
+
+### 2. 構建路徑隔離
+- 新項目: `vidspark-v2/`
+- 舊項目: `vidspark/`
+
+### 3. 端口隔離
+- 新項目: `:5174`
+- 舊項目: `:5173`
+
+### 4. 路由隔離
+- 新項目: `/vidspark-v2/`
+- 舊項目: `/vidspark/`
+
+## ⚠️ 開發規則
+
+1. **只在 `vidspark/` 目錄開發**
+2. **構建只到 `vidspark-v2/` 目錄**
+3. **絕不修改 `vidspark-backup-old/`**
+4. **使用端口 5174 進行開發**
+
+## 🔧 常用命令
+
+```bash
+# 開發
+npm run dev  # 自動使用端口 5174
+
+# 構建
+npm run build  # 自動構建到 vidspark-v2/
+
+# 預覽
+npm run preview  # 預覽構建結果
+```
+
+**創建日期**: 2025-09-02
+**目的**: 防止意外修改舊項目，確保開發安全

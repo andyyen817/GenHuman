@@ -35,8 +35,8 @@
                 <option>English</option>
               </select>
             </div>
-            <router-link to="/login" class="text-gray-600 hover:text-purple-600 px-3 py-2 text-sm font-medium transition-colors">登入</router-link>
-            <router-link to="/register" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">免費註冊</router-link>
+            <a href="/vidspark-v2/login.html" class="text-gray-600 hover:text-purple-600 px-3 py-2 text-sm font-medium transition-colors">登入</a>
+            <a href="/vidspark-v2/register.html" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">免費註冊</a>
           </div>
         </div>
       </div>
@@ -69,9 +69,9 @@
 
           <!-- CTA按鈕組 -->
           <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <router-link to="/register" class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+            <a href="/vidspark-v2/register.html" class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
               <i class="fas fa-rocket mr-2"></i>免費開始創作
-            </router-link>
+            </a>
             <a href="#demo" class="bg-white hover:bg-gray-50 text-gray-700 px-8 py-4 rounded-xl text-lg font-semibold border-2 border-gray-200 transition-all duration-300">
               <i class="fas fa-play mr-2"></i>觀看演示
             </a>
@@ -241,9 +241,9 @@
           加入數萬名創作者，使用 Vidspark 將您的想法轉化為專業影片
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <router-link to="/register" class="bg-white hover:bg-gray-100 text-purple-600 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105">
+          <a href="/vidspark-v2/register.html" class="bg-white hover:bg-gray-100 text-purple-600 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105">
             立即免費開始
-          </router-link>
+          </a>
           <a href="#contact" class="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300">
             聯繫銷售團隊
           </a>
@@ -306,38 +306,37 @@
 </template>
 
 <script setup lang="ts">
-// 暫時不需要複雜的邏輯
+// Landing page 邏輯
 </script>
 
-<style scoped>
+<style>
+/* 🚨 重要：不使用scoped，保持與純HTML版本一致 */
+body { font-family: 'Inter', sans-serif; }
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
 .hero-gradient {
-  background: linear-gradient(135deg, #5D5FEF 0%, #A78BFA 100%);
+    background: linear-gradient(135deg, #5D5FEF 0%, #A78BFA 100%);
 }
-
 .card-hover {
-  transition: all 0.3s ease;
+    transition: all 0.3s ease;
 }
-
 .card-hover:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(93, 95, 239, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(93, 95, 239, 0.15);
 }
-
 .floating-animation {
-  animation: float 6s ease-in-out infinite;
+    animation: float 6s ease-in-out infinite;
 }
-
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
 }
-
 .pulse-animation {
-  animation: pulse 2s infinite;
+    animation: pulse 2s infinite;
 }
-
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 </style>
