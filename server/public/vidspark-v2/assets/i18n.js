@@ -12,11 +12,24 @@ class VidsparkI18n {
 
     // 初始化
     init() {
-        console.log(`[${new Date().toLocaleTimeString()}] 🌐 初始化Vidspark i18n系統`);
-        this.loadTranslations();
-        this.detectLanguage();
-        this.createLanguageSwitcher();
-        this.applyTranslations();
+        console.log(`[${new Date().toLocaleTimeString()}] 🌐 初始化Vidspark i18n系統開始`);
+        try {
+            this.loadTranslations();
+            console.log(`[${new Date().toLocaleTimeString()}] ✅ 翻譯數據載入完成`);
+            
+            this.detectLanguage();
+            console.log(`[${new Date().toLocaleTimeString()}] ✅ 語言檢測完成: ${this.currentLanguage}`);
+            
+            this.createLanguageSwitcher();
+            console.log(`[${new Date().toLocaleTimeString()}] ✅ 語言切換器創建完成`);
+            
+            this.applyTranslations();
+            console.log(`[${new Date().toLocaleTimeString()}] ✅ 翻譯應用完成`);
+            
+            console.log(`[${new Date().toLocaleTimeString()}] 🎉 Vidspark i18n系統初始化全部完成`);
+        } catch (error) {
+            console.error(`[${new Date().toLocaleTimeString()}] ❌ i18n初始化過程中發生錯誤:`, error);
+        }
     }
 
     // 從localStorage載入翻譯數據（與管理後台共享）
@@ -310,9 +323,16 @@ let vidsparkI18n;
 
 // DOM載入完成後自動初始化
 document.addEventListener('DOMContentLoaded', function() {
-    vidsparkI18n = new VidsparkI18n();
+    console.log(`[${new Date().toLocaleTimeString()}] 🚀 開始初始化Vidspark i18n系統`);
+    try {
+        vidsparkI18n = new VidsparkI18n();
+        // 初始化完成後設置全局訪問
+        window.vidsparkI18n = vidsparkI18n;
+        console.log(`[${new Date().toLocaleTimeString()}] ✅ Vidspark i18n系統初始化成功`);
+    } catch (error) {
+        console.error(`[${new Date().toLocaleTimeString()}] ❌ Vidspark i18n系統初始化失敗:`, error);
+    }
 });
 
-// 提供全局訪問
+// 提供類的全局訪問
 window.VidsparkI18n = VidsparkI18n;
-window.vidsparkI18n = vidsparkI18n;
