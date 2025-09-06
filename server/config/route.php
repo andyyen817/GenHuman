@@ -923,6 +923,30 @@ Route::get('/vidspark-v2/pricing.html', function () {
     return new Response(404, ['Content-Type' => 'text/plain'], 'Pricing page not found');
 });
 
+// 🆕 Vidspark v2.0 主入口路由
+Route::get('/vidspark-v2/', function () {
+    $filePath = base_path() . '/public/vidspark-v2/index.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark v2 not found');
+});
+
+// 🆕 Vidspark v2.0 主入口路由（无斜杠）
+Route::get('/vidspark-v2', function () {
+    $filePath = base_path() . '/public/vidspark-v2/index.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark v2 not found');
+});
+
 // 🆕 Vidspark v2.0 管理後台路由
 Route::get('/vidspark-v2/admin/i18n-manager-pages.html', function () {
     $filePath = base_path() . '/public/vidspark-v2/admin/i18n-manager-pages.html';
@@ -962,6 +986,47 @@ Route::get('/vidspark-v2/assets/{path:.+}', function ($request, $path) {
         ]))->file($filePath);
     }
     return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark v2 asset not found: ' . $path);
+});
+
+// 🆕 Vidspark v2.0 SPA路由支持（Vue Router前端路由）
+Route::get('/vidspark-v2/{path:.+}', function ($request, $path) {
+    // 如果是靜態資源，先檢查是否存在
+    if (strpos($path, 'assets/') === 0) {
+        $filePath = base_path() . '/public/vidspark-v2/' . $path;
+        if (file_exists($filePath)) {
+            $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+            $contentTypes = [
+                'css' => 'text/css; charset=utf-8',
+                'js' => 'application/javascript; charset=utf-8', 
+                'png' => 'image/png',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                'ico' => 'image/x-icon',
+                'woff' => 'font/woff',
+                'woff2' => 'font/woff2',
+                'ttf' => 'font/ttf',
+                'otf' => 'font/otf'
+            ];
+            $contentType = $contentTypes[$ext] ?? 'application/octet-stream';
+            
+            return (new Response(200, [
+                'Content-Type' => $contentType,
+                'Cache-Control' => 'public, max-age=31536000'
+            ]))->file($filePath);
+        }
+    }
+    
+    // 所有其他路由都返回index.html（SPA路由支持）
+    $filePath = base_path() . '/public/vidspark-v2/index.html';
+    if (file_exists($filePath)) {
+        return (new Response(200, [
+            'Content-Type' => 'text/html; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate'
+        ]))->file($filePath);
+    }
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark v2 not found');
 });
 
 Route::fallback(function(){
