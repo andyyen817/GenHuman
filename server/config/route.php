@@ -947,17 +947,29 @@ Route::get('/vidspark-v2', function () {
     return new Response(404, ['Content-Type' => 'text/plain'], 'Vidspark v2 not found');
 });
 
-// 🆕 Vidspark v2.0 管理後台路由
-Route::get('/vidspark-v2/admin/i18n-manager-pages.html', function () {
-    $filePath = base_path() . '/public/vidspark-v2/admin/i18n-manager-pages.html';
+// 🆕 Vidspark v2.0 Landing页面路由
+Route::get('/vidspark-v2/landing.html', function () {
+    $filePath = base_path() . '/public/vidspark-v2/landing.html';
     if (file_exists($filePath)) {
         return (new Response(200, [
             'Content-Type' => 'text/html; charset=utf-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate'
         ]))->file($filePath);
     }
-    return new Response(404, ['Content-Type' => 'text/plain'], 'I18n manager not found');
+    return new Response(404, ['Content-Type' => 'text/plain'], 'Landing page not found');
 });
+
+// 🆕 Vidspark v2.0 管理後台路由（暂时禁用，等管理后台开发完成）
+// Route::get('/vidspark-v2/admin/i18n-manager-pages.html', function () {
+//     $filePath = base_path() . '/public/vidspark-v2/admin/i18n-manager-pages.html';
+//     if (file_exists($filePath)) {
+//         return (new Response(200, [
+//             'Content-Type' => 'text/html; charset=utf-8',
+//             'Cache-Control' => 'no-cache, no-store, must-revalidate'
+//         ]))->file($filePath);
+//     }
+//     return new Response(404, ['Content-Type' => 'text/plain'], 'I18n manager not found');
+// });
 
 // 🆕 Vidspark v2.0 靜態資源路由（CSS、JS、圖片等）
 Route::get('/vidspark-v2/assets/{path:.+}', function ($request, $path) {
