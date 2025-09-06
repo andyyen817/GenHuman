@@ -6,17 +6,43 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      redirect: '/dashboard'
+      component: () => import('../views/SimpleDashboardView.vue'),
     },
     {
       path: '/dashboard',
       name: 'dashboard',
+      redirect: '/' // 重定向到新的简化首页
+    },
+    {
+      path: '/old-dashboard',
+      name: 'old-dashboard',
       component: () => import('../views/DashboardView.vue'),
     },
     {
       path: '/projects',
       name: 'projects',
       component: () => import('../views/ProjectsView.vue'),
+    },
+    // 🎯 AI创作工作流路由 (按照v6任务清单)
+    {
+      path: '/inspiration',
+      name: 'inspiration',
+      component: () => import('../views/InspirationView.vue'),
+    },
+    {
+      path: '/scriptwriter',
+      name: 'scriptwriter',
+      component: () => import('../views/ScriptwriterView.vue'),
+    },
+    {
+      path: '/director',
+      name: 'director', 
+      component: () => import('../views/DirectorView.vue'),
+    },
+    {
+      path: '/editor',
+      name: 'editor',
+      component: () => import('../views/EditorView.vue'),
     },
     {
       path: '/avatars',

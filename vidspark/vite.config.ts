@@ -28,9 +28,9 @@ export default defineConfig({
       }
     }
   },
-  // 🚀 開發服務器配置
+  // 🚀 開發服務器配置 (端口5174符合安全防護要求)
   server: {
-    port: 3000,
+    port: 5174,
     host: true, // 允許所有網絡訪問
     open: true, // 自動打開瀏覽器
     cors: true
