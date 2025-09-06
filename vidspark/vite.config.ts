@@ -18,7 +18,7 @@ export default defineConfig({
   // 🛡️ 防衝突配置：構建到 vidspark-v2 避免與舊項目衝突
   build: {
     outDir: '../server/public/vidspark-v2',
-    emptyOutDir: true,
+    emptyOutDir: false, // 🚨 重要：不清空目錄，保護靜態HTML頁面
     assetsDir: 'assets',
     rollupOptions: {
       output: {

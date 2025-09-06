@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidspark 多語言管理系統 (獨立版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- 頁面標題 -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">
+                        <i class="fas fa-language text-purple-600 mr-3"></i>
+                        Vidspark 多語言管理系統 (獨立版)
+                    </h1>
+                    <p class="mt-2 text-gray-600">管理所有頁面的多語言翻譯內容 - 不依賴後端API</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- 統計信息 -->
+                    <div class="bg-purple-50 rounded-lg px-4 py-2">
+                        <div class="text-sm text-purple-700">
+                            <span class="font-semibold">總字段數：</span>
+                            <span id="total-keys">0</span>
+                        </div>
+                    </div>
+                    <!-- 新增按鈕 -->
+                    <button id="add-translation-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i>新增翻譯
+                    </button>
+                    <!-- 導出Excel按鈕 -->
+                    <button id="export-excel-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-download mr-2"></i>導出Excel
+                    </button>
+                    <!-- 重置數據按鈕 -->
+                    <button id="reset-data-btn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-refresh mr-2"></i>重置數據
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要內容 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 語言進度統計 -->
+        <div id="language-progress" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- 繁體中文進度 -->
+            <div class="bg-white rounded-lg p-6 shadow-sm border">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">繁體中文</h3>
+                    <span class="text-2xl font-bold text-blue-600" id="zh-tw-percentage">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="zh-tw-progress" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">已翻譯：<span id="zh-tw-count">0</span> / <span id="zh-tw-total">0</span></p>
+            </div>
+            
+            <!-- 簡體中文進度 -->
+            <div class="bg-white rounded-lg p-6 shadow-sm border">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">簡體中文</h3>
+                    <span class="text-2xl font-bold text-green-600" id="zh-cn-percentage">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="zh-cn-progress" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">已翻譯：<span id="zh-cn-count">0</span> / <span id="zh-cn-total">0</span></p>
+            </div>
+            
+            <!-- 英文進度 -->
+            <div class="bg-white rounded-lg p-6 shadow-sm border">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">English</h3>
+                    <span class="text-2xl font-bold text-purple-600" id="en-percentage">100%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="en-progress" class="bg-purple-600 h-2 rounded-full" style="width: 100%"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">主要語言：<span id="en-count">0</span> 個字段</p>
+            </div>
+        </div>
+
+        <!-- 翻譯字典表格 -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-table mr-2"></i>翻譯字典管理
+                    </h2>
+                    <div class="flex items-center space-x-4">
+                        <!-- 搜索框 -->
+                        <div class="relative">
+                            <input type="text" id="search-input" placeholder="搜索字段..." 
+                                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <!-- 刷新按鈕 -->
+                        <button id="refresh-btn" class="text-gray-500 hover:text-gray-700 p-2">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 表格容器 -->
+            <div class="table-container">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 sticky-header">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                英文字段 (Key)
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                繁體中文
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                簡體中文
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                操作
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="translations-table" class="bg-white divide-y divide-gray-200">
+                        <!-- 動態生成翻譯行 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/編輯翻譯對話框 -->
+    <div id="translation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <span id="modal-title">新增翻譯</span>
+                    </h3>
+                    <button id="close-modal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="translation-form">
+                    <div class="space-y-4">
+                        <!-- 英文字段 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                英文字段 (Key) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="field-key" placeholder="例如: welcomeMessage" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        
+                        <!-- 繁體中文 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                繁體中文翻譯
+                            </label>
+                            <input type="text" id="field-zh-tw" placeholder="例如: 歡迎訊息" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        
+                        <!-- 簡體中文 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                簡體中文翻譯
+                            </label>
+                            <input type="text" id="field-zh-cn" placeholder="例如: 欢迎消息" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" id="cancel-btn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                            取消
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                            保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 多語言字典數據（使用localStorage存儲）
+        let translations = {};
+        
+        // 從localStorage載入數據
+        function loadTranslations() {
+            console.log(`[${new Date().toLocaleTimeString()}] 🚀 初始化獨立版多語言管理系統`);
+            const stored = localStorage.getItem('vidspark-i18n-dictionary');
+            if (stored) {
+                translations = JSON.parse(stored);
+                console.log(`[${new Date().toLocaleTimeString()}] ✅ 從本地存儲載入: ${Object.keys(translations).length} 個字段`);
+            } else {
+                // 初始化一些示例數據
+                translations = {
+                    // 原有字段
+                    'welcomeMessage': {
+                        'en': 'Welcome Message',
+                        'zh-TW': '歡迎訊息',
+                        'zh-CN': '欢迎消息'
+                    },
+                    'loginButton': {
+                        'en': 'Login',
+                        'zh-TW': '登入',
+                        'zh-CN': '登录'
+                    },
+                    'registerButton': {
+                        'en': 'Register',
+                        'zh-TW': '註冊',
+                        'zh-CN': '注册'
+                    },
+                    'emailAddress': {
+                        'en': 'Email Address',
+                        'zh-TW': '電子信箱',
+                        'zh-CN': '电子邮件'
+                    },
+                    'password': {
+                        'en': 'Password',
+                        'zh-TW': '密碼',
+                        'zh-CN': '密码'
+                    },
+                    // Landing Page新增字段
+                    'features': {
+                        'en': 'Features',
+                        'zh-TW': '功能特色',
+                        'zh-CN': '功能特色'
+                    },
+                    'pricing': {
+                        'en': 'Pricing',
+                        'zh-TW': '定價方案',
+                        'zh-CN': '定价方案'
+                    },
+                    'aboutUs': {
+                        'en': 'About Us',
+                        'zh-TW': '關於我們',
+                        'zh-CN': '关于我们'
+                    },
+                    'helpSupport': {
+                        'en': 'Help & Support',
+                        'zh-TW': '幫助支援',
+                        'zh-CN': '帮助支持'
+                    },
+                    'freeRegister': {
+                        'en': 'Free Register',
+                        'zh-TW': '免費註冊',
+                        'zh-CN': '免费注册'
+                    },
+                    'mainTitle': {
+                        'en': 'Your',
+                        'zh-TW': '你的',
+                        'zh-CN': '你的'
+                    },
+                    'aiVideoTeam': {
+                        'en': 'AI Video Team',
+                        'zh-TW': 'AI 影片團隊',
+                        'zh-CN': 'AI 视频团队'
+                    },
+                    'easyCreation': {
+                        'en': ', Make Creativity Easy',
+                        'zh-TW': '，讓創意輕鬆實現',
+                        'zh-CN': '，让创意轻松实现'
+                    },
+                    'heroSubtitle': {
+                        'en': 'No experience needed, your AI team handles everything! From ideation, copywriting, production to editing, using the latest AI tools, digital humans and voice cloning technology to easily create professional videos.',
+                        'zh-TW': '無需任何經驗,你的 AI 團隊一手搞定！從發想、文案、製作到剪輯，利用最新AI工具、數位人與聲音克隆技術，輕鬆創作出專業影片。',
+                        'zh-CN': '无需任何经验，你的 AI 团队一手搞定！从发想、文案、制作到剪辑，利用最新AI工具、数字人与声音克隆技术，轻松创作出专业视频。'
+                    },
+                    'startCreating': {
+                        'en': 'Start Creating for Free',
+                        'zh-TW': '免費開始創作',
+                        'zh-CN': '免费开始创作'
+                    },
+                    'enterApp': {
+                        'en': 'Enter App',
+                        'zh-TW': '進入應用',
+                        'zh-CN': '进入应用'
+                    },
+                    'freeDigitalHuman': {
+                        'en': 'Free Digital Human Experience',
+                        'zh-TW': '免費數字人體驗',
+                        'zh-CN': '免费数字人体验'
+                    },
+                    'freeVoiceClone': {
+                        'en': 'Free Voice Cloning',
+                        'zh-TW': '免費聲音克隆',
+                        'zh-CN': '免费声音克隆'
+                    },
+                    'noCreditCard': {
+                        'en': 'No Credit Card Required',
+                        'zh-TW': '無需信用卡',
+                        'zh-CN': '无需信用卡'
+                    }
+                };
+                saveTranslations();
+                console.log(`[${new Date().toLocaleTimeString()}] ✅ 初始化示例數據: ${Object.keys(translations).length} 個字段`);
+            }
+            
+            renderTranslationsTable();
+            updateStatistics();
+        }
+        
+        // 保存到localStorage
+        function saveTranslations() {
+            localStorage.setItem('vidspark-i18n-dictionary', JSON.stringify(translations));
+            console.log(`[${new Date().toLocaleTimeString()}] 💾 已保存到本地存儲`);
+        }
+        
+        // 渲染翻譯表格
+        function renderTranslationsTable() {
+            const tbody = document.getElementById('translations-table');
+            tbody.innerHTML = '';
+            
+            Object.keys(translations).forEach(key => {
+                const translation = translations[key];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <code class="bg-gray-100 px-2 py-1 rounded">${key}</code>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="translation-text" data-key="${key}" data-lang="zh-TW">${translation['zh-TW'] || ''}</span>
+                        ${!translation['zh-TW'] ? '<span class="text-red-500 text-xs ml-2">未翻譯</span>' : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="translation-text" data-key="${key}" data-lang="zh-CN">${translation['zh-CN'] || ''}</span>
+                        ${!translation['zh-CN'] ? '<span class="text-red-500 text-xs ml-2">未翻譯</span>' : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-purple-600 hover:text-purple-900 mr-3 edit-btn" data-key="${key}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-900 delete-btn" data-key="${key}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // 綁定編輯和刪除事件
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const key = e.target.closest('button').dataset.key;
+                    editTranslation(key);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const key = e.target.closest('button').dataset.key;
+                    if (confirm(`確定要刪除字段 "${key}" 嗎？`)) {
+                        delete translations[key];
+                        saveTranslations();
+                        renderTranslationsTable();
+                        updateStatistics();
+                    }
+                });
+            });
+        }
+        
+        // 更新統計信息
+        function updateStatistics() {
+            const totalKeys = Object.keys(translations).length;
+            document.getElementById('total-keys').textContent = totalKeys;
+            
+            // 計算各語言完成度
+            let zhTwCount = 0, zhCnCount = 0;
+            
+            Object.values(translations).forEach(translation => {
+                if (translation['zh-TW']) zhTwCount++;
+                if (translation['zh-CN']) zhCnCount++;
+            });
+            
+            // 更新繁體中文統計
+            const zhTwPercentage = totalKeys > 0 ? Math.round((zhTwCount / totalKeys) * 100) : 0;
+            document.getElementById('zh-tw-percentage').textContent = zhTwPercentage + '%';
+            document.getElementById('zh-tw-progress').style.width = zhTwPercentage + '%';
+            document.getElementById('zh-tw-count').textContent = zhTwCount;
+            document.getElementById('zh-tw-total').textContent = totalKeys;
+            
+            // 更新簡體中文統計
+            const zhCnPercentage = totalKeys > 0 ? Math.round((zhCnCount / totalKeys) * 100) : 0;
+            document.getElementById('zh-cn-percentage').textContent = zhCnPercentage + '%';
+            document.getElementById('zh-cn-progress').style.width = zhCnPercentage + '%';
+            document.getElementById('zh-cn-count').textContent = zhCnCount;
+            document.getElementById('zh-cn-total').textContent = totalKeys;
+            
+            // 更新英文統計
+            document.getElementById('en-count').textContent = totalKeys;
+        }
+        
+        // 編輯翻譯
+        function editTranslation(key) {
+            const translation = translations[key];
+            document.getElementById('modal-title').textContent = '編輯翻譯';
+            document.getElementById('field-key').value = key;
+            document.getElementById('field-key').disabled = true;
+            document.getElementById('field-zh-tw').value = translation['zh-TW'] || '';
+            document.getElementById('field-zh-cn').value = translation['zh-CN'] || '';
+            
+            document.getElementById('translation-modal').classList.remove('hidden');
+        }
+        
+        // 新增翻譯
+        function addTranslation() {
+            document.getElementById('modal-title').textContent = '新增翻譯';
+            document.getElementById('field-key').value = '';
+            document.getElementById('field-key').disabled = false;
+            document.getElementById('field-zh-tw').value = '';
+            document.getElementById('field-zh-cn').value = '';
+            
+            document.getElementById('translation-modal').classList.remove('hidden');
+        }
+        
+        // 導出Excel格式
+        function exportToExcel() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "英文字段,繁體中文,簡體中文\n";
+            
+            Object.keys(translations).forEach(key => {
+                const translation = translations[key];
+                csvContent += `"${key}","${translation['zh-TW'] || ''}","${translation['zh-CN'] || ''}"\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "vidspark-i18n-dictionary.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log(`[${new Date().toLocaleTimeString()}] 📥 已導出Excel文件`);
+        }
+        
+        // 初始化事件監聽器
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTranslations();
+            
+            // 新增按鈕
+            document.getElementById('add-translation-btn').addEventListener('click', addTranslation);
+            
+            // 導出Excel按鈕
+            document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
+            
+            // 重置數據按鈕
+            document.getElementById('reset-data-btn').addEventListener('click', () => {
+                if (confirm('確定要重置所有翻譯數據嗎？這將清除所有自定義翻譯並恢復到默認狀態。')) {
+                    localStorage.removeItem('vidspark-i18n-dictionary');
+                    location.reload();
+                }
+            });
+            
+            // 關閉對話框
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.getElementById('translation-modal').classList.add('hidden');
+            });
+            
+            document.getElementById('cancel-btn').addEventListener('click', () => {
+                document.getElementById('translation-modal').classList.add('hidden');
+            });
+            
+            // 表單提交
+            document.getElementById('translation-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const key = document.getElementById('field-key').value.trim();
+                const zhTW = document.getElementById('field-zh-tw').value.trim();
+                const zhCN = document.getElementById('field-zh-cn').value.trim();
+                
+                if (!key) {
+                    alert('請輸入英文字段！');
+                    return;
+                }
+                
+                // 驗證字段格式
+                if (!/^[a-z][a-zA-Z0-9_]*$/.test(key)) {
+                    alert('字段格式錯誤！請使用駝峰命名法 (例如: welcomeMessage)');
+                    return;
+                }
+                
+                translations[key] = {
+                    'en': key, // 英文字段作為英文翻譯
+                    'zh-TW': zhTW,
+                    'zh-CN': zhCN
+                };
+                
+                saveTranslations();
+                renderTranslationsTable();
+                updateStatistics();
+                
+                document.getElementById('translation-modal').classList.add('hidden');
+                console.log(`[${new Date().toLocaleTimeString()}] ✅ 已保存翻譯: ${key}`);
+            });
+            
+            // 搜索功能
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#translations-table tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 刷新按鈕
+            document.getElementById('refresh-btn').addEventListener('click', () => {
+                renderTranslationsTable();
+                updateStatistics();
+                console.log(`[${new Date().toLocaleTimeString()}] 🔄 已刷新數據`);
+            });
+        });
+    </script>
+</body>
+</html>
