@@ -1,0 +1,10 @@
+[33m665474e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m [HOTFIX] 修复缺失页面 - 添加landing页面重定向，禁用缺失的管理后台路由
+[33m87beb68[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m [HOTFIX] 添加vidspark-v2路由配置 - 修复404错误
+[33m8302ca5[m [Vidspark] MVP仪表板优化完成 - 移除案例展示、白色背景、语言选择、用户资料功能
+[33m9d4f554[m [修復] 語言切換功能初始化問題 - 修復VidsparkI18n全局訪問時序問題 - 添加詳細的初始化調試日誌 - 確保語言切換器在DOM載入後正確創建 - 修復五個頁面的語言切換功能
+[33m717ab3c[m [緊急修復] 添加vidspark-v2路由支持，解決404錯誤 - 新增5個HTML頁面路由：landing/login/register/about/pricing - 新增i18n管理後台路由 - 新增靜態資源路由支持 - 修復所有vidspark-v2頁面無法訪問問題
+[33m47dd750[m [前端] 完成五個靜態頁面多語言功能開發 - Landing頁面：完整多語言支持和導航設計 - Login/Register頁面：用戶認證流程 - About頁面：關於我們內容展示 - Pricing頁面：方案價格完整翻譯 - 多語言管理系統：admin/i18n-manager-pages.html - 語言切換功能：支持繁體中文/簡體中文/英文
+[33mf70d0e7[m [修復] 解決index.html中文編碼亂碼問題，修復前端頁面顯示
+[33m3d79eb4[m [法錯誤，應用無法啟t push origin動問題
+[33mff520bf[m [緊急修復] 修復關鍵Webman語法錯誤，解決502/500頁面加載問題
+[33m79c4b74[m [緊急修復] 修復所有Webman語法錯誤，解決前端頁面無法加載問題
