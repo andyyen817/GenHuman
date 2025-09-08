@@ -147,16 +147,48 @@
               </div>
             </section>
             
-            <!-- 文案区（简化） -->
+            <!-- 🆕 文案区（内联编辑） -->
             <section class="shot-text">
-              <div class="text-display">
-                <p>{{ shot.text }}</p>
-              </div>
-              <div class="text-actions">
-                <button class="action-btn" @click="editText(shot)">
-                  ✏️ 编辑文案
-                </button>
+              <!-- 非编辑状态：显示文案 -->
+              <div v-if="editingShot?.id !== shot.id" class="text-display">
+                <div 
+                  class="text-content editable-text"
+                  @click="startEditText(shot)"
+                  :title="'点击编辑文案'"
+                >
+                  {{ shot.text }}
+                  <div class="edit-hint">
+                    <i class="fas fa-edit"></i>
+                    点击编辑
+                  </div>
+                </div>
                 <span class="char-count">{{ shot.text.length }}/200字</span>
+              </div>
+              
+              <!-- 编辑状态：显示输入框 -->
+              <div v-else class="text-editor">
+                <textarea 
+                  v-model="tempTextValue"
+                  class="text-input"
+                  placeholder="输入分镜文案..."
+                  @keydown.enter.ctrl="saveTextEdit(shot)"
+                  @keydown.esc="cancelTextEdit"
+                  rows="3"
+                  maxlength="200"
+                  ref="textEditorRef"
+                ></textarea>
+                <div class="editor-actions">
+                  <button class="save-btn" @click="saveTextEdit(shot)">
+                    ✅ 保存
+                  </button>
+                  <button class="cancel-btn" @click="cancelTextEdit">
+                    ❌ 取消
+                  </button>
+                  <span class="char-count">{{ tempTextValue.length }}/200字</span>
+                </div>
+                <div class="editor-tips">
+                  <small>💡 Ctrl+Enter保存，Esc取消</small>
+                </div>
               </div>
             </section>
             
@@ -235,15 +267,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 // 状态管理
 const isGeneratingAll = ref(false)
 const selectedStyle = ref('cartoon')
 const selectedMusic = ref('happy')
+
+// 🆕 内联编辑状态管理
+const editingShot = ref(null) // 当前正在编辑的shot
+const tempTextValue = ref('') // 临时编辑的文本值
 
 // 风格选项
 const styleOptions = reactive([
@@ -252,57 +289,61 @@ const styleOptions = reactive([
   { id: 'business', name: '商务风格', icon: '💼' }
 ])
 
-// 分镜数据
-const shots = reactive([
-  {
-    id: 1,
-    title: 'Shot 1',
-    text: '大家好，我是时间管理小助手，今天要和大家分享几个超实用的时间管理技巧',
-    duration: 3,
-    status: 'completed',
-    preview: '/api/placeholder/300/200',
-    audio: '/api/audio/shot1.mp3',
-    audioDuration: '0:04',
-    progress: 100,
-    isPlaying: false
-  },
-  {
-    id: 2,
-    title: 'Shot 2', 
-    text: '首先是番茄工作法，把工作分成25分钟的小块，这样能保持专注力',
-    duration: 4,
-    status: 'generating',
-    preview: null,
-    audio: null,
-    audioDuration: null,
-    progress: 65,
-    isPlaying: false
-  },
-  {
-    id: 3,
-    title: 'Shot 3',
-    text: '接下来是优先级排序，把重要紧急的事情放在第一位，避免被琐事干扰',
-    duration: 4,
-    status: 'pending',
-    preview: null,
-    audio: null,
-    audioDuration: null,
-    progress: 0,
-    isPlaying: false
-  },
-  {
-    id: 4,
-    title: 'Shot 4',
-    text: '最后要记住，时间管理不是为了忙碌，而是为了有时间做真正重要的事情',
-    duration: 5,
-    status: 'pending',
-    preview: null,
-    audio: null,
-    audioDuration: null,
-    progress: 0,
-    isPlaying: false
+// 🆕 动态分镜数据（从编剧页面同步）
+const shots = reactive([])
+
+// 🆕 初始化分镜数据的函数
+const initializeShotsFromScript = () => {
+  console.log('🎬 [分镜同步] 开始初始化分镜数据')
+  
+  // 尝试从localStorage获取脚本内容
+  const savedScript = localStorage.getItem('vidspark_script_content')
+  let scriptLines = []
+  
+  if (savedScript) {
+    console.log('📝 [分镜同步] 找到保存的脚本内容')
+    // 解析脚本，提取"第X幕"的内容
+    scriptLines = savedScript.split('\n').filter(line => line.trim().startsWith('第'))
   }
-])
+  
+  // 如果没有脚本内容，使用默认示例
+  if (scriptLines.length === 0) {
+    console.log('📝 [分镜同步] 使用默认示例脚本（5幕）')
+    scriptLines = [
+      '第一幕：大家好，我是时间管理小助手，今天要和大家分享几个超实用的时间管理技巧',
+      '第二幕：首先是番茄工作法，把工作分成25分钟的小块，这样能保持专注力',
+      '第三幕：接下来是优先级排序，把重要紧急的事情放在第一位，避免被琐事干扰',
+      '第四幕：最后要记住，时间管理不是为了忙碌，而是为了有时间做真正重要的事情',
+      '第五幕：希望这些方法对大家有帮助，记得点赞关注注我！'
+    ]
+  }
+  
+  // 清空现有分镜
+  shots.splice(0, shots.length)
+  
+  // 根据脚本内容创建分镜卡片
+  scriptLines.forEach((line, index) => {
+    const shotId = index + 1
+    const text = line.replace(/^第.+?[：:]\s*/, '') // 移除"第X幕："前缀
+    
+    const newShot = {
+      id: shotId,
+      title: `Shot ${shotId}`,
+      text: text,
+      duration: 3 + Math.floor(Math.random() * 3), // 3-5秒随机时长
+      status: shotId === 1 ? 'completed' : 'pending', // 第一个默认完成
+      preview: shotId === 1 ? '/api/placeholder/300/200' : null,
+      audio: shotId === 1 ? '/api/audio/shot1.mp3' : null,
+      audioDuration: shotId === 1 ? '0:04' : null,
+      progress: shotId === 1 ? 100 : 0,
+      isPlaying: false
+    }
+    
+    shots.push(newShot)
+  })
+  
+  console.log(`✅ [分镜同步] 成功创建 ${shots.length} 个分镜卡片`)
+}
 
 // 计算属性
 const totalShots = computed(() => shots.length)
@@ -378,14 +419,43 @@ const previewShot = (shot: any) => {
   alert(`预览 ${shot.title}`)
 }
 
-// 编辑文案
-const editText = (shot: any) => {
-  const newText = prompt('编辑文案:', shot.text)
-  if (newText && newText !== shot.text) {
-    shot.text = newText
+// 🆕 开始内联编辑文案
+const startEditText = (shot: any) => {
+  console.log(`✏️ [内联编辑] 开始编辑 ${shot.title} 的文案`)
+  editingShot.value = shot
+  tempTextValue.value = shot.text
+  
+  // 下一个tick后聚焦到输入框
+  nextTick(() => {
+    const textEditor = document.querySelector('.text-input') as HTMLTextAreaElement
+    if (textEditor) {
+      textEditor.focus()
+      textEditor.select()
+    }
+  })
+}
+
+// 🆕 保存文案编辑
+const saveTextEdit = async (shot: any) => {
+  if (tempTextValue.value.trim() && tempTextValue.value !== shot.text) {
+    const oldText = shot.text
+    shot.text = tempTextValue.value.trim()
+    console.log(`💾 [内联编辑] 保存文案更改: "${oldText}" → "${shot.text}"`)
+    
     // 重新生成音频
-    regenerateAudio(shot)
+    await regenerateAudio(shot)
   }
+  
+  // 退出编辑状态
+  editingShot.value = null
+  tempTextValue.value = ''
+}
+
+// 🆕 取消文案编辑
+const cancelTextEdit = () => {
+  console.log(`❌ [内联编辑] 取消编辑`)
+  editingShot.value = null
+  tempTextValue.value = ''
 }
 
 // 播放/暂停音频
@@ -484,6 +554,13 @@ const goToEditor = () => {
   }
   router.push('/editor')
 }
+
+// 🆕 生命周期钩子
+onMounted(() => {
+  console.log('🎬 [DirectorView] 组件已挂载')
+  // 初始化分镜数据（从编剧页面同步）
+  initializeShotsFromScript()
+})
 </script>
 
 <style scoped>
@@ -654,6 +731,115 @@ const goToEditor = () => {
 /* 右侧分镜矩阵区 */
 .storyboard-matrix {
   flex: 1;
+}
+
+/* 🆕 内联编辑样式 */
+.editable-text {
+  position: relative;
+  padding: 12px;
+  border: 2px dashed transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.editable-text:hover {
+  border-color: #667eea;
+  background: #f8fafc;
+}
+
+.edit-hint {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  display: none;
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.editable-text:hover .edit-hint {
+  display: block;
+}
+
+.text-editor {
+  padding: 8px;
+  background: #f8fafc;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+}
+
+.text-input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.editor-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  gap: 8px;
+}
+
+.save-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.cancel-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.editor-tips {
+  margin-top: 4px;
+  text-align: center;
+}
+
+.editor-tips small {
+  color: #6b7280;
+  font-size: 11px;
 }
 
 .shots-grid {

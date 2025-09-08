@@ -1,732 +1,1265 @@
 <template>
-  <div class="editor-container">
-    <!-- 顶部进度条 -->
-    <header class="editor-header">
-      <div class="progress-section">
-        <h1>🎞️ 最后一步：合成影片</h1>
-        <p>AI会自动把所有片段拼接成完整影片，添加字幕和背景音乐</p>
-        <div v-if="isProcessing" class="processing-status">
-          <div class="status-indicator">
-            <div class="spinner"></div>
-            <span>{{ currentProcessingStep }}</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: processingProgress + '%' }"></div>
-          </div>
-          <span class="progress-text">{{ processingProgress }}% 完成 | 预计还需 {{ estimatedTime }} 分钟</span>
-        </div>
+  <div class="container">
+    <!-- 顶部导航 -->
+    <header class="header">
+      <div class="logo">🎬 Vidspark</div>
+      <div class="progress-flow">
+        <span class="flow-step completed">📝 编剧</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step completed">🎤 声音分镜</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step completed">🎬 图像分镜</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step active">🎞️ 剪辑</span>
+      </div>
+      <div style="color: #6b7280; font-size: 14px;">
+        项目：{{ projectName }}
       </div>
     </header>
 
-    <!-- 主要工作区 -->
+    <!-- 主标题区 -->
+    <section class="main-header">
+      <h1 class="main-title">🎞️ AI智能剪辑</h1>
+      <p class="main-subtitle">自动合成你的创作内容，生成专业的短视频</p>
+      <div class="project-stats">
+        <div class="stat-item">
+          <div class="stat-number">{{ totalShots }}</div>
+          <div class="stat-label">分镜片段</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{ totalDuration }}</div>
+          <div class="stat-label">总时长(秒)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{ outputQuality }}</div>
+          <div class="stat-label">输出质量</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主工作区 -->
     <main class="editor-workspace">
-      <!-- 视频预览区 -->
-      <div class="video-preview-section">
-        <div class="video-preview-large">
-          <video 
-            v-if="finalVideoUrl" 
-            :src="finalVideoUrl" 
-            controls 
-            width="100%"
-            class="preview-video"
-          >
-            您的浏览器不支持视频播放
-          </video>
-          <div v-else class="preview-placeholder">
-            <div class="placeholder-content">
-              <div class="placeholder-icon">🎬</div>
-              <h3>影片预览</h3>
-              <p>点击下方"开始合成"按钮生成最终影片</p>
+      <!-- 左侧主编辑区 -->
+      <div class="main-editor">
+        <!-- 视频预览器 -->
+        <div class="video-preview">
+          <div class="preview-content">
+            <div v-if="previewVideo" class="video-container">
+              <video
+                ref="videoPlayer"
+                :src="previewVideo"
+                @timeupdate="updateTimeDisplay"
+                @loadedmetadata="onVideoLoaded"
+              ></video>
+            </div>
+            <div v-else class="preview-placeholder">
+              <div style="text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 15px;">👨‍💼</div>
+                <div style="font-size: 18px; margin-bottom: 10px;">{{ projectName }}</div>
+                <div style="font-size: 14px; opacity: 0.8;">预览：{{ totalShots }}个分镜已自动合成</div>
+              </div>
+            </div>
+          </div>
+          <div class="preview-overlay">
+            <div class="play-controls">
+              <button class="play-button" @click="togglePlay">
+                {{ isPlaying ? '⏸️' : '▶️' }}
+              </button>
+              <div class="time-display">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</div>
+            </div>
+            <div class="video-info">
+              {{ outputQuality }} • {{ aspectRatio }} • 已添加字幕和背景音乐
             </div>
           </div>
         </div>
-        
-        <div v-if="finalVideoUrl" class="preview-info">
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">总时长:</span>
-              <span class="info-value">{{ totalDuration }}</span>
+
+        <!-- 时间轴编辑器 -->
+        <div class="timeline-container">
+          <div class="timeline-header">
+            <h3 class="timeline-title">📏 时间轴编辑</h3>
+            <div class="timeline-controls">
+              <button
+                v-for="filter in timelineFilters"
+                :key="filter.key"
+                :class="['timeline-btn', { active: activeFilter === filter.key }]"
+                @click="setTimelineFilter(filter.key)"
+              >
+                {{ filter.label }}
+              </button>
             </div>
-            <div class="info-item">
-              <span class="info-label">片段数:</span>
-              <span class="info-value">{{ totalShots }} 个</span>
+          </div>
+          
+          <div class="timeline-tracks">
+            <!-- 视频轨道 -->
+            <div v-show="showTrack('video')" class="track">
+              <div class="track-label">视频</div>
+              <div class="track-content">
+                <div
+                  v-for="(clip, index) in videoClips"
+                  :key="`video-${index}`"
+                  class="timeline-clip video"
+                  @click="selectClip('video', index)"
+                >
+                  🎬 第{{ index + 1 }}幕 {{ clip.duration }}s
+                </div>
+              </div>
             </div>
-            <div class="info-item">
-              <span class="info-label">字幕:</span>
-              <span class="info-value">{{ subtitleEnabled ? '已添加' : '无字幕' }}</span>
+            
+            <!-- 音频轨道 -->
+            <div v-show="showTrack('audio')" class="track">
+              <div class="track-label">音频</div>
+              <div class="track-content">
+                <div
+                  v-for="(clip, index) in audioClips"
+                  :key="`audio-${index}`"
+                  class="timeline-clip audio"
+                  @click="selectClip('audio', index)"
+                >
+                  🎤 配音-{{ index + 1 }}
+                </div>
+              </div>
             </div>
-            <div class="info-item">
-              <span class="info-label">背景音乐:</span>
-              <span class="info-value">{{ backgroundMusic || '无音乐' }}</span>
+            
+            <!-- 字幕轨道 -->
+            <div v-show="showTrack('subtitle')" class="track">
+              <div class="track-label">字幕</div>
+              <div class="track-content">
+                <div
+                  v-for="(clip, index) in subtitleClips"
+                  :key="`subtitle-${index}`"
+                  class="timeline-clip text"
+                  @click="selectClip('subtitle', index)"
+                >
+                  📝 字幕-{{ index + 1 }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- 背景音乐轨道 -->
+            <div v-show="showTrack('music')" class="track">
+              <div class="track-label">音乐</div>
+              <div class="track-content">
+                <div class="timeline-clip music">
+                  🎵 {{ backgroundMusic.name }} ({{ totalDuration }}s)
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 设置面板 -->
-      <div class="settings-panel">
-        <div class="settings-section">
-          <h3>🎨 字幕设置</h3>
-          <div class="setting-item">
-            <label>字幕样式:</label>
-            <select v-model="subtitleStyle" class="big-select">
-              <option value="simple">简洁白字</option>
-              <option value="bordered">彩色边框</option>
-              <option value="shadow">阴影效果</option>
-              <option value="none">不要字幕</option>
-            </select>
-          </div>
+      <!-- 右侧设置面板 -->
+      <aside class="settings-panel">
+        <!-- 字幕设置 -->
+        <div class="panel-section">
+          <h3 class="panel-title">📝 字幕设置</h3>
           
-          <div v-if="subtitleStyle !== 'none'" class="setting-item">
-            <label>字幕位置:</label>
-            <select v-model="subtitlePosition" class="big-select">
-              <option value="bottom">底部</option>
-              <option value="center">居中</option>
-              <option value="top">顶部</option>
-            </select>
+          <div class="setting-group">
+            <label class="setting-label">字幕样式</label>
+            <div class="setting-options">
+              <div
+                v-for="style in subtitleStyles"
+                :key="style.value"
+                :class="['setting-option', { selected: subtitleSettings.style === style.value }]"
+                @click="subtitleSettings.style = style.value"
+              >
+                {{ style.label }}
+              </div>
+            </div>
+            <div class="subtitle-preview">
+              <div class="subtitle-text" :style="getSubtitleStyle()">
+                大家好，我是时间管理小助手
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="settings-section">
-          <h3>🎵 音频设置</h3>
-          <div class="setting-item">
-            <label>背景音乐:</label>
-            <select v-model="backgroundMusic" class="big-select">
-              <option value="">不要背景音乐</option>
-              <option value="happy">轻松愉快</option>
-              <option value="professional">专业严肃</option>
-              <option value="inspiring">激励向上</option>
-            </select>
-          </div>
-          
-          <div v-if="backgroundMusic" class="setting-item">
-            <label>音乐音量:</label>
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              v-model="musicVolume"
-              class="volume-slider"
+          <div class="setting-group">
+            <label class="setting-label">字体大小</label>
+            <input
+              type="range"
+              class="setting-input"
+              min="12"
+              max="48"
+              v-model="subtitleSettings.fontSize"
             >
-            <span class="volume-text">{{ musicVolume }}%</span>
+            <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 5px;">
+              当前: {{ subtitleSettings.fontSize }}px
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">字幕位置</label>
+            <div class="setting-options">
+              <div
+                v-for="position in subtitlePositions"
+                :key="position.value"
+                :class="['setting-option', { selected: subtitleSettings.position === position.value }]"
+                @click="subtitleSettings.position = position.value"
+              >
+                {{ position.label }}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="settings-section">
-          <h3>📱 影片设置</h3>
-          <div class="setting-item">
-            <label>影片质量:</label>
-            <select v-model="videoQuality" class="big-select">
-              <option value="720p">高清 720p (推荐)</option>
-              <option value="480p">标清 480p (快速)</option>
-              <option value="1080p">超高清 1080p (慢速)</option>
-            </select>
-          </div>
+        <!-- 转场效果 -->
+        <div class="panel-section">
+          <h3 class="panel-title">🎬 转场效果</h3>
           
-          <div class="setting-item">
-            <label>影片比例:</label>
-            <select v-model="aspectRatio" class="big-select">
-              <option value="16:9">横屏 16:9</option>
-              <option value="9:16">竖屏 9:16</option>
-              <option value="1:1">正方形 1:1</option>
+          <div class="setting-group">
+            <label class="setting-label">转场类型</label>
+            <div class="setting-options">
+              <div
+                v-for="transition in transitionTypes"
+                :key="transition.value"
+                :class="['setting-option', { selected: transitionSettings.type === transition.value }]"
+                @click="transitionSettings.type = transition.value"
+              >
+                {{ transition.label }}
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">转场时长</label>
+            <select class="setting-input" v-model="transitionSettings.duration">
+              <option value="0.3">0.3秒</option>
+              <option value="0.5">0.5秒</option>
+              <option value="0.8">0.8秒</option>
+              <option value="1.0">1.0秒</option>
             </select>
           </div>
         </div>
-      </div>
+
+        <!-- 音频设置 -->
+        <div class="panel-section">
+          <h3 class="panel-title">🎵 音频设置</h3>
+          
+          <div class="setting-group">
+            <label class="setting-label">背景音乐</label>
+            <select class="setting-input" v-model="audioSettings.backgroundMusic">
+              <option value="relaxed">轻松愉快</option>
+              <option value="business">专业商务</option>
+              <option value="warm">温馨暖心</option>
+              <option value="tech">科技感</option>
+              <option value="none">无背景音乐</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">音乐音量</label>
+            <input
+              type="range"
+              class="setting-input"
+              min="0"
+              max="100"
+              v-model="audioSettings.musicVolume"
+            >
+            <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 5px;">
+              {{ audioSettings.musicVolume }}% (推荐音量)
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">配音音量</label>
+            <input
+              type="range"
+              class="setting-input"
+              min="0"
+              max="100"
+              v-model="audioSettings.voiceVolume"
+            >
+            <div style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 5px;">
+              {{ audioSettings.voiceVolume }}% (推荐音量)
+            </div>
+          </div>
+        </div>
+
+        <!-- 输出设置 -->
+        <div class="panel-section">
+          <h3 class="panel-title">📤 输出设置</h3>
+          
+          <div class="export-settings">
+            <div class="setting-group">
+              <label class="setting-label">输出质量</label>
+              <div class="quality-options">
+                <div
+                  v-for="quality in qualityOptions"
+                  :key="quality.value"
+                  :class="['quality-option', { selected: exportSettings.quality === quality.value }]"
+                  @click="exportSettings.quality = quality.value"
+                >
+                  <div>
+                    <div class="quality-name">{{ quality.name }}</div>
+                    <div class="quality-details">{{ quality.resolution }} • {{ quality.description }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">输出格式</label>
+              <select class="setting-input" v-model="exportSettings.format">
+                <option value="mp4">MP4 (推荐)</option>
+                <option value="mov">MOV</option>
+                <option value="avi">AVI</option>
+                <option value="gif">GIF</option>
+              </select>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">预计文件大小</label>
+              <div style="padding: 10px; background: #f0f9ff; border-radius: 6px; text-align: center;">
+                <div style="font-weight: 500; color: #0369a1;">约 {{ estimatedFileSize }}</div>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">
+                  基于当前设置估算
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
     </main>
 
     <!-- 底部操作区 -->
-    <footer class="editor-footer">
-      <button class="back-btn" @click="goBack">
-        ← 返回导演区
-      </button>
-      
-      <div class="cost-section">
-        <div class="cost-info">
-          <span class="cost-label">💰 本次制作需要:</span>
-          <span class="cost-value">{{ totalCost }} 积分</span>
-        </div>
-        <div class="balance-info">
-          <span class="balance-label">你还有:</span>
-          <span class="balance-value">{{ userCredits }} 积分</span>
-        </div>
+    <footer class="bottom-actions">
+      <div class="action-group">
+        <router-link to="/image-storyboard" class="action-btn secondary">
+          ← 返回图像分镜
+        </router-link>
+        <button class="action-btn secondary" @click="saveProject">
+          💾 保存项目
+        </button>
       </div>
 
-      <div class="action-buttons">
-        <button 
-          v-if="!finalVideoUrl"
-          class="mega-btn primary"
-          @click="startComposition"
-          :disabled="isProcessing || userCredits < totalCost"
-        >
-          <span v-if="isProcessing">⏳ 正在合成中...</span>
-          <span v-else>✨ 开始合成最终影片</span>
+      <div class="action-group">
+        <button class="action-btn secondary large" @click="previewVideo">
+          👁️ 预览视频
         </button>
-        
-        <div v-else class="final-actions">
-          <button class="action-btn" @click="previewFullscreen">
-            👁️ 全屏预览
-          </button>
-          <button class="action-btn" @click="downloadVideo">
-            📥 下载影片
-          </button>
-          <button class="action-btn" @click="shareVideo">
-            📤 分享影片
-          </button>
-          <button class="mega-btn success" @click="startNewProject">
-            🎬 制作新影片
-          </button>
-        </div>
+        <button class="action-btn primary large" @click="exportVideo" :disabled="isExporting">
+          {{ isExporting ? '⏳ 生成中...' : '🚀 生成视频' }}
+        </button>
       </div>
     </footer>
 
     <!-- 处理进度弹窗 -->
-    <div v-if="isProcessing" class="processing-modal">
-      <div class="modal-content">
-        <div class="processing-animation">
-          <div class="film-reel">🎬</div>
-          <div class="processing-dots">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-          </div>
+    <div v-if="showProcessing" class="processing-overlay">
+      <div class="processing-modal">
+        <div class="processing-icon">🎬</div>
+        <div class="processing-title">正在生成视频</div>
+        <div class="processing-text">AI正在自动合成你的创作内容...</div>
+        <div class="processing-progress">
+          <div class="processing-fill" :style="{ width: processingProgress + '%' }"></div>
         </div>
-        <h3>正在制作你的影片...</h3>
-        <p>{{ currentProcessingStep }}</p>
-        <div class="progress-details">
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: processingProgress + '%' }"></div>
-          </div>
-          <span class="progress-percentage">{{ processingProgress }}%</span>
-        </div>
-        <div class="processing-tips">
-          <p>💡 制作期间你可以：</p>
-          <ul>
-            <li>🍵 泡杯茶放松一下</li>
-            <li>📱 刷刷朋友圈</li>
-            <li>📝 想想下个作品的创意</li>
-          </ul>
+        <div class="processing-info">
+          {{ processingStep }}
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+<script>
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
-
-// 基础数据
-const userCredits = ref(125)
-const totalShots = ref(4)
-
-// 设置选项
-const subtitleStyle = ref('simple')
-const subtitlePosition = ref('bottom')
-const backgroundMusic = ref('happy')
-const musicVolume = ref(30)
-const videoQuality = ref('720p')
-const aspectRatio = ref('16:9')
-
-// 处理状态
-const isProcessing = ref(false)
-const processingProgress = ref(0)
-const currentProcessingStep = ref('')
-const estimatedTime = ref(0)
-const finalVideoUrl = ref('')
-
-// 处理步骤
-const processingSteps = [
-  '正在收集所有片段...',
-  '正在拼接影片片段...',
-  '正在生成字幕文件...',
-  '正在添加背景音乐...',
-  '正在调整音频音量...',
-  '正在渲染最终影片...',
-  '正在优化影片质量...',
-  '影片制作完成！'
-]
-
-// 计算属性
-const totalDuration = computed(() => {
-  // 模拟计算总时长
-  return '2分30秒'
-})
-
-const subtitleEnabled = computed(() => subtitleStyle.value !== 'none')
-
-const totalCost = computed(() => {
-  let cost = 5 // 基础合成费用
-  if (subtitleEnabled.value) cost += 2
-  if (backgroundMusic.value) cost += 2
-  if (videoQuality.value === '1080p') cost += 3
-  return cost
-})
-
-// 开始合成
-const startComposition = async () => {
-  if (isProcessing.value) return
-  
-  if (userCredits.value < totalCost.value) {
-    alert('积分不足，请先充值！')
-    return
-  }
-
-  console.log('✨ [开始合成] 启动影片合成流程')
-  isProcessing.value = true
-  processingProgress.value = 0
-  estimatedTime.value = 3
-
-  try {
-    for (let i = 0; i < processingSteps.length; i++) {
-      currentProcessingStep.value = processingSteps[i]
-      console.log(`📋 [处理步骤] ${currentProcessingStep.value}`)
-      
-      // 模拟处理时间
-      const stepDuration = i === processingSteps.length - 1 ? 500 : 3000
-      await simulateProcessing(stepDuration, i)
-      
-      processingProgress.value = Math.round(((i + 1) / processingSteps.length) * 100)
-      estimatedTime.value = Math.max(0, estimatedTime.value - 0.5)
-    }
-
-    // 生成最终视频URL
-    finalVideoUrl.value = '/api/video/final-composition.mp4'
+export default {
+  name: 'EditorView',
+  setup() {
+    const router = useRouter()
     
-    // 扣除积分
-    userCredits.value -= totalCost.value
+    // 响应式数据
+    const projectName = ref('时间管理技巧分享')
+    const isPlaying = ref(false)
+    const currentTime = ref(8)
+    const duration = ref(42)
+    const isExporting = ref(false)
+    const showProcessing = ref(false)
+    const processingProgress = ref(0)
+    const processingStep = ref('')
+    const activeFilter = ref('all')
+    const aspectRatio = ref('16:9')
     
-    console.log('✅ [合成完成] 影片制作成功')
-    alert('🎉 影片制作完成！')
+    const videoPlayer = ref(null)
+    const previewVideo = ref(null)
     
-  } catch (error) {
-    console.error('❌ [合成失败]', error)
-    alert('制作失败，请重试')
-  } finally {
-    isProcessing.value = false
-  }
-}
-
-// 模拟处理过程
-const simulateProcessing = (duration: number, step: number) => {
-  return new Promise((resolve) => {
-    const interval = setInterval(() => {
-      // 可以在这里添加更详细的进度更新
-    }, 100)
+    // 时间轴数据
+    const videoClips = ref([])
+    const audioClips = ref([])
+    const subtitleClips = ref([])
+    const backgroundMusic = ref({ name: '轻松背景音乐' })
     
-    setTimeout(() => {
-      clearInterval(interval)
-      resolve(true)
-    }, duration)
-  })
-}
-
-// 全屏预览
-const previewFullscreen = () => {
-  console.log('👁️ [全屏预览] 开启全屏模式')
-  const video = document.querySelector('.preview-video') as HTMLVideoElement
-  if (video && video.requestFullscreen) {
-    video.requestFullscreen()
-  }
-}
-
-// 下载视频
-const downloadVideo = () => {
-  console.log('📥 [下载影片] 开始下载')
-  // 创建下载链接
-  const link = document.createElement('a')
-  link.href = finalVideoUrl.value
-  link.download = '我的AI影片.mp4'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
-// 分享视频
-const shareVideo = () => {
-  console.log('📤 [分享影片] 开启分享')
-  
-  if (navigator.share) {
-    navigator.share({
-      title: '我用AI制作的影片',
-      text: '快来看看我用Vidspark制作的影片！',
-      url: window.location.href
-    }).catch(console.error)
-  } else {
-    // 复制链接到剪贴板
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      alert('链接已复制到剪贴板！')
-    }).catch(() => {
-      alert('分享链接：' + window.location.href)
+    const timelineFilters = ref([
+      { key: 'all', label: '全部' },
+      { key: 'video', label: '视频' },
+      { key: 'audio', label: '音频' },
+      { key: 'subtitle', label: '字幕' }
+    ])
+    
+    // 设置数据
+    const subtitleSettings = ref({
+      style: 'simple',
+      fontSize: 24,
+      position: 'bottom'
     })
-  }
-}
-
-// 开始新项目
-const startNewProject = () => {
-  console.log('🎬 [新项目] 开始制作新影片')
-  if (confirm('确定要制作新影片吗？当前设置将被重置。')) {
-    router.push('/')
-  }
-}
-
-// 返回导演区
-const goBack = () => {
-  if (isProcessing.value) {
-    if (!confirm('正在制作中，确定要返回吗？进度将丢失。')) {
-      return
+    
+    const transitionSettings = ref({
+      type: 'fade',
+      duration: '0.5'
+    })
+    
+    const audioSettings = ref({
+      backgroundMusic: 'relaxed',
+      musicVolume: 30,
+      voiceVolume: 85
+    })
+    
+    const exportSettings = ref({
+      quality: '1080p',
+      format: 'mp4'
+    })
+    
+    // 选项数据
+    const subtitleStyles = ref([
+      { value: 'simple', label: '简约' },
+      { value: 'outlined', label: '描边' },
+      { value: 'shadow', label: '阴影' },
+      { value: 'colored', label: '彩色' }
+    ])
+    
+    const subtitlePositions = ref([
+      { value: 'top', label: '顶部' },
+      { value: 'bottom', label: '底部' }
+    ])
+    
+    const transitionTypes = ref([
+      { value: 'fade', label: '淡入淡出' },
+      { value: 'cut', label: '切割' },
+      { value: 'slide', label: '滑动' },
+      { value: 'zoom', label: '缩放' }
+    ])
+    
+    const qualityOptions = ref([
+      {
+        value: '720p',
+        name: '720p 标清',
+        resolution: '1280×720',
+        description: '适合快速分享',
+        fileSize: '8.5 MB'
+      },
+      {
+        value: '1080p',
+        name: '1080p 高清',
+        resolution: '1920×1080',
+        description: '推荐质量',
+        fileSize: '15.2 MB'
+      },
+      {
+        value: '4k',
+        name: '4K 超清',
+        resolution: '3840×2160',
+        description: '最高质量',
+        fileSize: '42.8 MB'
+      }
+    ])
+    
+    // 计算属性
+    const totalShots = computed(() => videoClips.value.length)
+    const totalDuration = computed(() => {
+      return videoClips.value.reduce((sum, clip) => sum + clip.duration, 0)
+    })
+    const outputQuality = computed(() => exportSettings.value.quality)
+    const estimatedFileSize = computed(() => {
+      const quality = qualityOptions.value.find(q => q.value === exportSettings.value.quality)
+      return quality?.fileSize || '15.2 MB'
+    })
+    
+    // 生命周期
+    onMounted(() => {
+      initializeFromFinalShots()
+    })
+    
+    // 方法
+    const initializeFromFinalShots = () => {
+      // 从localStorage获取最终分镜内容
+      const finalShots = localStorage.getItem('vidspark_final_shots')
+      if (finalShots) {
+        try {
+          const shots = JSON.parse(finalShots)
+          
+          // 生成视频片段
+          videoClips.value = shots.map((shot, index) => ({
+            id: `video_${index + 1}`,
+            name: `第${index + 1}幕`,
+            duration: shot.displayDuration || 8,
+            url: shot.previewUrl
+          }))
+          
+          // 生成音频片段
+          audioClips.value = shots.map((shot, index) => ({
+            id: `audio_${index + 1}`,
+            name: `配音-${index + 1}`,
+            duration: shot.displayDuration || 8,
+            text: shot.audioText || ''
+          }))
+          
+          // 生成字幕片段
+          subtitleClips.value = shots.map((shot, index) => ({
+            id: `subtitle_${index + 1}`,
+            name: `字幕-${index + 1}`,
+            duration: shot.displayDuration || 8,
+            text: shot.audioText || ''
+          }))
+          
+        } catch (error) {
+          console.error('解析最终分镜内容失败:', error)
+          createDefaultClips()
+        }
+      } else {
+        createDefaultClips()
+      }
+    }
+    
+    const createDefaultClips = () => {
+      const defaultClips = Array.from({ length: 5 }, (_, index) => ({
+        id: `clip_${index + 1}`,
+        name: `第${index + 1}幕`,
+        duration: 8
+      }))
+      
+      videoClips.value = [...defaultClips]
+      audioClips.value = [...defaultClips]
+      subtitleClips.value = [...defaultClips]
+    }
+    
+    const formatTime = (seconds) => {
+      const mins = Math.floor(seconds / 60)
+      const secs = seconds % 60
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    }
+    
+    const togglePlay = () => {
+      isPlaying.value = !isPlaying.value
+      
+      if (videoPlayer.value) {
+        if (isPlaying.value) {
+          videoPlayer.value.play()
+        } else {
+          videoPlayer.value.pause()
+        }
+      } else {
+        // 模拟播放
+        if (isPlaying.value) {
+          const playInterval = setInterval(() => {
+            if (!isPlaying.value) {
+              clearInterval(playInterval)
+              return
+            }
+            currentTime.value++
+            if (currentTime.value >= duration.value) {
+              currentTime.value = duration.value
+              isPlaying.value = false
+              clearInterval(playInterval)
+            }
+          }, 1000)
+        }
+      }
+    }
+    
+    const updateTimeDisplay = () => {
+      if (videoPlayer.value) {
+        currentTime.value = Math.floor(videoPlayer.value.currentTime)
+      }
+    }
+    
+    const onVideoLoaded = () => {
+      if (videoPlayer.value) {
+        duration.value = Math.floor(videoPlayer.value.duration)
+      }
+    }
+    
+    const setTimelineFilter = (filter) => {
+      activeFilter.value = filter
+    }
+    
+    const showTrack = (trackType) => {
+      return activeFilter.value === 'all' || activeFilter.value === trackType
+    }
+    
+    const selectClip = (trackType, index) => {
+      console.log(`选中${trackType}轨道的第${index + 1}个片段`)
+      // 这里可以添加选中逻辑
+    }
+    
+    const getSubtitleStyle = () => {
+      const style = {
+        fontSize: subtitleSettings.value.fontSize + 'px'
+      }
+      
+      switch (subtitleSettings.value.style) {
+        case 'outlined':
+          style.textShadow = '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000'
+          break
+        case 'shadow':
+          style.textShadow = '2px 2px 4px rgba(0,0,0,0.5)'
+          break
+        case 'colored':
+          style.color = '#667eea'
+          style.fontWeight = 'bold'
+          break
+        default:
+          style.color = 'white'
+      }
+      
+      return style
+    }
+    
+    const saveProject = () => {
+      // 保存项目设置到localStorage
+      const projectData = {
+        subtitleSettings: subtitleSettings.value,
+        transitionSettings: transitionSettings.value,
+        audioSettings: audioSettings.value,
+        exportSettings: exportSettings.value,
+        clips: {
+          video: videoClips.value,
+          audio: audioClips.value,
+          subtitle: subtitleClips.value
+        }
+      }
+      
+      localStorage.setItem('vidspark_editor_settings', JSON.stringify(projectData))
+      alert('项目已保存！所有设置和进度都已自动保存。')
+    }
+    
+    const previewVideo = () => {
+      alert('生成预览中...\n\n预览功能将在新窗口打开，显示当前设置下的视频效果。')
+    }
+    
+    const exportVideo = async () => {
+      if (!confirm(`确定要生成最终视频吗？\n\n预计处理时间: 2-3分钟\n文件大小: 约${estimatedFileSize.value}`)) {
+        return
+      }
+      
+      await startProcessing()
+    }
+    
+    const startProcessing = async () => {
+      showProcessing.value = true
+      isExporting.value = true
+      processingProgress.value = 0
+      
+      const steps = [
+        '正在合成分镜 1/5...',
+        '正在合成分镜 2/5...',
+        '正在合成分镜 3/5...',
+        '正在合成分镜 4/5...',
+        '正在合成分镜 5/5...',
+        '正在添加字幕...',
+        '正在混合音频...',
+        '正在添加转场效果...',
+        '正在优化视频质量...',
+        '正在生成最终文件...'
+      ]
+      
+      for (let i = 0; i < steps.length; i++) {
+        processingStep.value = steps[i]
+        processingProgress.value = ((i + 1) / steps.length) * 100
+        await new Promise(resolve => setTimeout(resolve, 800))
+      }
+      
+      processingStep.value = '生成完成！正在准备下载...'
+      
+      setTimeout(() => {
+        showProcessing.value = false
+        isExporting.value = false
+        alert(`🎉 视频生成成功！\n\n文件名: ${projectName.value}.${exportSettings.value.format}\n大小: ${estimatedFileSize.value}\n质量: ${outputQuality.value}\n\n视频已保存到"我的项目"，您现在可以下载或分享。`)
+        
+        // 跳转到项目页面
+        router.push('/projects')
+      }, 1500)
+    }
+    
+    return {
+      // 数据
+      projectName,
+      isPlaying,
+      currentTime,
+      duration,
+      isExporting,
+      showProcessing,
+      processingProgress,
+      processingStep,
+      activeFilter,
+      aspectRatio,
+      videoPlayer,
+      previewVideo,
+      videoClips,
+      audioClips,
+      subtitleClips,
+      backgroundMusic,
+      timelineFilters,
+      subtitleSettings,
+      transitionSettings,
+      audioSettings,
+      exportSettings,
+      subtitleStyles,
+      subtitlePositions,
+      transitionTypes,
+      qualityOptions,
+      
+      // 计算属性
+      totalShots,
+      totalDuration,
+      outputQuality,
+      estimatedFileSize,
+      
+      // 方法
+      formatTime,
+      togglePlay,
+      updateTimeDisplay,
+      onVideoLoaded,
+      setTimelineFilter,
+      showTrack,
+      selectClip,
+      getSubtitleStyle,
+      saveProject,
+      previewVideo,
+      exportVideo
     }
   }
-  router.push('/director')
 }
-
-// 组件挂载
-onMounted(() => {
-  console.log('🎞️ [AI剪辑区] 页面加载完成')
-  // 可以在这里加载项目数据
-})
 </script>
 
 <style scoped>
-.editor-container {
+.container {
+  max-width: 1800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  display: flex;
-  flex-direction: column;
 }
 
-/* 顶部进度条 */
-.editor-header {
-  background: white;
-  padding: 32px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+/* 顶部导航 */
+.header {
+  background: #1a1c20;
+  color: white;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.progress-flow {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.flow-step {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.flow-step.completed {
+  background: #10b981;
+  color: white;
+}
+
+.flow-step.active {
+  background: #f59e0b;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.flow-step.pending {
+  background: #6b7280;
+  color: #d1d5db;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.flow-arrow {
+  color: #6b7280;
+  font-size: 18px;
+}
+
+/* 主标题区 */
+.main-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 30px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.main-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 10px;
+}
+
+.main-subtitle {
+  font-size: 18px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.project-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.stat-item {
   text-align: center;
 }
 
-.progress-section h1 {
-  margin: 0 0 8px 0;
-  color: #1f2937;
+.stat-number {
   font-size: 28px;
+  font-weight: bold;
+  color: #667eea;
 }
 
-.progress-section p {
-  margin: 0 0 24px 0;
-  color: #6b7280;
-  font-size: 16px;
-}
-
-.processing-status {
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.status-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #e5e7eb;
-  border-top-color: #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  transition: width 0.3s ease;
-}
-
-.progress-text {
+.stat-label {
   font-size: 14px;
   color: #6b7280;
+  margin-top: 5px;
 }
 
 /* 主工作区 */
 .editor-workspace {
-  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 0;
+  min-height: 700px;
+}
+
+/* 左侧主编辑区 */
+.main-editor {
+  background: #f9fafb;
   display: flex;
-  gap: 32px;
-  padding: 32px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
+  flex-direction: column;
 }
 
-.video-preview-section {
-  flex: 2;
+/* 预览播放器 */
+.video-preview {
+  background: #000;
+  aspect-ratio: 16/9;
+  margin: 20px;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
 }
 
-.video-preview-large {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
-
-.preview-video {
-  width: 100%;
-  border-radius: 12px;
-}
-
-.preview-placeholder {
-  width: 100%;
-  height: 300px;
-  background: #f3f4f6;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
+.preview-content {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
 }
 
-.placeholder-content {
-  text-align: center;
-}
-
-.placeholder-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.placeholder-content h3 {
-  margin: 0 0 8px 0;
-  color: #374151;
-  font-size: 20px;
-}
-
-.placeholder-content p {
-  margin: 0;
-  color: #6b7280;
-}
-
-.preview-info {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background: #f8fafc;
-  border-radius: 8px;
-}
-
-.info-label {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.info-value {
-  font-size: 14px;
-  color: #1f2937;
-  font-weight: 500;
-}
-
-/* 设置面板 */
-.settings-panel {
-  flex: 1;
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  height: fit-content;
-}
-
-.settings-section {
-  margin-bottom: 32px;
-}
-
-.settings-section:last-child {
-  margin-bottom: 0;
-}
-
-.settings-section h3 {
-  margin: 0 0 16px 0;
-  color: #1f2937;
-  font-size: 18px;
-}
-
-.setting-item {
-  margin-bottom: 16px;
-}
-
-.setting-item label {
-  display: block;
-  margin-bottom: 8px;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.big-select {
+.video-container {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  height: 100%;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-placeholder {
+  text-align: center;
+  font-size: 24px;
+}
+
+.preview-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  padding: 20px;
+  color: white;
+}
+
+.play-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.play-button {
+  width: 50px;
+  height: 50px;
+  background: #667eea;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.play-button:hover {
+  background: #5a67d8;
+  transform: scale(1.1);
+}
+
+.time-display {
   font-size: 14px;
+  font-weight: 500;
+}
+
+.video-info {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* 时间轴 */
+.timeline-container {
   background: white;
-  outline: none;
-  transition: border-color 0.2s ease;
+  padding: 20px;
+  border-top: 1px solid #e5e7eb;
+  flex: 1;
 }
 
-.big-select:focus {
-  border-color: #667eea;
-}
-
-.volume-slider {
-  width: calc(100% - 50px);
-  margin-right: 12px;
-}
-
-.volume-text {
-  font-size: 14px;
-  color: #6b7280;
-  min-width: 35px;
-}
-
-/* 底部操作区 */
-.editor-footer {
-  background: white;
-  padding: 24px 32px;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+.timeline-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
+  margin-bottom: 20px;
 }
 
-.cost-section {
-  text-align: center;
+.timeline-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
 }
 
-.cost-info, .balance-info {
+.timeline-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.timeline-btn {
+  padding: 8px 15px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timeline-btn:hover {
+  border-color: #667eea;
+  background: #f8fafc;
+}
+
+.timeline-btn.active {
+  border-color: #667eea;
+  background: #eef2ff;
+  color: #667eea;
+}
+
+/* 时间轴轨道 */
+.timeline-tracks {
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 15px;
+  min-height: 200px;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  min-height: 40px;
+}
+
+.track-label {
+  width: 80px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  text-align: right;
+  margin-right: 15px;
+}
+
+.track-content {
+  flex: 1;
+  display: flex;
+  gap: 5px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  padding: 3px;
+  min-height: 35px;
+}
+
+.timeline-clip {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.timeline-clip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.timeline-clip.audio {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.timeline-clip.video {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.timeline-clip.text {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.timeline-clip.music {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  flex: 1;
+}
+
+/* 右侧设置面板 */
+.settings-panel {
+  background: white;
+  border-left: 1px solid #e5e7eb;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.panel-section {
+  margin-bottom: 25px;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 15px;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
 }
 
-.cost-label, .balance-label {
+.setting-group {
+  margin-bottom: 20px;
+}
+
+.setting-label {
   font-size: 14px;
-  color: #6b7280;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+  display: block;
 }
 
-.cost-value {
-  font-size: 16px;
-  color: #dc2626;
-  font-weight: 600;
+.setting-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
 }
 
-.balance-value {
-  font-size: 16px;
-  color: #059669;
-  font-weight: 600;
+.setting-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.setting-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
-.mega-btn {
-  padding: 16px 32px;
-  border: none;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mega-btn.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.mega-btn.success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.mega-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102,126,234,0.3);
-}
-
-.mega-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.final-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  padding: 12px 20px;
+.setting-option {
+  padding: 10px;
   border: 2px solid #e5e7eb;
   background: white;
   border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
   cursor: pointer;
-  font-size: 14px;
   transition: all 0.2s ease;
 }
 
-.action-btn:hover {
+.setting-option:hover {
   border-color: #667eea;
-  background: #f8fafc;
 }
 
-.back-btn {
-  padding: 12px 24px;
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
+.setting-option.selected {
+  border-color: #667eea;
+  background: #eef2ff;
+  color: #667eea;
+  font-weight: 500;
+}
+
+/* 字幕样式预览 */
+.subtitle-preview {
+  background: #000;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 16px;
+  position: relative;
+}
+
+.subtitle-text {
+  position: relative;
+  z-index: 2;
+}
+
+/* 输出设置 */
+.export-settings {
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.quality-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quality-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
   transition: all 0.2s ease;
 }
 
-.back-btn:hover {
+.quality-option:hover {
+  border-color: #667eea;
+}
+
+.quality-option.selected {
+  border-color: #667eea;
+  background: #eef2ff;
+}
+
+.quality-name {
+  font-weight: 500;
+  color: #374151;
+}
+
+.quality-details {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* 底部操作区 */
+.bottom-actions {
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-group {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.action-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+}
+
+.action-btn.secondary:hover {
   background: #e5e7eb;
 }
 
-/* 处理进度弹窗 */
-.processing-modal {
+.action-btn.large {
+  padding: 15px 30px;
+  font-size: 16px;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 处理进度条 */
+.processing-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -739,142 +1272,96 @@ onMounted(() => {
   z-index: 1000;
 }
 
-.modal-content {
+.processing-modal {
   background: white;
   padding: 40px;
   border-radius: 20px;
+  text-align: center;
   max-width: 400px;
   width: 90%;
-  text-align: center;
 }
 
-.processing-animation {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 24px;
+.processing-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: spin 2s linear infinite;
 }
 
-.film-reel {
-  font-size: 48px;
-  animation: rotate 2s linear infinite;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.processing-dots {
-  display: flex;
-  gap: 4px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  background: #667eea;
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-
-.dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes pulse {
-  0%, 80%, 100% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-  40% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
-.modal-content h3 {
-  margin: 0 0 12px 0;
-  color: #1f2937;
-  font-size: 20px;
-}
-
-.modal-content p {
-  margin: 0 0 24px 0;
-  color: #6b7280;
-}
-
-.progress-details {
-  margin-bottom: 24px;
-}
-
-.progress-percentage {
-  font-size: 14px;
-  color: #6b7280;
-  margin-top: 8px;
-  display: block;
-}
-
-.processing-tips {
-  background: #f8fafc;
-  padding: 16px;
-  border-radius: 8px;
-  text-align: left;
-}
-
-.processing-tips p {
-  margin: 0 0 8px 0;
-  font-weight: 500;
+.processing-title {
+  font-size: 24px;
+  font-weight: bold;
   color: #374151;
+  margin-bottom: 10px;
 }
 
-.processing-tips ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.processing-tips li {
-  margin-bottom: 4px;
+.processing-text {
+  font-size: 16px;
   color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.processing-progress {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.processing-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.processing-info {
   font-size: 14px;
+  color: #6b7280;
 }
 
 /* 响应式设计 */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .editor-workspace {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
   }
   
-  .info-grid {
-    grid-template-columns: 1fr;
+  .settings-panel {
+    border-left: none;
+    border-top: 1px solid #e5e7eb;
+    max-height: 400px;
   }
 }
 
 @media (max-width: 768px) {
-  .editor-workspace {
-    padding: 20px;
+  .container {
+    margin: 10px;
+    border-radius: 15px;
   }
   
-  .editor-footer {
+  .video-preview {
+    margin: 15px;
+  }
+  
+  .timeline-container {
+    padding: 15px;
+  }
+  
+  .bottom-actions {
     flex-direction: column;
-    text-align: center;
+    gap: 15px;
   }
   
-  .final-actions {
+  .action-group {
+    width: 100%;
     justify-content: center;
   }
-  
-  .action-btn, .mega-btn {
-    width: 100%;
-  }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 </style>

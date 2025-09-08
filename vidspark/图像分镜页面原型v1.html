@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 图像分镜页面 - Vidspark AI创作流程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: #1a1c20;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-flow {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .flow-step {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .flow-step.active {
+            background: #f59e0b;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .flow-step.pending {
+            background: #6b7280;
+            color: #d1d5db;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .flow-arrow {
+            color: #6b7280;
+            font-size: 18px;
+        }
+
+        /* 主标题区 */
+        .main-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .main-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .main-subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        /* 全局操作栏 */
+        .global-actions {
+            background: #f8fafc;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .mega-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .mega-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .mega-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .global-settings {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-selector {
+            padding: 8px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* 分镜网格 */
+        .shots-grid {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            background: #f9fafb;
+        }
+
+        /* 图像分镜卡片 */
+        .image-shot-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .image-shot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        .image-shot-card.completed {
+            border-color: #10b981;
+        }
+
+        .image-shot-card.processing {
+            border-color: #f59e0b;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .shot-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-badge.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.processing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.pending {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* 音频信息显示 */
+        .audio-info {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .audio-icon {
+            width: 40px;
+            height: 40px;
+            background: #0ea5e9;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .audio-details {
+            flex: 1;
+        }
+
+        .audio-text {
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .audio-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* 内容选择标签页 */
+        .content-tabs {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            min-height: 300px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 数字人选择 */
+        .avatar-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .avatar-option {
+            background: #f8fafc;
+            border: 3px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .avatar-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .avatar-option.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+        }
+
+        .avatar-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        /* 图片上传区 */
+        .image-upload {
+            border: 3px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .image-upload:hover {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+
+        .image-upload.has-image {
+            border-style: solid;
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        /* AI生图设置 */
+        .ai-generation {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .prompt-input {
+            width: 100%;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .prompt-tips {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .prompt-tip {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #9a3412;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .prompt-tip:hover {
+            background: #fed7aa;
+        }
+
+        /* 组合设置 */
+        .composition-settings {
+            background: #f1f5f9;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .setting-section {
+            margin-bottom: 20px;
+        }
+
+        .setting-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .setting-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .setting-option {
+            padding: 8px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .setting-option.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* 位置布局选择器 */
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .position-option {
+            aspect-ratio: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .position-option.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+            color: #667eea;
+        }
+
+        /* 预览区域 */
+        .preview-area {
+            background: #000;
+            border-radius: 15px;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .preview-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 操作按钮组 */
+        .card-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+        }
+
+        .action-btn.secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* 底部导航 */
+        .footer-navigation {
+            background: white;
+            padding: 25px 30px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn.back {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .nav-btn.back:hover {
+            background: #e5e7eb;
+        }
+
+        .nav-btn.next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn.next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn.next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-summary {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin: 8px auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 4px;
+            width: 40%;
+            transition: width 0.3s ease;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .shots-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .shots-grid {
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .global-actions {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .footer-navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .card-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="logo">🎬 Vidspark</div>
+            <div class="progress-flow">
+                <span class="flow-step completed">📝 编剧</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step completed">🎤 声音分镜</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step active">🎬 图像分镜</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step pending">🎞️ 剪辑</span>
+            </div>
+            <div style="color: #6b7280; font-size: 14px;">
+                项目：时间管理技巧分享
+            </div>
+        </header>
+
+        <!-- 主标题区 -->
+        <section class="main-header">
+            <h1 class="main-title">🎬 图像分镜制作</h1>
+            <p class="main-subtitle">为每个分镜添加视觉内容，让你的故事更加生动</p>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">总分镜数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">待处理</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 全局操作栏 -->
+        <section class="global-actions">
+            <button class="mega-button" onclick="generateAllImages()">
+                🎨 一键生成所有图像
+            </button>
+            <div class="global-settings">
+                <div class="setting-group">
+                    <label>影片风格：</label>
+                    <select class="setting-selector">
+                        <option>卡通风格</option>
+                        <option>写实风格</option>
+                        <option>商务风格</option>
+                        <option>手绘风格</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>画面比例：</label>
+                    <select class="setting-selector">
+                        <option>16:9 横屏</option>
+                        <option>9:16 竖屏</option>
+                        <option>1:1 方形</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>分辨率：</label>
+                    <select class="setting-selector">
+                        <option>1080p 高清</option>
+                        <option>720p 标清</option>
+                        <option>4K 超清</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- 分镜网格 -->
+        <main class="shots-grid">
+            <!-- 分镜卡片 1 - 已完成 -->
+            <div class="image-shot-card completed">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第一幕</h3>
+                    <span class="status-badge completed">✅ 已完成</span>
+                </div>
+                
+                <!-- 音频信息 -->
+                <div class="audio-info">
+                    <div class="audio-icon">🎤</div>
+                    <div class="audio-details">
+                        <div class="audio-text">大家好，我是时间管理小助手，今天要和大家分享几个超实用的时间管理技巧</div>
+                        <div class="audio-meta">我的声音 • 时长: 0:08</div>
+                    </div>
+                </div>
+
+                <!-- 内容选择标签页 -->
+                <div class="content-tabs">
+                    <button class="tab-button active" onclick="switchTab(1, 'avatar')">👨 数字人</button>
+                    <button class="tab-button" onclick="switchTab(1, 'image')">🖼️ 图片</button>
+                    <button class="tab-button" onclick="switchTab(1, 'ai')">🎨 AI生图</button>
+                </div>
+
+                <!-- 数字人标签页 -->
+                <div class="tab-content active" id="tab-1-avatar">
+                    <div class="avatar-selection">
+                        <div class="avatar-option selected">
+                            <div class="avatar-preview">👨‍💼</div>
+                            <div class="avatar-name">商务男士</div>
+                        </div>
+                        <div class="avatar-option">
+                            <div class="avatar-preview">👩‍🏫</div>
+                            <div class="avatar-name">亲和女老师</div>
+                        </div>
+                        <div class="avatar-option">
+                            <div class="avatar-preview">🧑‍💻</div>
+                            <div class="avatar-name">科技达人</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图片标签页 -->
+                <div class="tab-content" id="tab-1-image">
+                    <div class="image-upload has-image">
+                        <div class="upload-icon">📊</div>
+                        <div class="upload-text">时间管理图表.png</div>
+                        <div class="upload-hint">点击更换图片 • 支持JPG、PNG、PPT截图</div>
+                    </div>
+                </div>
+
+                <!-- AI生图标签页 -->
+                <div class="tab-content" id="tab-1-ai">
+                    <div class="ai-generation">
+                        <textarea class="prompt-input" placeholder="描述你想要的画面...">一个现代办公室场景，桌上有时钟、日历和笔记本，象征时间管理</textarea>
+                        <div class="prompt-tips">
+                            <span class="prompt-tip" onclick="addPrompt(1, '现代办公室')">现代办公室</span>
+                            <span class="prompt-tip" onclick="addPrompt(1, '时钟元素')">时钟元素</span>
+                            <span class="prompt-tip" onclick="addPrompt(1, '简洁风格')">简洁风格</span>
+                            <span class="prompt-tip" onclick="addPrompt(1, '明亮光线')">明亮光线</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 组合设置 -->
+                <div class="composition-settings">
+                    <div class="setting-section">
+                        <div class="setting-title">组合方式：</div>
+                        <div class="setting-options">
+                            <div class="setting-option selected">数字人在前</div>
+                            <div class="setting-option">图片在前</div>
+                            <div class="setting-option">无组合</div>
+                        </div>
+                    </div>
+
+                    <div class="setting-section">
+                        <div class="setting-title">数字人位置：</div>
+                        <div class="position-grid">
+                            <div class="position-option">左上</div>
+                            <div class="position-option">居中</div>
+                            <div class="position-option">右上</div>
+                            <div class="position-option">左中</div>
+                            <div class="position-option selected">中心</div>
+                            <div class="position-option">右中</div>
+                            <div class="position-option">左下</div>
+                            <div class="position-option">中下</div>
+                            <div class="position-option">右下</div>
+                        </div>
+                    </div>
+
+                    <div class="setting-section">
+                        <div class="setting-title">数字人尺寸：</div>
+                        <div class="setting-options">
+                            <div class="setting-option">小</div>
+                            <div class="setting-option selected">中</div>
+                            <div class="setting-option">大</div>
+                            <div class="setting-option">全屏</div>
+                        </div>
+                    </div>
+
+                    <div class="setting-section">
+                        <div class="setting-title">显示时长：</div>
+                        <div class="setting-options">
+                            <div class="setting-option">3秒</div>
+                            <div class="setting-option">5秒</div>
+                            <div class="setting-option selected">8秒</div>
+                            <div class="setting-option">自定义</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 预览区域 -->
+                <div class="preview-area">
+                    <div class="preview-content">
+                        <div style="text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 10px;">👨‍💼</div>
+                            <div style="font-size: 14px; opacity: 0.8;">预览：商务男士 + 时间管理背景</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary">🔄 重新生成</button>
+                    <button class="action-btn primary">👁️ 预览效果</button>
+                </div>
+            </div>
+
+            <!-- 分镜卡片 2 - 处理中 -->
+            <div class="image-shot-card processing">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第二幕</h3>
+                    <span class="status-badge processing">⏳ 生成中</span>
+                </div>
+                
+                <!-- 音频信息 -->
+                <div class="audio-info">
+                    <div class="audio-icon">🎤</div>
+                    <div class="audio-details">
+                        <div class="audio-text">首先是番茄工作法，把工作分成25分钟的小块，这样能保持专注力</div>
+                        <div class="audio-meta">我的声音 • 时长: 0:10</div>
+                    </div>
+                </div>
+
+                <!-- 内容选择标签页 -->
+                <div class="content-tabs">
+                    <button class="tab-button active" onclick="switchTab(2, 'ai')">🎨 AI生图</button>
+                    <button class="tab-button" onclick="switchTab(2, 'avatar')">👨 数字人</button>
+                    <button class="tab-button" onclick="switchTab(2, 'image')">🖼️ 图片</button>
+                </div>
+
+                <!-- AI生图标签页 -->
+                <div class="tab-content active" id="tab-2-ai">
+                    <div class="ai-generation">
+                        <textarea class="prompt-input" placeholder="描述你想要的画面...">番茄计时器，25分钟倒计时，专注工作的氛围</textarea>
+                        <div class="prompt-tips">
+                            <span class="prompt-tip">番茄计时器</span>
+                            <span class="prompt-tip">25分钟</span>
+                            <span class="prompt-tip">专注氛围</span>
+                            <span class="prompt-tip">简约风格</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数字人标签页 -->
+                <div class="tab-content" id="tab-2-avatar">
+                    <div class="avatar-selection">
+                        <div class="avatar-option selected">
+                            <div class="avatar-preview">👨‍💼</div>
+                            <div class="avatar-name">商务男士</div>
+                        </div>
+                        <div class="avatar-option">
+                            <div class="avatar-preview">👩‍🏫</div>
+                            <div class="avatar-name">亲和女老师</div>
+                        </div>
+                        <div class="avatar-option">
+                            <div class="avatar-preview">🧑‍💻</div>
+                            <div class="avatar-name">科技达人</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图片标签页 -->
+                <div class="tab-content" id="tab-2-image">
+                    <div class="image-upload" onclick="uploadImage(2)">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">点击上传图片</div>
+                        <div class="upload-hint">支持JPG、PNG、PPT截图 • 最大10MB</div>
+                    </div>
+                </div>
+
+                <!-- 预览区域 -->
+                <div class="preview-area">
+                    <div class="preview-placeholder">
+                        ⏳ AI正在生成图像...<br>
+                        <small style="font-size: 14px; margin-top: 10px; display: block;">
+                            预计完成时间: 1分钟
+                        </small>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary" disabled>⏳ 生成中...</button>
+                    <button class="action-btn primary" disabled>⏳ 处理中</button>
+                </div>
+            </div>
+
+            <!-- 分镜卡片 3 - 待处理 -->
+            <div class="image-shot-card">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第三幕</h3>
+                    <span class="status-badge pending">⏰ 待处理</span>
+                </div>
+                
+                <!-- 音频信息 -->
+                <div class="audio-info">
+                    <div class="audio-icon">🎤</div>
+                    <div class="audio-details">
+                        <div class="audio-text">接下来是优先级排序，把重要紧急的事情放在第一位，避免被琐事干扰</div>
+                        <div class="audio-meta">我的声音 • 时长: 0:12</div>
+                    </div>
+                </div>
+
+                <!-- 内容选择标签页 -->
+                <div class="content-tabs">
+                    <button class="tab-button active" onclick="switchTab(3, 'avatar')">👨 数字人</button>
+                    <button class="tab-button" onclick="switchTab(3, 'image')">🖼️ 图片</button>
+                    <button class="tab-button" onclick="switchTab(3, 'ai')">🎨 AI生图</button>
+                </div>
+
+                <!-- 数字人标签页 -->
+                <div class="tab-content active" id="tab-3-avatar">
+                    <div class="avatar-selection">
+                        <div class="avatar-option selected">
+                            <div class="avatar-preview">👨‍💼</div>
+                            <div class="avatar-name">商务男士</div>
+                        </div>
+                        <div class="avatar-option">
+                            <div class="avatar-preview">👩‍🏫</div>
+                            <div class="avatar-name">亲和女老师</div>
+                        </div>
+                        <div class="avatar-option">
+                            <div class="avatar-preview">🧑‍💻</div>
+                            <div class="avatar-name">科技达人</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图片标签页 -->
+                <div class="tab-content" id="tab-3-image">
+                    <div class="image-upload" onclick="uploadImage(3)">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">点击上传图片</div>
+                        <div class="upload-hint">支持JPG、PNG、PPT截图 • 最大10MB</div>
+                    </div>
+                </div>
+
+                <!-- AI生图标签页 -->
+                <div class="tab-content" id="tab-3-ai">
+                    <div class="ai-generation">
+                        <textarea class="prompt-input" placeholder="描述你想要的画面...">优先级矩阵图，四象限分析，重要紧急事项标记</textarea>
+                        <div class="prompt-tips">
+                            <span class="prompt-tip">优先级矩阵</span>
+                            <span class="prompt-tip">四象限</span>
+                            <span class="prompt-tip">重要紧急</span>
+                            <span class="prompt-tip">清晰图表</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 预览区域 -->
+                <div class="preview-area">
+                    <div class="preview-placeholder">
+                        点击上方标签选择内容类型<br>
+                        <small style="font-size: 14px; margin-top: 10px; display: block;">
+                            💡 建议：先选择数字人，再添加背景图片
+                        </small>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary">🎨 选择内容</button>
+                    <button class="action-btn primary" onclick="generateImage(3)">🚀 开始生成</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- 底部导航 -->
+        <footer class="footer-navigation">
+            <a href="file:///D:/genhuman/genhuman/vidspark/声音分镜页面原型v1.html" class="nav-btn back">
+                ← 返回声音分镜
+            </a>
+            <div class="progress-summary">
+                <div>图像制作进度</div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div>1 / 5 已完成</div>
+            </div>
+            <a href="#" class="nav-btn next" id="nextBtn">
+                下一步：影片剪辑 →
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        // 标签页切换
+        function switchTab(cardNumber, tabType) {
+            // 隐藏当前卡片的所有标签页
+            const tabs = document.querySelectorAll(`#tab-${cardNumber}-avatar, #tab-${cardNumber}-image, #tab-${cardNumber}-ai`);
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // 移除当前卡片所有按钮的active状态
+            const buttons = document.querySelectorAll(`.image-shot-card:nth-child(${cardNumber}) .tab-button`);
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // 显示选中的标签页
+            document.getElementById(`tab-${cardNumber}-${tabType}`).classList.add('active');
+            
+            // 激活对应按钮
+            event.target.classList.add('active');
+        }
+
+        // 生成图像
+        function generateImage(shotNumber) {
+            alert(`开始为第${shotNumber}幕生成图像`);
+            const card = document.querySelector(`.image-shot-card:nth-child(${shotNumber})`);
+            const badge = card.querySelector('.status-badge');
+            badge.textContent = '⏳ 生成中';
+            badge.className = 'status-badge processing';
+            card.classList.add('processing');
+            
+            setTimeout(() => {
+                badge.textContent = '✅ 已完成';
+                badge.className = 'status-badge completed';
+                card.classList.remove('processing');
+                card.classList.add('completed');
+                updateProgress();
+            }, 5000);
+        }
+
+        // 批量生成所有图像
+        function generateAllImages() {
+            if (confirm('确定要为所有分镜生成图像吗？这可能需要几分钟时间。')) {
+                alert('开始批量生成图像...');
+                [2, 3, 4, 5].forEach((num, index) => {
+                    setTimeout(() => generateImage(num), index * 2000);
+                });
+            }
+        }
+
+        // 上传图片
+        function uploadImage(shotNumber) {
+            alert(`为第${shotNumber}幕上传图片`);
+            // 模拟文件选择器
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    alert(`已选择文件: ${file.name}`);
+                }
+            };
+            fileInput.click();
+        }
+
+        // 添加提示词
+        function addPrompt(shotNumber, prompt) {
+            const textarea = document.querySelector(`#tab-${shotNumber}-ai .prompt-input`);
+            textarea.value += `, ${prompt}`;
+        }
+
+        // 更新进度
+        function updateProgress() {
+            const completed = document.querySelectorAll('.image-shot-card.completed').length;
+            const total = document.querySelectorAll('.image-shot-card').length;
+            const percentage = (completed / total) * 100;
+            
+            document.querySelector('.progress-fill').style.width = percentage + '%';
+            document.querySelector('.progress-summary').innerHTML = `
+                <div>图像制作进度</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percentage}%"></div>
+                </div>
+                <div>${completed} / ${total} 已完成</div>
+            `;
+
+            // 更新统计数据
+            document.querySelector('.stat-item:nth-child(2) .stat-number').textContent = completed;
+            document.querySelector('.stat-item:nth-child(3) .stat-number').textContent = total - completed;
+
+            // 更新下一步按钮
+            const nextBtn = document.getElementById('nextBtn');
+            if (completed === total) {
+                nextBtn.style.opacity = '1';
+                nextBtn.removeAttribute('disabled');
+                nextBtn.href = '#'; // 这里会链接到剪辑页面
+            } else {
+                nextBtn.style.opacity = '0.5';
+                nextBtn.setAttribute('disabled', 'true');
+            }
+        }
+
+        // 选项选择功能
+        document.addEventListener('click', function(e) {
+            // 数字人选择
+            if (e.target.closest('.avatar-option')) {
+                const option = e.target.closest('.avatar-option');
+                const container = option.closest('.avatar-selection');
+                container.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            }
+            
+            // 设置选项
+            if (e.target.closest('.setting-option')) {
+                const option = e.target.closest('.setting-option');
+                const container = option.closest('.setting-options, .position-grid');
+                container.querySelectorAll('.setting-option, .position-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            }
+        });
+
+        // 初始化
+        updateProgress();
+    </script>
+</body>
+</html>

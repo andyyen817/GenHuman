@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤 声音分镜页面 - Vidspark AI创作流程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: #1a1c20;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-flow {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .flow-step {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .flow-step.active {
+            background: #f59e0b;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .flow-step.pending {
+            background: #6b7280;
+            color: #d1d5db;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .flow-arrow {
+            color: #6b7280;
+            font-size: 18px;
+        }
+
+        /* 主标题区 */
+        .main-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .main-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .main-subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        /* 全局操作栏 */
+        .global-actions {
+            background: #f8fafc;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mega-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .mega-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .mega-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .voice-settings {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .voice-selector {
+            padding: 8px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* 分镜网格 */
+        .shots-grid {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            background: #f9fafb;
+        }
+
+        /* 声音分镜卡片 */
+        .voice-shot-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .voice-shot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .voice-shot-card.completed {
+            border-color: #10b981;
+        }
+
+        .voice-shot-card.processing {
+            border-color: #f59e0b;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .shot-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.processing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.pending {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* 文案显示区 */
+        .script-text {
+            background: #f8fafc;
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #374151;
+            position: relative;
+        }
+
+        .script-text.editable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .script-text.editable:hover {
+            border-color: #667eea;
+            background: #f1f5f9;
+        }
+
+        .edit-hint {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 12px;
+            color: #667eea;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .script-text:hover .edit-hint {
+            opacity: 1;
+        }
+
+        /* 声音选择区 */
+        .voice-selection {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .voice-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .voice-option {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .voice-option:hover {
+            border-color: #667eea;
+        }
+
+        .voice-option.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .voice-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        /* 操作按钮组 */
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .action-btn.secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* 音频播放器 */
+        .audio-player {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .play-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .play-button:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        .audio-info {
+            flex: 1;
+        }
+
+        .audio-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .audio-duration {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .waveform {
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .waveform-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 15px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 底部导航 */
+        .footer-navigation {
+            background: white;
+            padding: 25px 30px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn.back {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .nav-btn.back:hover {
+            background: #e5e7eb;
+        }
+
+        .nav-btn.next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn.next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn.next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-summary {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin: 8px auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 4px;
+            width: 60%;
+            transition: width 0.3s ease;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .shots-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .global-actions {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .footer-navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="logo">🎬 Vidspark</div>
+            <div class="progress-flow">
+                <span class="flow-step completed">📝 编剧</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step active">🎤 声音分镜</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step pending">🎬 图像分镜</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step pending">🎞️ 剪辑</span>
+            </div>
+            <div style="color: #6b7280; font-size: 14px;">
+                项目：时间管理技巧分享
+            </div>
+        </header>
+
+        <!-- 主标题区 -->
+        <section class="main-header">
+            <h1 class="main-title">🎤 声音分镜制作</h1>
+            <p class="main-subtitle">为每个分镜选择声音并生成AI配音，让你的内容更生动</p>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">总分镜数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">待处理</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 全局操作栏 -->
+        <section class="global-actions">
+            <button class="mega-button" onclick="processAllVoices()">
+                🎤 一键生成所有声音
+            </button>
+            <div class="voice-settings">
+                <label>默认声音：</label>
+                <select class="voice-selector">
+                    <option>我的克隆声音</option>
+                    <option>温和女声</option>
+                    <option>专业男声</option>
+                    <option>活泼女声</option>
+                </select>
+                <label>语速：</label>
+                <select class="voice-selector">
+                    <option>正常</option>
+                    <option>稍快</option>
+                    <option>稍慢</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- 分镜网格 -->
+        <main class="shots-grid">
+            <!-- 分镜卡片 1 -->
+            <div class="voice-shot-card completed">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第一幕</h3>
+                    <span class="status-badge completed">✅ 已完成</span>
+                </div>
+                
+                <div class="script-text editable" onclick="editScript(1)">
+                    大家好，我是时间管理小助手，今天要和大家分享几个超实用的时间管理技巧
+                    <span class="edit-hint">点击编辑文案</span>
+                </div>
+
+                <div class="voice-selection">
+                    <div class="section-title">选择声音：</div>
+                    <div class="voice-options">
+                        <div class="voice-option selected">
+                            <div class="voice-avatar">👨</div>
+                            我的声音
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👩</div>
+                            温和女声
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👨</div>
+                            专业男声
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary" onclick="regenVoice(1)">🔄 重新生成</button>
+                    <button class="action-btn primary" onclick="playVoice(1)">▶️ 试听</button>
+                </div>
+
+                <div class="audio-player">
+                    <button class="play-button" onclick="togglePlay(1)">▶️</button>
+                    <div class="audio-info">
+                        <div class="audio-title">第一幕配音 - 我的声音</div>
+                        <div class="audio-duration">时长: 0:08 • 已生成</div>
+                        <div class="waveform">
+                            <div class="waveform-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分镜卡片 2 -->
+            <div class="voice-shot-card processing">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第二幕</h3>
+                    <span class="status-badge processing">⏳ 生成中</span>
+                </div>
+                
+                <div class="script-text editable" onclick="editScript(2)">
+                    首先是番茄工作法，把工作分成25分钟的小块，这样能保持专注力
+                    <span class="edit-hint">点击编辑文案</span>
+                </div>
+
+                <div class="voice-selection">
+                    <div class="section-title">选择声音：</div>
+                    <div class="voice-options">
+                        <div class="voice-option selected">
+                            <div class="voice-avatar">👨</div>
+                            我的声音
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👩</div>
+                            温和女声
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👨</div>
+                            专业男声
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary" disabled>⏳ 生成中...</button>
+                    <button class="action-btn primary" disabled>⏳ 处理中</button>
+                </div>
+
+                <div class="audio-player">
+                    <button class="play-button" disabled>⏳</button>
+                    <div class="audio-info">
+                        <div class="audio-title">第二幕配音 - 生成中</div>
+                        <div class="audio-duration">预计完成: 30秒</div>
+                        <div class="waveform">
+                            <div class="waveform-fill" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分镜卡片 3 -->
+            <div class="voice-shot-card">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第三幕</h3>
+                    <span class="status-badge pending">⏰ 待处理</span>
+                </div>
+                
+                <div class="script-text editable" onclick="editScript(3)">
+                    接下来是优先级排序，把重要紧急的事情放在第一位，避免被琐事干扰
+                    <span class="edit-hint">点击编辑文案</span>
+                </div>
+
+                <div class="voice-selection">
+                    <div class="section-title">选择声音：</div>
+                    <div class="voice-options">
+                        <div class="voice-option selected">
+                            <div class="voice-avatar">👨</div>
+                            我的声音
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👩</div>
+                            温和女声
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👨</div>
+                            专业男声
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary">🎤 选择语音</button>
+                    <button class="action-btn primary" onclick="generateVoice(3)">🚀 开始生成</button>
+                </div>
+
+                <div class="audio-player" style="opacity: 0.5;">
+                    <button class="play-button" disabled>⏸️</button>
+                    <div class="audio-info">
+                        <div class="audio-title">第三幕配音 - 未生成</div>
+                        <div class="audio-duration">点击上方按钮开始生成</div>
+                        <div class="waveform">
+                            <div class="waveform-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分镜卡片 4 -->
+            <div class="voice-shot-card">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第四幕</h3>
+                    <span class="status-badge pending">⏰ 待处理</span>
+                </div>
+                
+                <div class="script-text editable" onclick="editScript(4)">
+                    最后要记住，时间管理不是为了忙碌，而是为了有时间做真正重要的事情
+                    <span class="edit-hint">点击编辑文案</span>
+                </div>
+
+                <div class="voice-selection">
+                    <div class="section-title">选择声音：</div>
+                    <div class="voice-options">
+                        <div class="voice-option selected">
+                            <div class="voice-avatar">👨</div>
+                            我的声音
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👩</div>
+                            温和女声
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👨</div>
+                            专业男声
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary">🎤 选择语音</button>
+                    <button class="action-btn primary" onclick="generateVoice(4)">🚀 开始生成</button>
+                </div>
+
+                <div class="audio-player" style="opacity: 0.5;">
+                    <button class="play-button" disabled>⏸️</button>
+                    <div class="audio-info">
+                        <div class="audio-title">第四幕配音 - 未生成</div>
+                        <div class="audio-duration">点击上方按钮开始生成</div>
+                        <div class="waveform">
+                            <div class="waveform-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分镜卡片 5 -->
+            <div class="voice-shot-card">
+                <div class="card-header">
+                    <h3 class="shot-title">🎬 第五幕</h3>
+                    <span class="status-badge pending">⏰ 待处理</span>
+                </div>
+                
+                <div class="script-text editable" onclick="editScript(5)">
+                    希望这些方法对大家有帮助，记得点赞关注我！
+                    <span class="edit-hint">点击编辑文案</span>
+                </div>
+
+                <div class="voice-selection">
+                    <div class="section-title">选择声音：</div>
+                    <div class="voice-options">
+                        <div class="voice-option selected">
+                            <div class="voice-avatar">👨</div>
+                            我的声音
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👩</div>
+                            温和女声
+                        </div>
+                        <div class="voice-option">
+                            <div class="voice-avatar">👨</div>
+                            专业男声
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn secondary">🎤 选择语音</button>
+                    <button class="action-btn primary" onclick="generateVoice(5)">🚀 开始生成</button>
+                </div>
+
+                <div class="audio-player" style="opacity: 0.5;">
+                    <button class="play-button" disabled>⏸️</button>
+                    <div class="audio-info">
+                        <div class="audio-title">第五幕配音 - 未生成</div>
+                        <div class="audio-duration">点击上方按钮开始生成</div>
+                        <div class="waveform">
+                            <div class="waveform-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 底部导航 -->
+        <footer class="footer-navigation">
+            <a href="#" class="nav-btn back">
+                ← 返回编剧区
+            </a>
+            <div class="progress-summary">
+                <div>声音制作进度</div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div>2 / 5 已完成</div>
+            </div>
+            <a href="#" class="nav-btn next" id="nextBtn">
+                下一步：图像分镜 →
+            </a>
+        </footer>
+    </div>
+
+    <script>
+        // 模拟交互功能
+        function editScript(shotNumber) {
+            alert(`编辑第${shotNumber}幕的文案`);
+        }
+
+        function generateVoice(shotNumber) {
+            alert(`开始为第${shotNumber}幕生成声音`);
+            // 模拟生成过程
+            const card = document.querySelector(`.voice-shot-card:nth-child(${shotNumber})`);
+            const badge = card.querySelector('.status-badge');
+            badge.textContent = '⏳ 生成中';
+            badge.className = 'status-badge processing';
+            
+            setTimeout(() => {
+                badge.textContent = '✅ 已完成';
+                badge.className = 'status-badge completed';
+                card.classList.add('completed');
+                updateProgress();
+            }, 3000);
+        }
+
+        function processAllVoices() {
+            if (confirm('确定要为所有分镜生成声音吗？这可能需要几分钟时间。')) {
+                alert('开始批量生成声音...');
+                [3, 4, 5].forEach((num, index) => {
+                    setTimeout(() => generateVoice(num), index * 1000);
+                });
+            }
+        }
+
+        function togglePlay(shotNumber) {
+            alert(`播放/暂停第${shotNumber}幕的声音`);
+        }
+
+        function regenVoice(shotNumber) {
+            if (confirm(`确定要重新生成第${shotNumber}幕的声音吗？`)) {
+                alert(`重新生成第${shotNumber}幕声音`);
+            }
+        }
+
+        function updateProgress() {
+            const completed = document.querySelectorAll('.voice-shot-card.completed').length;
+            const total = document.querySelectorAll('.voice-shot-card').length;
+            const percentage = (completed / total) * 100;
+            
+            document.querySelector('.progress-fill').style.width = percentage + '%';
+            document.querySelector('.progress-summary').innerHTML = `
+                <div>声音制作进度</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percentage}%"></div>
+                </div>
+                <div>${completed} / ${total} 已完成</div>
+            `;
+
+            // 更新下一步按钮
+            const nextBtn = document.getElementById('nextBtn');
+            if (completed === total) {
+                nextBtn.style.opacity = '1';
+                nextBtn.removeAttribute('disabled');
+            } else {
+                nextBtn.style.opacity = '0.5';
+                nextBtn.setAttribute('disabled', 'true');
+            }
+        }
+
+        // 声音选项选择
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.voice-option')) {
+                const option = e.target.closest('.voice-option');
+                const container = option.closest('.voice-options');
+                container.querySelectorAll('.voice-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            }
+        });
+
+        // 初始化
+        updateProgress();
+    </script>
+</body>
+</html>

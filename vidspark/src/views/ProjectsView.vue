@@ -1,124 +1,141 @@
 <template>
   <div class="h-screen flex bg-gray-50">
-    <!-- 左側導航欄 -->
-    <div class="w-64 sidebar-dark flex flex-col">
+    <!-- 左側導航欄 - 簡化版v6.0風格 -->
+    <div class="w-72 sidebar-dark flex flex-col">
       <!-- Logo區域 -->
       <div class="p-6 border-b border-gray-700">
         <div class="flex items-center">
-          <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center mr-3">
-            <i class="fas fa-video text-white text-sm"></i>
+          <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center mr-3">
+            <i class="fas fa-video text-white text-lg"></i>
           </div>
           <h1 class="text-xl font-bold text-white">Vidspark</h1>
         </div>
       </div>
 
-      <!-- 創建按鈕 -->
-      <div class="p-4">
+      <!-- 🆕 創建大按鈕 -->
+      <div class="p-6">
         <button 
           @click="createNewProject"
-          class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+          class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-4 px-6 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center text-lg"
         >
-          <i class="fas fa-plus mr-2"></i>
-          創建影片
+          <i class="fas fa-plus mr-3 text-xl"></i>
+          開始創作影片
         </button>
       </div>
 
-      <!-- 主導航 -->
-      <nav class="flex-1 px-4">
-        <ul class="space-y-2">
-          <li>
-            <router-link 
-              to="/dashboard" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-              active-class="bg-purple-600 text-white"
-            >
-              <i class="fas fa-home mr-3"></i>
-              首頁
-            </router-link>
-          </li>
-          <li>
-            <router-link 
-              to="/projects" 
-              class="flex items-center px-4 py-3 text-white bg-purple-600 rounded-lg"
-              active-class="bg-purple-600 text-white"
-            >
-              <i class="fas fa-folder mr-3"></i>
-              我的項目
-            </router-link>
-          </li>
-          <li>
-            <router-link 
-              to="/avatars" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <i class="fas fa-user-tie mr-3"></i>
-              數字人庫
-            </router-link>
-          </li>
-          <li>
-            <router-link 
-              to="/voices" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <i class="fas fa-microphone mr-3"></i>
-              聲音庫
-            </router-link>
-          </li>
-          <li>
-            <router-link 
-              to="/templates" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <i class="fas fa-layer-group mr-3"></i>
-              模板庫
-            </router-link>
-          </li>
-          <li>
-            <router-link 
-              to="/media" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <i class="fas fa-images mr-3"></i>
-              媒體庫
-            </router-link>
-          </li>
-        </ul>
+      <!-- 🆕 核心工作流導航 -->
+      <nav class="flex-1 px-6">
+        <div class="mb-6">
+          <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-3">創作工作流</h3>
+          <ul class="space-y-2">
+            <li>
+              <router-link 
+                to="/" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-home mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">儀表板</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link 
+                to="/inspiration" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-lightbulb mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">靈感創作區</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link 
+                to="/scriptwriter" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-feather-alt mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">AI編劇</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link 
+                to="/director" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-video mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">AI導演</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link 
+                to="/editor" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-cut mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">AI剪輯</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link 
+                to="/projects" 
+                class="flex items-center px-4 py-3 text-white bg-purple-600 rounded-lg shadow-md"
+              >
+                <i class="fas fa-folder mr-3 text-lg"></i>
+                <span class="font-medium">我的項目</span>
+              </router-link>
+            </li>
+          </ul>
+        </div>
 
-        <!-- 分隔線 -->
-        <div class="my-6 border-t border-gray-600"></div>
-
-        <ul class="space-y-2">
-          <li>
-            <router-link 
-              to="/settings" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <i class="fas fa-cog mr-3"></i>
-              應用設定
-            </router-link>
-          </li>
-          <li>
-            <router-link 
-              to="/team" 
-              class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <i class="fas fa-users mr-3"></i>
-              創建團隊
-            </router-link>
-          </li>
-        </ul>
+        <div class="mb-6">
+          <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-3">資產管理</h3>
+          <ul class="space-y-2">
+            <li>
+              <router-link 
+                to="/avatars" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-user-tie mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">數字人庫</span>
+                <span class="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-full">{{ assetStats.avatars }}</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link 
+                to="/voices" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-microphone mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">聲音庫</span>
+                <span class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-full">{{ assetStats.voices }}</span>
+              </router-link>
+            </li>
+            <li>
+              <router-link 
+                to="/media" 
+                class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors group"
+              >
+                <i class="fas fa-images mr-3 text-lg group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium">媒體庫</span>
+                <span class="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">{{ assetStats.media }}</span>
+              </router-link>
+            </li>
+          </ul>
+        </div>
       </nav>
 
-      <!-- 底部用戶信息 -->
-      <div class="p-4 border-t border-gray-700">
-        <!-- 升級按鈕 -->
-        <div class="mb-4">
+      <!-- 🆕 用戶信息與積分 -->
+      <div class="p-6 border-t border-gray-700">
+        <!-- 積分顯示 -->
+        <div class="mb-4 p-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl border border-yellow-500/30">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-yellow-200 text-sm font-medium">剩餘積分</span>
+            <span class="text-yellow-100 text-lg font-bold">{{ userInfo.credits }}</span>
+          </div>
           <button 
             @click="upgradePlan"
             class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 px-4 rounded-lg font-medium text-sm hover:from-yellow-600 hover:to-orange-600 transition-all"
           >
             <i class="fas fa-crown mr-2"></i>
-            升級方案
+            升級獲得更多積分
           </button>
         </div>
         
@@ -127,210 +144,297 @@
           <img 
             :src="userInfo.avatar" 
             :alt="userInfo.name" 
-            class="w-10 h-10 rounded-full"
+            class="w-12 h-12 rounded-full border-2 border-purple-500"
           >
           <div class="ml-3 flex-1">
-            <p class="text-white text-sm font-medium">{{ userInfo.name }}</p>
+            <p class="text-white text-sm font-semibold">{{ userInfo.name }}</p>
             <p class="text-gray-400 text-xs">{{ userInfo.plan }}</p>
           </div>
-          <button class="text-gray-400 hover:text-white">
-            <i class="fas fa-ellipsis-v"></i>
+          <button class="text-gray-400 hover:text-white p-2 hover:bg-gray-700 rounded-lg transition-colors">
+            <i class="fas fa-cog"></i>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 右側主內容區 -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- 頂部欄 -->
-      <header class="bg-white border-b border-gray-200 px-6 py-4">
+    <!-- 右側主內容區 - v6.0現代化設計 -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-white">
+      <!-- 🆕 現代化頂部欄 -->
+      <header class="bg-white border-b border-gray-100 px-8 py-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">我的項目</h1>
-            <p class="text-gray-600">管理您的所有影片創作項目</p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">我的項目</h1>
+            <p class="text-gray-600 text-lg">管理您的所有影片創作項目 • 共 {{ projectStats.total }} 個項目</p>
           </div>
           
           <div class="flex items-center space-x-4">
-            <!-- 搜索框 -->
+            <!-- 🆕 現代化搜索框 -->
             <div class="relative">
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="搜索項目..."
-                class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="搜索項目標題或描述..."
+                class="w-80 pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg shadow-sm bg-gray-50 focus:bg-white transition-all"
               >
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fas fa-search text-gray-400"></i>
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400 text-lg"></i>
               </div>
             </div>
             
-            <!-- 篩選按鈕 -->
+            <!-- 🆕 精簡篩選按鈕 -->
             <div class="relative">
               <button 
                 @click="showFilters = !showFilters"
-                class="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                class="flex items-center px-6 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 text-lg font-medium transition-all"
+                :class="filterStatus || filterTime ? 'bg-purple-50 border-purple-300 text-purple-700' : 'text-gray-700'"
               >
                 <i class="fas fa-filter mr-2"></i>
                 篩選
+                <span v-if="filterStatus || filterTime" class="ml-2 w-2 h-2 bg-purple-500 rounded-full"></span>
               </button>
               
               <!-- 篩選下拉菜單 -->
               <div 
                 v-if="showFilters"
-                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+                class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-10 overflow-hidden"
               >
-                <div class="p-4">
-                  <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">狀態</label>
-                    <select v-model="filterStatus" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="p-6">
+                  <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">項目狀態</label>
+                    <select v-model="filterStatus" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-lg focus:ring-2 focus:ring-purple-500">
                       <option value="">全部狀態</option>
-                      <option value="completed">已完成</option>
-                      <option value="processing">處理中</option>
-                      <option value="draft">草稿</option>
+                      <option value="completed">✅ 已完成</option>
+                      <option value="processing">⏳ 處理中</option>
+                      <option value="draft">📝 草稿</option>
                     </select>
                   </div>
-                  <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">創建時間</label>
-                    <select v-model="filterTime" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                  <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">創建時間</label>
+                    <select v-model="filterTime" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-lg focus:ring-2 focus:ring-purple-500">
                       <option value="">全部時間</option>
-                      <option value="today">今天</option>
-                      <option value="week">本週</option>
-                      <option value="month">本月</option>
+                      <option value="today">📅 今天</option>
+                      <option value="week">📅 本週</option>
+                      <option value="month">📅 本月</option>
                     </select>
                   </div>
-                  <button 
-                    @click="applyFilters"
-                    class="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700"
-                  >
-                    應用篩選
-                  </button>
+                  <div class="flex space-x-2">
+                    <button 
+                      @click="clearFilters"
+                      class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 font-medium"
+                    >
+                      清除
+                    </button>
+                    <button 
+                      @click="applyFilters"
+                      class="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 font-medium"
+                    >
+                      應用
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <!-- 視圖切換 -->
-            <div class="flex items-center border border-gray-300 rounded-lg">
+            <!-- 🆕 現代化視圖切換 -->
+            <div class="flex items-center bg-gray-100 rounded-xl p-1">
               <button 
                 @click="viewMode = 'grid'"
-                :class="viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'"
-                class="p-2 rounded-l-lg"
+                :class="viewMode === 'grid' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-600 hover:bg-gray-200'"
+                class="p-3 rounded-lg transition-all font-medium"
               >
-                <i class="fas fa-th"></i>
+                <i class="fas fa-th text-lg"></i>
               </button>
               <button 
                 @click="viewMode = 'list'"
-                :class="viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'"
-                class="p-2 rounded-r-lg"
+                :class="viewMode === 'list' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-600 hover:bg-gray-200'"
+                class="p-3 rounded-lg transition-all font-medium"
               >
-                <i class="fas fa-list"></i>
+                <i class="fas fa-list text-lg"></i>
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <!-- 主內容滾動區域 -->
-      <main class="flex-1 overflow-y-auto p-6">
-        <!-- 項目統計 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div class="flex items-center">
-              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-video text-purple-600 text-xl"></i>
+      <!-- 🆕 現代化主內容滾動區域 -->
+      <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
+        <!-- 🆕 現代化項目統計 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-gray-600 mb-2">總項目數</p>
+                <p class="text-3xl font-bold text-gray-900">{{ projectStats.total }}</p>
+                <p class="text-sm text-green-600 mt-2">
+                  <i class="fas fa-arrow-up mr-1"></i>
+                  +2 本週新增
+                </p>
               </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">總項目數</p>
-                <p class="text-2xl font-bold text-gray-900">{{ projectStats.total }}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div class="flex items-center">
-              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-check-circle text-green-600 text-xl"></i>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">已完成</p>
-                <p class="text-2xl font-bold text-gray-900">{{ projectStats.completed }}</p>
+              <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fas fa-video text-white text-2xl"></i>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div class="flex items-center">
-              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-clock text-blue-600 text-xl"></i>
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-gray-600 mb-2">已完成</p>
+                <p class="text-3xl font-bold text-gray-900">{{ projectStats.completed }}</p>
+                <p class="text-sm text-blue-600 mt-2">
+                  <i class="fas fa-chart-line mr-1"></i>
+                  完成率 {{ Math.round((projectStats.completed / projectStats.total) * 100) }}%
+                </p>
               </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">處理中</p>
-                <p class="text-2xl font-bold text-gray-900">{{ projectStats.processing }}</p>
+              <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fas fa-check-circle text-white text-2xl"></i>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div class="flex items-center">
-              <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-edit text-gray-600 text-xl"></i>
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-gray-600 mb-2">處理中</p>
+                <p class="text-3xl font-bold text-gray-900">{{ projectStats.processing }}</p>
+                <p class="text-sm text-orange-600 mt-2">
+                  <i class="fas fa-clock mr-1"></i>
+                  預計2小時完成
+                </p>
               </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-600">草稿</p>
-                <p class="text-2xl font-bold text-gray-900">{{ projectStats.draft }}</p>
+              <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fas fa-cogs text-white text-2xl"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-gray-600 mb-2">草稿</p>
+                <p class="text-3xl font-bold text-gray-900">{{ projectStats.draft }}</p>
+                <p class="text-sm text-gray-600 mt-2">
+                  <i class="fas fa-edit mr-1"></i>
+                  待完善編輯
+                </p>
+              </div>
+              <div class="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i class="fas fa-file-alt text-white text-2xl"></i>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 項目網格視圖 -->
-        <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- 🆕 無項目狀態顯示 -->
+        <div v-if="filteredProjects.length === 0 && !searchQuery && !filterStatus" class="text-center py-16">
+          <div class="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-video text-gray-400 text-4xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-4">開始您的第一個創作！</h3>
+          <p class="text-gray-600 text-lg mb-8 max-w-md mx-auto">使用我們的AI創作工具，幾分鐘內創建專業的影片內容</p>
+          <button 
+            @click="createNewProject"
+            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+          >
+            <i class="fas fa-plus mr-3 text-xl"></i>
+            立即開始創作
+          </button>
+        </div>
+
+        <!-- 🆕 現代化項目網格視圖 -->
+        <div v-if="viewMode === 'grid' && filteredProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           <div 
             v-for="project in filteredProjects" 
             :key="project.id"
             @click="openProject(project)"
-            class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover cursor-pointer group"
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden card-hover cursor-pointer group hover:shadow-xl transition-all duration-300"
           >
             <div class="relative">
               <img 
                 :src="project.thumbnail" 
                 :alt="project.title" 
-                class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
               >
-              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                <div class="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <i class="fas fa-play text-purple-600 text-lg ml-1"></i>
+              <!-- 🆕 現代化預覽遮罩 -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                <div class="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-300">
+                  <i class="fas fa-play text-purple-600 text-2xl ml-1"></i>
                 </div>
               </div>
-              <div class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+              
+              <!-- 🆕 現代化時長標籤 -->
+              <div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-lg font-medium">
                 {{ project.duration }}
               </div>
-              <!-- 項目菜單 -->
-              <div class="absolute top-2 right-2">
+              
+              <!-- 🆕 狀態指示器 -->
+              <div class="absolute top-3 left-3">
+                <span 
+                  :class="getStatusBadgeClass(project.status)"
+                  class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm"
+                >
+                  {{ getStatusIcon(project.status) }} {{ getStatusText(project.status) }}
+                </span>
+              </div>
+              
+              <!-- 🆕 項目菜單 -->
+              <div class="absolute top-3 right-3">
                 <button 
                   @click.stop="showProjectMenu(project, $event)"
-                  class="w-8 h-8 bg-white bg-opacity-80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-100"
+                  class="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/90"
                 >
-                  <i class="fas fa-ellipsis-v text-gray-600"></i>
+                  <i class="fas fa-ellipsis-v text-gray-700"></i>
                 </button>
               </div>
             </div>
-            <div class="p-4">
-              <h3 class="font-semibold text-gray-900 mb-2 truncate">{{ project.title }}</h3>
-              <p class="text-sm text-gray-500 mb-3">{{ project.createdAt }}</p>
+            
+            <!-- 🆕 現代化項目信息 -->
+            <div class="p-6">
+              <h3 class="font-bold text-gray-900 mb-2 text-lg truncate">{{ project.title }}</h3>
+              <p class="text-gray-600 mb-4 text-sm line-clamp-2">{{ project.description || '暫無描述' }}</p>
+              
               <div class="flex items-center justify-between">
-                <span 
-                  :class="getStatusClass(project.status)"
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                >
-                  {{ getStatusText(project.status) }}
-                </span>
                 <div class="flex items-center text-sm text-gray-500">
-                  <i class="fas fa-eye mr-1"></i>
+                  <i class="fas fa-calendar-alt mr-2"></i>
+                  {{ project.createdAt }}
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                  <i class="fas fa-eye mr-2"></i>
                   {{ project.views }}
+                </div>
+              </div>
+              
+              <!-- 🆕 項目進度條（處理中項目顯示） -->
+              <div v-if="project.status === 'processing'" class="mt-4">
+                <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+                  <span>處理進度</span>
+                  <span>{{ project.progress || 65 }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                    :style="{ width: (project.progress || 65) + '%' }"
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 🆕 搜索無結果狀態 -->
+        <div v-if="filteredProjects.length === 0 && (searchQuery || filterStatus)" class="text-center py-16">
+          <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-search text-gray-400 text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-4">找不到相關項目</h3>
+          <p class="text-gray-600 mb-6">嘗試調整搜索條件或篩選器</p>
+          <button 
+            @click="clearFilters"
+            class="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition-colors"
+          >
+            <i class="fas fa-times mr-2"></i>
+            清除篩選
+          </button>
         </div>
 
         <!-- 項目列表視圖 -->
@@ -469,7 +573,15 @@ const viewMode = ref('grid')
 const userInfo = reactive({
   name: '張小明',
   plan: '免費會員',
+  credits: 128,
   avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+})
+
+// 資產統計
+const assetStats = reactive({
+  avatars: 3,
+  voices: 5,
+  media: 12
 })
 
 // 項目統計
@@ -615,10 +727,31 @@ const getStatusText = computed(() => (status: string) => {
   return texts[status as keyof typeof texts] || '未知'
 })
 
+// 🆕 新增狀態徽章樣式
+const getStatusBadgeClass = computed(() => (status: string) => {
+  const classes = {
+    completed: 'bg-green-500/90 text-white',
+    processing: 'bg-blue-500/90 text-white',
+    draft: 'bg-gray-500/90 text-white'
+  }
+  return classes[status as keyof typeof classes] || 'bg-gray-500/90 text-white'
+})
+
+// 🆕 新增狀態圖標
+const getStatusIcon = computed(() => (status: string) => {
+  const icons = {
+    completed: '✅',
+    processing: '⏳',
+    draft: '📝'
+  }
+  return icons[status as keyof typeof icons] || '❓'
+})
+
 // 方法
 const createNewProject = () => {
   console.log('創建新項目')
-  // 跳轉到創建項目頁面
+  // 跳轉到仪表板開始創作
+  router.push('/')
 }
 
 const upgradePlan = () => {
@@ -628,6 +761,14 @@ const upgradePlan = () => {
 
 const applyFilters = () => {
   console.log('應用篩選:', { filterStatus: filterStatus.value, filterTime: filterTime.value })
+  showFilters.value = false
+}
+
+// 🆕 清除篩選方法
+const clearFilters = () => {
+  filterStatus.value = ''
+  filterTime.value = ''
+  searchQuery.value = ''
   showFilters.value = false
 }
 

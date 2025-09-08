@@ -35,6 +35,16 @@ const router = createRouter({
       component: () => import('../views/ScriptwriterView.vue'),
     },
     {
+      path: '/voice-storyboard',
+      name: 'voice-storyboard',
+      component: () => import('../views/VoiceStoryboardView.vue'),
+    },
+    {
+      path: '/image-storyboard',
+      name: 'image-storyboard',
+      component: () => import('../views/ImageStoryboardView.vue'),
+    },
+    {
       path: '/director',
       name: 'director', 
       component: () => import('../views/DirectorView.vue'),

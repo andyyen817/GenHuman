@@ -37,8 +37,11 @@
         <div class="panel-header">
           <h3>📝 剧本大纲</h3>
           <div class="panel-tools">
-            <button class="tool-btn" @click="handleAIWrite" :disabled="isGenerating">
+            <button class="tool-btn" @click="handleAIWrite" :disabled="isGenerating || geminiConnectionStatus === 'disconnected'">
               🤖 AI写作
+              <span v-if="geminiConnectionStatus === 'connected'" class="status-indicator connected">●</span>
+              <span v-else-if="geminiConnectionStatus === 'disconnected'" class="status-indicator disconnected">●</span>
+              <span v-else class="status-indicator unknown">●</span>
             </button>
             <button class="tool-btn" @click="handleTemplate">
               📋 模板
@@ -389,6 +392,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { generateVideoScript, generateTitleSuggestions, testGeminiConnection } from '../services/geminiApi.js'
+import { renderPrompt, PROMPT_CATEGORIES } from '../services/promptManager.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -400,6 +405,8 @@ const scenario = ref(route.query.scenario as string || 'fromScratch')
 const scriptContent = ref('')
 const isGenerating = ref(false)
 const showTemplateModal = ref(false)
+const generatedShots = ref([])
+const geminiConnectionStatus = ref('unknown') // 'connected', 'disconnected', 'unknown'
 
 // 角色设计状态
 const activeCharacterTab = ref('ai')
@@ -577,26 +584,84 @@ const scriptTemplates = reactive([
 const handleAIWrite = async () => {
   if (isGenerating.value) return
   
+  // 检查是否有用户输入内容
+  const userInput = scriptContent.value.trim()
+  if (!userInput) {
+    alert('请先在文本框中输入您的创作需求，然后点击AI写作')
+    return
+  }
+  
   isGenerating.value = true
-  console.log('🤖 [AI写作] 开始生成剧本')
+  console.log(`[${new Date().toLocaleTimeString()}] 🤖 开始AI编剧生成`)
+  console.log(`[${new Date().toLocaleTimeString()}] 📋 场景: ${scenario.value}`)
+  console.log(`[${new Date().toLocaleTimeString()}] 💭 用户输入: ${userInput}`)
   
   try {
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    // 根据场景选择合适的模板
+    let scenarioKey = 'scenario1'
+    if (scenario.value === 'digitalHuman') {
+      scenarioKey = 'scenario4'
+    } else if (scenario.value === 'pptVideo') {
+      scenarioKey = 'scenario5'
+    }
     
-    scriptContent.value = `第一幕：大家好，我是时间管理小助手，今天要和大家分享几个超实用的时间管理技巧
-
-第二幕：首先是番茄工作法，把工作分成25分钟的小块，这样能保持专注力
-
-第三幕：接下来是优先级排序，把重要紧急的事情放在第一位，避免被琐事干扰
-
-第四幕：最后要记住，时间管理不是为了忙碌，而是为了有时间做真正重要的事情
-
-第五幕：希望这些方法对大家有帮助，记得点赞关注哦！`
-
-    console.log('✅ [AI写作] 剧本生成完成')
+    console.log(`[${new Date().toLocaleTimeString()}] 🎯 使用场景模板: ${scenarioKey}`)
+    
+    // 调用Gemini API生成脚本
+    const scriptData = await generateVideoScript(userInput, scenarioKey)
+    
+    console.log(`[${new Date().toLocaleTimeString()}] ✅ AI生成成功`)
+    console.log(`[${new Date().toLocaleTimeString()}] 📊 生成标题: ${scriptData.title}`)
+    console.log(`[${new Date().toLocaleTimeString()}] 📊 分幕数量: ${scriptData.acts?.length || 0}`)
+    
+    // 格式化生成的内容
+    if (scriptData.acts && scriptData.acts.length > 0) {
+      const formattedScript = scriptData.acts.map((act, index) => 
+        `第${index + 1}幕：${act.content}`
+      ).join('\n\n')
+      
+      scriptContent.value = formattedScript
+      
+      // 更新分镜预览
+      generatedShots.value = scriptData.acts.map(act => act.content)
+      
+      // 保存完整的脚本数据到localStorage
+      localStorage.setItem('vidspark_script_content', JSON.stringify(scriptData))
+      
+      console.log(`[${new Date().toLocaleTimeString()}] 💾 脚本已保存到localStorage`)
+      
+    } else {
+      throw new Error('生成的脚本格式不正确')
+    }
+    
   } catch (error) {
-    console.error('❌ [AI写作] 生成失败:', error)
-    alert('AI生成失败，请重试')
+    console.error(`[${new Date().toLocaleTimeString()}] ❌ AI生成失败:`, error)
+    
+    // 显示具体的错误信息
+    let errorMessage = 'AI生成失败，请重试'
+    if (error.message.includes('API')) {
+      errorMessage = 'AI服务暂时不可用，请稍后重试'
+    } else if (error.message.includes('网络')) {
+      errorMessage = '网络连接有问题，请检查网络后重试'
+    }
+    
+    alert(errorMessage)
+    
+    // 如果失败，提供一个默认的示例脚本
+    if (!scriptContent.value.includes('第一幕')) {
+      scriptContent.value = `第一幕：大家好，我要和大家分享关于"${userInput}"的内容
+
+第二幕：首先让我们了解一下这个主题的核心要点
+
+第三幕：接下来我来详细解释具体的方法和步骤
+
+第四幕：这样做的好处和效果是非常明显的
+
+第五幕：希望这些内容对大家有帮助，记得点赞关注！`
+      
+      console.log(`[${new Date().toLocaleTimeString()}] 🔄 使用默认脚本模板`)
+    }
+    
   } finally {
     isGenerating.value = false
   }
@@ -666,6 +731,9 @@ const playVoicePreview = (voice: any) => {
 // 保存项目
 const saveProject = () => {
   console.log('💾 保存项目')
+  // 🆕 保存脚本内容到localStorage，供AI导演页面使用
+  localStorage.setItem('vidspark_script_content', scriptContent.value)
+  console.log('📝 [脚本同步] 脚本内容已保存到localStorage')
 }
 
 // 返回首页
@@ -680,6 +748,10 @@ const goToDirector = () => {
     return
   }
   
+  // 🆕 自动保存脚本内容到localStorage
+  localStorage.setItem('vidspark_script_content', scriptContent.value)
+  console.log('📝 [脚本同步] 自动保存脚本内容，准备进入导演区')
+  
   router.push('/director')
 }
 
@@ -692,6 +764,44 @@ const triggerAudioUpload = () => { if (audioInput.value) audioInput.value.click(
 const handleAudioUpload = () => { console.log('处理音频上传') }
 const cloneVoice = () => { console.log('克隆声音') }
 const selectLibraryVoice = (voice: any) => { selectedLibraryVoice.value = voice.id; selectedVoice.value = voice }
+
+// 生命周期钩子
+onMounted(async () => {
+  console.log(`[${new Date().toLocaleTimeString()}] 📋 ScriptwriterView 组件已挂载`)
+  console.log(`[${new Date().toLocaleTimeString()}] 🎯 当前场景: ${scenario.value}`)
+  
+  // 测试Gemini API连接
+  try {
+    console.log(`[${new Date().toLocaleTimeString()}] 🔧 测试Gemini API连接...`)
+    const isConnected = await testGeminiConnection()
+    
+    if (isConnected) {
+      geminiConnectionStatus.value = 'connected'
+      console.log(`[${new Date().toLocaleTimeString()}] ✅ Gemini API连接成功`)
+    } else {
+      geminiConnectionStatus.value = 'disconnected'
+      console.log(`[${new Date().toLocaleTimeString()}] ❌ Gemini API连接失败`)
+    }
+  } catch (error) {
+    geminiConnectionStatus.value = 'disconnected'
+    console.error(`[${new Date().toLocaleTimeString()}] ❌ Gemini API测试异常:`, error)
+  }
+  
+  // 根据场景设置默认提示文本
+  if (!scriptContent.value) {
+    const scenarioPrompts = {
+      'fromScratch': '请描述您想制作的视频内容，例如：我想制作一个关于时间管理的短视频',
+      'digitalHuman': '请输入您的完整文案内容，我将帮您分镜到数字人视频中',
+      'pptVideo': '请描述您的PPT内容概述，我将为每页设计讲解文案',
+      'remake': '请上传您想重新设计的视频文件',
+      'imitate': '请上传您想模仿的爆款视频',
+      'videoClip': '请上传您想切片的视频文件'
+    }
+    
+    const promptText = scenarioPrompts[scenario.value] || scenarioPrompts['fromScratch']
+    console.log(`[${new Date().toLocaleTimeString()}] 💡 设置场景提示: ${promptText}`)
+  }
+})
 </script>
 
 <style scoped>
@@ -881,10 +991,35 @@ const selectLibraryVoice = (voice: any) => { selectedLibraryVoice.value = voice.
   cursor: pointer;
   font-size: 12px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.tool-btn:hover {
+.tool-btn:hover:not(:disabled) {
   background: #e5e7eb;
+}
+
+.tool-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-indicator {
+  font-size: 8px;
+  margin-left: 2px;
+}
+
+.status-indicator.connected {
+  color: #10b981;
+}
+
+.status-indicator.disconnected {
+  color: #ef4444;
+}
+
+.status-indicator.unknown {
+  color: #f59e0b;
 }
 
 /* 剧本编辑面板 */
