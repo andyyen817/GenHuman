@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenHuman API 測試頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GenHuman API 測試頁面</h1>
+        <p>這個頁面用於測試GenHuman API封裝層的所有功能</p>
+    </div>
+
+    <!-- 1. 聲音克隆測試 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>1. 聲音克隆 (Voice Clone)</h2>
+            <div class="form-group">
+                <label for="voiceFile">選擇音頻文件:</label>
+                <input type="file" id="voiceFile" accept="audio/*">
+            </div>
+            <div class="form-group">
+                <label for="voiceName">聲音名稱:</label>
+                <input type="text" id="voiceName" placeholder="輸入聲音名稱">
+            </div>
+            <button onclick="testVoiceClone()">開始聲音克隆</button>
+            <div id="voiceCloneResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- 2. 語音合成測試 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>2. 語音合成 (Text to Speech)</h2>
+            <div class="form-group">
+                <label for="ttsText">輸入文本:</label>
+                <textarea id="ttsText" rows="3" placeholder="輸入要合成的文本"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="ttsVoiceId">聲音ID:</label>
+                <input type="text" id="ttsVoiceId" placeholder="輸入聲音ID">
+            </div>
+            <button onclick="testTextToSpeech()">開始語音合成</button>
+            <div id="ttsResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- 3. 數字人克隆測試 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>3. 數字人克隆 (Avatar Clone)</h2>
+            <div class="form-group">
+                <label for="avatarVideo">選擇視頻文件:</label>
+                <input type="file" id="avatarVideo" accept="video/*">
+            </div>
+            <div class="form-group">
+                <label for="avatarName">數字人名稱:</label>
+                <input type="text" id="avatarName" placeholder="輸入數字人名稱">
+            </div>
+            <button onclick="testAvatarClone()">開始數字人克隆</button>
+            <div id="avatarCloneResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- 4. 數字人合成測試 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>4. 數字人合成 (Avatar Synthesis)</h2>
+            <div class="form-group">
+                <label for="synthAvatarId">數字人ID:</label>
+                <input type="text" id="synthAvatarId" placeholder="輸入數字人ID">
+            </div>
+            <div class="form-group">
+                <label for="synthVoiceId">聲音ID:</label>
+                <input type="text" id="synthVoiceId" placeholder="輸入聲音ID">
+            </div>
+            <div class="form-group">
+                <label for="synthText">合成文本:</label>
+                <textarea id="synthText" rows="3" placeholder="輸入要合成的文本"></textarea>
+            </div>
+            <button onclick="testAvatarSynthesis()">開始數字人合成</button>
+            <div id="avatarSynthResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- 5. 任務狀態查詢測試 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>5. 任務狀態查詢 (Task Status)</h2>
+            <div class="form-group">
+                <label for="taskId">任務ID:</label>
+                <input type="text" id="taskId" placeholder="輸入任務ID">
+            </div>
+            <button onclick="testTaskStatus()">查詢任務狀態</button>
+            <button onclick="startPolling()">開始輪詢</button>
+            <button onclick="stopPolling()">停止輪詢</button>
+            <div id="taskStatusResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- 6. 文件上傳測試 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>6. 文件上傳測試 (File Upload)</h2>
+            <div class="form-group">
+                <label for="uploadFile">選擇文件:</label>
+                <input type="file" id="uploadFile">
+            </div>
+            <button onclick="testFileUpload()">上傳文件</button>
+            <div id="uploadResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let pollingInterval = null;
+
+        // 顯示結果的通用函數
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = `result ${isError ? 'error' : 'success'}`;
+        }
+
+        // 文件轉Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // 顯示加載狀態
+        function showLoading(elementId, message = '處理中...') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result loading';
+        }
+
+        // 1. 聲音克隆測試
+        async function testVoiceClone() {
+            const fileInput = document.getElementById('voiceFile');
+            const voiceName = document.getElementById('voiceName').value;
+            
+            if (!fileInput.files[0] || !voiceName) {
+                showResult('voiceCloneResult', { error: '請選擇音頻文件並輸入聲音名稱' }, true);
+                return;
+            }
+
+            showLoading('voiceCloneResult', '正在克隆聲音...');
+            
+            try {
+                const formData = new FormData();
+                formData.append('audio_file', fileInput.files[0]);
+                formData.append('voice_name', voiceName);
+
+                const response = await fetch(`${API_BASE}/genhuman-proxy.php?path=clone-voice`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: 'sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                        audio_file: await fileToBase64(fileInput.files[0]),
+                        voice_name: voiceName
+                    })
+                });
+
+                const result = await response.json();
+                showResult('voiceCloneResult', result, !response.ok);
+            } catch (error) {
+                showResult('voiceCloneResult', { error: error.message }, true);
+            }
+        }
+
+        // 2. 語音合成測試
+        async function testTextToSpeech() {
+            const text = document.getElementById('ttsText').value;
+            const voiceId = document.getElementById('ttsVoiceId').value;
+            
+            if (!text || !voiceId) {
+                showResult('ttsResult', { error: '請輸入文本和聲音ID' }, true);
+                return;
+            }
+
+            showLoading('ttsResult', '正在合成語音...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/genhuman-proxy.php?path=synthesize-voice`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: 'sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                        text: text,
+                        voice_id: voiceId
+                    })
+                });
+
+                const result = await response.json();
+                showResult('ttsResult', result, !response.ok);
+            } catch (error) {
+                showResult('ttsResult', { error: error.message }, true);
+            }
+        }
+
+        // 3. 數字人克隆測試
+        async function testAvatarClone() {
+            const fileInput = document.getElementById('avatarVideo');
+            const avatarName = document.getElementById('avatarName').value;
+            
+            if (!fileInput.files[0] || !avatarName) {
+                showResult('avatarCloneResult', { error: '請選擇視頻文件並輸入數字人名稱' }, true);
+                return;
+            }
+
+            showLoading('avatarCloneResult', '正在克隆數字人...');
+            
+            try {
+                const formData = new FormData();
+                formData.append('video_file', fileInput.files[0]);
+                formData.append('avatar_name', avatarName);
+
+                const response = await fetch(`${API_BASE}/genhuman-proxy.php?path=create-scene`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: 'sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                        video_file: await fileToBase64(fileInput.files[0]),
+                        scene_name: avatarName
+                    })
+                });
+
+                const result = await response.json();
+                showResult('avatarCloneResult', result, !response.ok);
+            } catch (error) {
+                showResult('avatarCloneResult', { error: error.message }, true);
+            }
+        }
+
+        // 4. 數字人合成測試
+        async function testAvatarSynthesis() {
+            const avatarId = document.getElementById('synthAvatarId').value;
+            const voiceId = document.getElementById('synthVoiceId').value;
+            const text = document.getElementById('synthText').value;
+            
+            if (!avatarId || !voiceId || !text) {
+                showResult('avatarSynthResult', { error: '請填寫所有必需字段' }, true);
+                return;
+            }
+
+            showLoading('avatarSynthResult', '正在合成數字人視頻...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/genhuman-proxy.php?path=create-musetalk`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: 'sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                        scene_id: avatarId,
+                        audio_url: voiceId,
+                        text: text
+                    })
+                });
+
+                const result = await response.json();
+                showResult('avatarSynthResult', result, !response.ok);
+            } catch (error) {
+                showResult('avatarSynthResult', { error: error.message }, true);
+            }
+        }
+
+        // 5. 任務狀態查詢測試
+        async function testTaskStatus() {
+            const taskId = document.getElementById('taskId').value;
+            
+            if (!taskId) {
+                showResult('taskStatusResult', { error: '請輸入任務ID' }, true);
+                return;
+            }
+
+            showLoading('taskStatusResult', '正在查詢任務狀態...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/genhuman-proxy.php?path=musetalk-task&task_id=${encodeURIComponent(taskId)}`, {
+                    method: 'GET'
+                });
+                const result = await response.json();
+                showResult('taskStatusResult', result, !response.ok);
+            } catch (error) {
+                showResult('taskStatusResult', { error: error.message }, true);
+            }
+        }
+
+        // 開始輪詢
+        function startPolling() {
+            const taskId = document.getElementById('taskId').value;
+            if (!taskId) {
+                showResult('taskStatusResult', { error: '請輸入任務ID' }, true);
+                return;
+            }
+
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/genhuman-proxy.php?path=musetalk-task&task_id=${encodeURIComponent(taskId)}`);
+                    const result = await response.json();
+                    showResult('taskStatusResult', {
+                        ...result,
+                        polling: true,
+                        timestamp: new Date().toLocaleString()
+                    }, !response.ok);
+                    
+                    // 如果任務完成，停止輪詢
+                    if (result.status === 'completed' || result.status === 'failed') {
+                        stopPolling();
+                    }
+                } catch (error) {
+                    showResult('taskStatusResult', { error: error.message, polling: true }, true);
+                }
+            }, 3000); // 每3秒查詢一次
+
+            showResult('taskStatusResult', { message: '開始輪詢任務狀態...', polling: true });
+        }
+
+        // 停止輪詢
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+                showResult('taskStatusResult', { message: '已停止輪詢' });
+            }
+        }
+
+        // 6. 文件上傳測試
+        async function testFileUpload() {
+            const fileInput = document.getElementById('uploadFile');
+            
+            if (!fileInput.files[0]) {
+                showResult('uploadResult', { error: '請選擇文件' }, true);
+                return;
+            }
+
+            showLoading('uploadResult', '正在上傳文件...');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch(`${API_BASE}/upload-handler.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                showResult('uploadResult', result, !response.ok);
+            } catch (error) {
+                showResult('uploadResult', { error: error.message }, true);
+            }
+        }
+
+        // 頁面加載完成後的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('GenHuman API 測試頁面已加載');
+        });
+    </script>
+</body>
+</html>

@@ -666,7 +666,9 @@ Route::any('/vidspark-admin/api/callback', function ($request) {
 // 🆕 Vidspark簡單上傳系統（歸零重寫）
 Route::post('/vidspark-simple-upload/video', [app\controller\VidsparkSimpleUploadController::class, 'uploadVideo']);
 Route::post('/vidspark-simple-upload/audio', [app\controller\VidsparkSimpleUploadController::class, 'uploadAudio']);
+Route::post('/vidspark-simple-upload/upload-base64', [app\controller\VidsparkSimpleUploadController::class, 'uploadBase64']);
 Route::get('/vidspark-simple-upload/test', [app\controller\VidsparkSimpleUploadController::class, 'test']);
+Route::any('/vidspark-simple-upload/debug', [app\controller\VidsparkSimpleUploadController::class, 'debug']);
 
 // 🆕 簡單文件存儲路由（與存儲結構完全匹配）
 Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $filename) {

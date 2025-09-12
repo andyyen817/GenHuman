@@ -16,3 +16,16 @@ php_value file_uploads On
 # 安全配置
 php_flag display_errors Off
 php_flag log_errors On
+
+# 静态文件访问规则
+RewriteEngine On
+
+# 处理vidspark静态文件访问
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^vidspark/files/(.*)$ /index.php [QSA,L]
+
+# 处理其他路由
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php [QSA,L]

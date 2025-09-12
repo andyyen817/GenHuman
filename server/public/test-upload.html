@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidSpark 文件上傳測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .upload-form {
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VidSpark 文件上傳測試</h1>
+        
+        <form class="upload-form" id="uploadForm">
+            <div class="form-group">
+                <label for="videoFile">選擇視頻文件：</label>
+                <input type="file" id="videoFile" name="video" accept="video/*,.txt" required>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit">上傳文件</button>
+            </div>
+        </form>
+        
+        <div id="result" class="result"></div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #e9ecef; border-radius: 5px;">
+            <h3>測試端點：</h3>
+            <p><strong>上傳端點：</strong> POST /vidspark-simple-upload/video</p>
+            <p><strong>測試端點：</strong> <a href="/vidspark-simple-upload/test" target="_blank">GET /vidspark-simple-upload/test</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('videoFile');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                showResult('請選擇一個文件', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            try {
+                showResult('正在上傳...', 'success');
+                
+                // 方法1: 使用 FormData (原始方法)
+                const formData = new FormData();
+                formData.append('video', file);
+                
+                const response1 = await fetch('/vidspark-simple-upload/video', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result1 = await response1.text();
+                
+                // 方法2: 使用 Base64 編碼
+                const base64Data = await fileToBase64(file);
+                const response2 = await fetch('/vidspark-simple-upload/upload-base64', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        filesize: file.size,
+                        filetype: file.type,
+                        data: base64Data
+                    })
+                });
+                
+                const result2 = await response2.text();
+                
+                if (response1.ok || response2.ok) {
+                    showResult(`FormData 上傳結果:<br><pre>${result1}</pre><br>Base64 上傳結果:<br><pre>${result2}</pre>`, 'success');
+                } else {
+                    showResult(`上傳失敗 - FormData: ${result1}<br>Base64: ${result2}`, 'error');
+                }
+            } catch (error) {
+                showResult('上傳錯誤：' + error.message, 'error');
+            }
+        });
+        
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    // 移除 data:mime;base64, 前綴
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = 'result ' + type;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -31,9 +31,16 @@ class VidsparkSimpleUploadController
         try {
             error_log('[SimpleUpload] ==================== 開始視頻上傳 ====================');
             error_log('[SimpleUpload] 當前時間: ' . date('Y-m-d H:i:s'));
+            error_log('[SimpleUpload] 請求方法: ' . $request->method());
+            error_log('[SimpleUpload] Content-Type: ' . $request->header('content-type'));
             
-            // 檢查文件
+            // 調試：檢查所有上傳的文件
+            $allFiles = $request->file();
+            error_log('[SimpleUpload] 所有上傳文件: ' . print_r($allFiles, true));
+            
+            // 檢查是否有上傳的視頻文件
             $file = $request->file('video');
+            error_log('[SimpleUpload] video文件對象: ' . ($file ? 'exists' : 'null'));
             if (!$file) {
                 throw new Exception('沒有接收到視頻文件');
             }
@@ -53,7 +60,7 @@ class VidsparkSimpleUploadController
             $newFilename = 'video_' . date('YmdHis') . '_' . uniqid() . '.' . $extension;
             
             // 存儲路徑（超簡單）
-            $storageDir = base_path() . '/public/vidspark/files/video';
+            $storageDir = dirname(__DIR__, 2) . '/public/vidspark/files/video';
             $fullPath = $storageDir . '/' . $newFilename;
             
             error_log('[SimpleUpload] 存儲目錄: ' . $storageDir);
@@ -156,7 +163,7 @@ class VidsparkSimpleUploadController
             $newFilename = 'audio_' . date('YmdHis') . '_' . uniqid() . '.' . $extension;
             
             // 存儲路徑（超簡單）
-            $storageDir = base_path() . '/public/vidspark/files/audio';
+            $storageDir = dirname(__DIR__, 2) . '/public/vidspark/files/audio';
             $fullPath = $storageDir . '/' . $newFilename;
             
             error_log('[SimpleUpload] 音頻存儲目錄: ' . $storageDir);
@@ -235,6 +242,199 @@ class VidsparkSimpleUploadController
             'time' => date('Y-m-d H:i:s'),
             'system' => 'Simple Upload v1.0'
         ], JSON_UNESCAPED_UNICODE));
+    }
+    
+    /**
+     * 調試端點 - 檢查請求數據
+     */
+    public function debug(Request $request): Response
+    {
+        // 直接讀取 php://input
+        $directInput = file_get_contents('php://input');
+        
+        // 觸發手動解析（如果需要的話）
+        $allFiles = $request->file();
+        
+        $debug = [
+            'method' => $request->method(),
+            'content_type' => $request->header('content-type'),
+            'post_data' => $_POST,
+            'files_data' => $_FILES,
+            'parsed_files' => array_keys($allFiles),
+            'direct_input_length' => strlen($directInput),
+            'request_raw_input_length' => strlen($request->getRawInput()),
+            'direct_input_preview' => substr($directInput, 0, 200),
+            'server_vars' => [
+                'REQUEST_METHOD' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+                'CONTENT_TYPE' => $_SERVER['CONTENT_TYPE'] ?? 'unknown',
+                'CONTENT_LENGTH' => $_SERVER['CONTENT_LENGTH'] ?? 'unknown'
+            ]
+        ];
+        
+        return new Response(200, [
+            'Content-Type' => 'application/json; charset=utf-8'
+        ], json_encode($debug, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
+    
+    /**
+     * 處理 Base64 編碼的文件上傳
+     */
+    public function uploadBase64(Request $request): Response
+    {
+        try {
+            error_log('[Base64Upload] ==================== 開始 Base64 上傳 ====================');
+            error_log('[Base64Upload] 當前時間: ' . date('Y-m-d H:i:s'));
+            
+            // 獲取 JSON 數據
+            $jsonData = json_decode(file_get_contents('php://input'), true);
+            
+            if (!$jsonData) {
+                throw new Exception('無效的 JSON 數據');
+            }
+            
+            if (!isset($jsonData['data']) || !isset($jsonData['filename'])) {
+                throw new Exception('缺少必要的文件數據');
+            }
+            
+            $filename = $jsonData['filename'];
+            $filesize = $jsonData['filesize'] ?? 0;
+            $filetype = $jsonData['filetype'] ?? 'application/octet-stream';
+            $base64Data = $jsonData['data'];
+            
+            error_log('[Base64Upload] 文件名: ' . $filename);
+            error_log('[Base64Upload] 文件大小: ' . $this->formatFileSize($filesize));
+            error_log('[Base64Upload] 文件類型: ' . $filetype);
+            error_log('[Base64Upload] Base64 數據長度: ' . strlen($base64Data));
+            
+            // 解碼 Base64 數據
+            $fileContent = base64_decode($base64Data);
+            if ($fileContent === false) {
+                throw new Exception('Base64 解碼失敗');
+            }
+            
+            // 確定文件類型和存儲目錄
+            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'];
+            $audioExtensions = ['mp3', 'wav', 'm4a', 'aac', 'ogg'];
+            
+            if (in_array($extension, $videoExtensions)) {
+                $fileType = 'video';
+                $dbType = 3; // 視頻類型
+            } elseif (in_array($extension, $audioExtensions)) {
+                $fileType = 'audio';
+                $dbType = 2; // 音頻類型
+            } else {
+                $fileType = 'video'; // 默認為視頻
+                $dbType = 3;
+            }
+            
+            // 生成唯一文件名
+            $uniqueName = $fileType . '_' . date('YmdHis') . '_' . uniqid() . '.' . $extension;
+            
+            // 設置存儲路徑（統一使用vidspark/files結構）
+            $storageDir = dirname(__DIR__, 2) . '/public/vidspark/files/' . $fileType;
+            if (!is_dir($storageDir)) {
+                mkdir($storageDir, 0755, true);
+            }
+            
+            $filePath = $storageDir . '/' . $uniqueName;
+            
+            // 保存文件到本地
+            if (file_put_contents($filePath, $fileContent) === false) {
+                throw new Exception('文件保存失敗');
+            }
+            
+            error_log('[Base64Upload] 文件保存成功: ' . $filePath);
+            
+            // 生成完整的Zeabur URL
+            $fileUrl = 'https://genhuman-digital-human.zeabur.app/vidspark/files/' . $fileType . '/' . $uniqueName;
+            
+            // 保存到數據庫（yc_upload表）
+            try {
+                $this->saveToDatabase([
+                    'title' => $filename,
+                    'url' => $fileUrl,
+                    'size' => $this->formatFileSize(strlen($fileContent)),
+                    'md5' => md5($fileContent),
+                    'ext' => $extension,
+                    'type' => $dbType,
+                    'adapter' => 'local',
+                    'mime_type' => $filetype,
+                    'uid' => 0, // 暫時設為0，後續可根據用戶系統調整
+                    'admin_uid' => 0,
+                    'hidden' => 1,
+                    'create_time' => date('Y-m-d H:i:s'),
+                    'update_time' => date('Y-m-d H:i:s')
+                ]);
+                error_log('[Base64Upload] 數據庫記錄保存成功');
+            } catch (Exception $dbError) {
+                error_log('[Base64Upload] 數據庫保存失敗: ' . $dbError->getMessage());
+                // 數據庫保存失敗不影響文件上傳成功
+            }
+            
+            error_log('[Base64Upload] 生成的URL: ' . $fileUrl);
+            error_log('[Base64Upload] ==================== Base64上傳成功 ====================');
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => true,
+                'message' => '文件上傳成功',
+                'data' => [
+                    'file_url' => $fileUrl,
+                    'original_name' => $filename,
+                    'file_size' => $this->formatFileSize(strlen($fileContent)),
+                    'upload_time' => date('Y-m-d H:i:s'),
+                    'method' => 'base64',
+                    'storage' => 'zeabur_mysql'
+                ]
+            ], JSON_UNESCAPED_UNICODE));
+            
+        } catch (Exception $e) {
+            error_log('[Base64Upload] 錯誤: ' . $e->getMessage());
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], json_encode([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'upload_time' => date('Y-m-d H:i:s'),
+                'method' => 'base64'
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+    
+    /**
+     * 保存文件信息到數據庫
+     */
+    private function saveToDatabase($data): void
+    {
+        try {
+            // 獲取數據庫配置
+            $host = $_ENV['MYSQL_HOST'] ?? $_SERVER['MYSQL_HOST'] ?? 'localhost';
+            $port = $_ENV['MYSQL_PORT'] ?? $_SERVER['MYSQL_PORT'] ?? '3306';
+            $database = $_ENV['MYSQL_DATABASE'] ?? $_SERVER['MYSQL_DATABASE'] ?? 'genhuman';
+            $username = $_ENV['MYSQL_USERNAME'] ?? $_SERVER['MYSQL_USERNAME'] ?? 'root';
+            $password = $_ENV['MYSQL_PASSWORD'] ?? $_SERVER['MYSQL_PASSWORD'] ?? '';
+            
+            $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
+            $pdo = new \PDO($dsn, $username, $password, [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+            ]);
+            
+            $sql = "INSERT INTO yc_upload (title, url, size, md5, ext, type, adapter, mime_type, uid, admin_uid, hidden, create_time, update_time) 
+                    VALUES (:title, :url, :size, :md5, :ext, :type, :adapter, :mime_type, :uid, :admin_uid, :hidden, :create_time, :update_time)";
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($data);
+            
+            error_log('[Database] 文件記錄已保存到yc_upload表，ID: ' . $pdo->lastInsertId());
+            
+        } catch (\PDOException $e) {
+            error_log('[Database] PDO錯誤: ' . $e->getMessage());
+            throw new Exception('數據庫連接或操作失敗: ' . $e->getMessage());
+        }
     }
     
     /**
