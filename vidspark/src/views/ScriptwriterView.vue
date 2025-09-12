@@ -405,7 +405,6 @@ const scenario = ref(route.query.scenario as string || 'fromScratch')
 const scriptContent = ref('')
 const isGenerating = ref(false)
 const showTemplateModal = ref(false)
-const generatedShots = ref([])
 const geminiConnectionStatus = ref('unknown') // 'connected', 'disconnected', 'unknown'
 
 // 角色设计状态
@@ -621,9 +620,6 @@ const handleAIWrite = async () => {
       ).join('\n\n')
       
       scriptContent.value = formattedScript
-      
-      // 更新分镜预览
-      generatedShots.value = scriptData.acts.map(act => act.content)
       
       // 保存完整的脚本数据到localStorage
       localStorage.setItem('vidspark_script_content', JSON.stringify(scriptData))

@@ -333,7 +333,7 @@
       </div>
 
       <div class="action-group">
-        <button class="action-btn secondary large" @click="previewVideo">
+        <button class="action-btn secondary large" @click="handlePreviewVideo">
           👁️ 预览视频
         </button>
         <button class="action-btn primary large" @click="exportVideo" :disabled="isExporting">
@@ -632,7 +632,7 @@ export default {
       alert('项目已保存！所有设置和进度都已自动保存。')
     }
     
-    const previewVideo = () => {
+    const handlePreviewVideo = () => {
       alert('生成预览中...\n\n预览功能将在新窗口打开，显示当前设置下的视频效果。')
     }
     
@@ -724,7 +724,7 @@ export default {
       selectClip,
       getSubtitleStyle,
       saveProject,
-      previewVideo,
+      handlePreviewVideo,
       exportVideo
     }
   }

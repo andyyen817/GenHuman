@@ -673,8 +673,9 @@ Route::any('/vidspark-simple-upload/debug', [app\controller\VidsparkSimpleUpload
 // 🆕 簡單文件存儲路由（與存儲結構完全匹配）
 Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $filename) {
     try {
-        // 直接映射，無複雜邏輯
-        $filePath = base_path() . '/public/vidspark/files/' . $type . '/' . $filename;
+        // 直接映射，無複雜邏輯 - 修復Zeabur路径问题
+        $publicPath = realpath(__DIR__ . '/../public') ?: (__DIR__ . '/../public');
+        $filePath = $publicPath . '/vidspark/files/' . $type . '/' . $filename;
         
         error_log("[SimpleStorage] 請求: {$type}/{$filename}");
         error_log("[SimpleStorage] 路徑: {$filePath}");
@@ -747,7 +748,8 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
 Route::get('/vidspark/{path:.+}', function ($request, $path) {
     // 如果是靜態資源，先檢查是否存在
     if (strpos($path, 'assets/') === 0) {
-        $filePath = base_path() . '/public/vidspark/' . $path;
+        $publicPath = realpath(__DIR__ . '/../public') ?: (__DIR__ . '/../public');
+        $filePath = $publicPath . '/vidspark/' . $path;
         if (file_exists($filePath)) {
             $ext = pathinfo($filePath, PATHINFO_EXTENSION);
             $contentTypes = [

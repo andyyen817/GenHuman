@@ -34,6 +34,11 @@
           <span>充值积分</span>
         </a>
         
+        <router-link to="/genhuman" class="nav-item">
+          <i>🤖</i>
+          <span>數字人製作</span>
+        </router-link>
+        
         <a href="#" class="nav-item" @click="currentSection = 'help'">
           <i>❓</i>
           <span>使用帮助</span>

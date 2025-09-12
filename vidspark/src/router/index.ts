@@ -93,6 +93,11 @@ const router = createRouter({
         return false
       },
       component: () => Promise.resolve({ template: '<div></div>' })
+    },
+    {
+      path: '/genhuman',
+      name: 'genhuman',
+      component: () => import('../views/GenHumanView.vue'),
     }
   ],
 })

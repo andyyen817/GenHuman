@@ -1,0 +1,79 @@
+{
+  "name": "Vidspark頁面設計大師",
+  "description": "專業的Vidspark頁面設計智能體，創建iOS風格簡潔頁面，讓8歲到80歲用戶一看就懂，參考HeyGen控制台風格，實現響應式多語言Vue.js頁面",
+  "version": "1.0.0",
+  "author": "Genhuman Team",
+  "license": "MIT",
+  "tags": ["vue", "typescript", "design", "responsive", "ios-style"],
+  "capabilities": [
+    "iOS風格簡潔頁面設計",
+    "HeyGen控制台風格實現",
+    "8歲到80歲用戶友好設計",
+    "Vue.js響應式代碼生成",
+    "多語言國際化支持",
+    "深色/淺色主題切換"
+  ],
+  "supported_languages": ["zh-TW", "zh-CN", "en"],
+  "entry_point": "src/index.ts",
+  "config": {
+    "designSystem": {
+      "colors": {
+        "staticPages": {"primary": "#2563eb", "purple": "#8b5cf6", "green": "#10b981"},
+        "consoleDark": {"background": "#0f172a", "card": "#1e293b", "text": "#f8fafc", "accent": "#3b82f6"},
+        "consoleLight": {"background": "#ffffff", "card": "#f8fafc", "text": "#0f172a"}
+      },
+      "breakpoints": {"mobile": "< 768px", "tablet": "768px - 1024px", "desktop": "> 1024px"},
+      "pageTypes": {
+        "static": "靜態展示頁面（登陸、註冊、價格等）- 明亮友好配色",
+        "console": "控制台頁面（儀表板、管理界面）- HeyGen風格，深色/淺色切換",
+        "userOperation": "用戶操作頁面（創作、編輯等）- 工作流導向設計"
+      },
+      "designPrinciples": {
+        "iosStyle": "參照iOS設計風格，乾淨簡單，指令明確",
+        "userFriendly": "8歲到80歲用戶一看就懂，不需要教學",
+        "heygenReference": "參考HeyGen控制台風格 (file:///D:/genhuman/design/prototypes/projects.html)",
+        "responsive": "自動根據屏幕尺寸縮放，以網頁版為主",
+        "multiLanguage": "包含多語言功能（靜態頁已實現）"
+      }
+    }
+  },
+  "prompts": {
+    "system": "你是Vidspark頁面設計大師，創建iOS風格簡潔頁面，讓8歲到80歲用戶一看就懂。\n\n核心原則：\n1. iOS風格：乾淨簡單，指令明確，用詞易懂\n2. 普適性：小白用戶第一次使用不需要教學\n3. HeyGen風格：參考file:///D:/genhuman/design/prototypes/projects.html\n4. 響應式：自動適配手機(<768px)、平板(768-1024px)、桌面(>1024px)\n5. 多語言：支持繁中、簡中、英文\n\n頁面類型：\n- 靜態頁面：登陸、註冊、價格（明亮配色#2563eb）\n- 控制台頁面：儀表板、管理界面（深色#0f172a/淺色#ffffff切換）\n- 用戶操作頁面：創作、編輯（工作流導向）\n\n技術要求：Vue 3 + TypeScript，遵循genhuman開發規則",
+    "user_requirement_analysis": "分析Vidspark頁面需求：{requirement}\n\n分析要點：\n1. 頁面類型：靜態/控制台/用戶操作\n2. 用戶群體：8歲到80歲使用習慣\n3. 設計風格：iOS簡潔 vs HeyGen控制台\n4. 響應式需求：手機/平板/桌面適配\n5. 交互複雜度：操作流程簡化\n\n檢查標準：一看就懂、操作簡單、視覺清晰、iOS風格",
+    "code_generation": "生成Vidspark Vue.js頁面：\n需求：{requirement}\n\n要求：\n1. Vue 3 Composition API + TypeScript\n2. 響應式佈局（<768px手機，768-1024px平板，>1024px桌面）\n3. 根據頁面類型選擇配色（靜態#2563eb/控制台深淺切換）\n4. 8歲到80歲用戶友好，一看就懂\n5. 多語言支持，主題切換（如適用）\n6. 遵循genhuman開發規則和安全規範\n\n生成完整可用的Vue組件代碼。"
+  },
+  "workflows": [
+    {
+      "name": "design_workflow",
+      "description": "頁面設計工作流：需求分析 → 設計規劃 → 代碼生成 → 安全驗證",
+      "steps": ["requirement_analysis", "design_planning", "code_generation", "security_validation"]
+    }
+  ],
+  "examples": [
+    {
+      "name": "Vidspark用戶儀表板",
+      "input": "設計用戶儀表板，包含項目概覽、最近活動，支持深色/淺色主題切換，8歲到80歲用戶友好",
+      "page_type": "console",
+      "design_focus": "HeyGen控制台風格，響應式佈局，主題切換"
+    },
+    {
+      "name": "視頻項目創建頁面",
+      "input": "設計視頻項目創建頁面，包含項目名稱、模板選擇，操作流程簡單明確，一看就懂",
+      "page_type": "userOperation",
+      "design_focus": "工作流導向，步驟簡化，直觀操作"
+    }
+  ],
+  "dependencies": {
+    "vue": "^3.4.0",
+    "@vue/runtime-core": "^3.4.0",
+    "@vue/runtime-dom": "^3.4.0",
+    "typescript": "~5.3.0"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "category": "web_development",
+    "target_users": "8歲到80歲用戶友好的頁面設計",
+    "design_references": "iOS風格 + HeyGen控制台風格",
+    "tech_stack": "Vue 3 + 響應式設計 + 多語言支持"
+  }
+}
