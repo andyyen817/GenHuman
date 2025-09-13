@@ -680,6 +680,22 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
         error_log("[SimpleStorage] 請求: {$type}/{$filename}");
         error_log("[SimpleStorage] 路徑: {$filePath}");
         error_log("[SimpleStorage] 存在: " . (file_exists($filePath) ? '是' : '否'));
+        error_log("[SimpleStorage] 公共路径: {$publicPath}");
+        error_log("[SimpleStorage] 工作目录: " . getcwd());
+        
+        // 🔧 增强调试：检查目录结构
+        $vidspark_dir = $publicPath . '/vidspark';
+        $files_dir = $publicPath . '/vidspark/files';
+        $type_dir = $publicPath . '/vidspark/files/' . $type;
+        
+        error_log("[SimpleStorage] vidspark目录存在: " . (is_dir($vidspark_dir) ? '是' : '否'));
+        error_log("[SimpleStorage] files目录存在: " . (is_dir($files_dir) ? '是' : '否'));
+        error_log("[SimpleStorage] {$type}目录存在: " . (is_dir($type_dir) ? '是' : '否'));
+        
+        if (is_dir($type_dir)) {
+            $files_in_dir = scandir($type_dir);
+            error_log("[SimpleStorage] {$type}目录文件: " . implode(', ', array_filter($files_in_dir, function($f) { return $f !== '.' && $f !== '..'; })));
+        }
         
         // 處理OPTIONS預檢請求
         if ($request->method() === 'OPTIONS') {
@@ -733,7 +749,57 @@ Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $file
             return (new Response(200, $headers))->file($filePath);
         }
         
-        return new Response(404, ['Content-Type' => 'text/plain'], 'File not found: ' . $type . '/' . $filename);
+        // 🔧 文件不存在時回退到數據庫訪問方案
+        error_log("[SimpleStorage] 文件不存在，嘗試數據庫備用訪問: {$filePath}");
+        
+        // 嘗試通過數據庫查找文件信息
+        try {
+            $db = \support\Db::connection();
+            $fileRecord = $db->table('uploaded_files')
+                ->where('filename', $filename)
+                ->where('file_type', $type)
+                ->orderBy('upload_time', 'desc')
+                ->first();
+            
+            if ($fileRecord && !empty($fileRecord->file_data)) {
+                error_log("[SimpleStorage] 從數據庫找到文件，大小: " . strlen($fileRecord->file_data));
+                
+                // 獲取MIME類型
+                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                $mimeTypes = [
+                    'mp4' => 'video/mp4',
+                    'mp3' => 'audio/mpeg',
+                    'wav' => 'audio/wav',
+                    'm4a' => 'audio/x-m4a',
+                    'aac' => 'audio/aac',
+                    'txt' => 'text/plain'
+                ];
+                $mimeType = $mimeTypes[$ext] ?? 'application/octet-stream';
+                
+                return new Response(200, [
+                    'Content-Type' => $mimeType,
+                    'Content-Length' => strlen($fileRecord->file_data),
+                    'Accept-Ranges' => 'bytes',
+                    'Cache-Control' => 'public, max-age=86400',
+                    'Access-Control-Allow-Origin' => '*',
+                    'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+                    'Access-Control-Allow-Headers' => 'Content-Type, Authorization'
+                ], $fileRecord->file_data);
+            }
+        } catch (Exception $dbError) {
+            error_log("[SimpleStorage] 數據庫查詢失敗: " . $dbError->getMessage());
+        }
+        
+        return new Response(404, [
+            'Content-Type' => 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin' => '*'
+        ], json_encode([
+            'error' => true,
+            'message' => '找不到檔案',
+            'file' => $filename,
+            'type' => $type,
+            'fallback_attempted' => true
+        ], JSON_UNESCAPED_UNICODE));
         
     } catch (Exception $e) {
         error_log("[SimpleStorage] 錯誤: " . $e->getMessage());

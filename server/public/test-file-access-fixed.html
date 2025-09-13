@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件访问修复测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+        .test-section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+        }
+        .test-url {
+            font-family: 'Courier New', monospace;
+            background: #edf2f7;
+            padding: 8px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 5px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #22543d;
+        }
+        .error {
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            color: #742a2a;
+        }
+        .info {
+            background: #bee3f8;
+            border: 1px solid #90cdf4;
+            color: #2a4365;
+        }
+        .upload-section {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+        }
+        .access-section {
+            background: #fffaf0;
+            border: 2px solid #f6ad55;
+        }
+        .debug-section {
+            background: #fef5e7;
+            border: 2px solid #ed8936;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #edf2f7;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4299e1, #667eea);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 文件访问修复测试</h1>
+        
+        <!-- 文件上传测试 -->
+        <div class="test-section upload-section">
+            <h2>📤 文件上传测试</h2>
+            
+            <div class="test-item">
+                <h3>视频上传 (FormData)</h3>
+                <input type="file" id="videoFile" accept="video/*">
+                <button onclick="uploadVideo()">上传视频</button>
+                <div class="progress" id="videoProgress" style="display:none;">
+                    <div class="progress-bar" id="videoProgressBar"></div>
+                </div>
+                <div id="videoResult" class="result" style="display:none;"></div>
+            </div>
+            
+            <div class="test-item">
+                <h3>音频上传 (FormData)</h3>
+                <input type="file" id="audioFile" accept="audio/*">
+                <button onclick="uploadAudio()">上传音频</button>
+                <div class="progress" id="audioProgress" style="display:none;">
+                    <div class="progress-bar" id="audioProgressBar"></div>
+                </div>
+                <div id="audioResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+        
+        <!-- 文件访问测试 -->
+        <div class="test-section access-section">
+            <h2>🔍 文件访问测试</h2>
+            
+            <div class="test-item">
+                <h3>已知文件访问测试</h3>
+                <div class="test-url">https://genhuman-digital-human.zeabur.app/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4</div>
+                <button onclick="testFileAccess('https://genhuman-digital-human.zeabur.app/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4')">测试访问</button>
+                <button onclick="testFileHead('https://genhuman-digital-human.zeabur.app/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4')">HEAD请求</button>
+                <div id="knownFileResult" class="result" style="display:none;"></div>
+            </div>
+            
+            <div class="test-item">
+                <h3>自定义URL测试</h3>
+                <input type="text" id="customUrl" placeholder="输入文件URL" style="width: 100%; padding: 8px; margin: 10px 0;">
+                <button onclick="testCustomUrl()">测试访问</button>
+                <div id="customUrlResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+        
+        <!-- 调试信息 -->
+        <div class="test-section debug-section">
+            <h2>🐛 调试信息</h2>
+            
+            <div class="test-item">
+                <h3>服务器状态检查</h3>
+                <button onclick="checkServerStatus()">检查服务器状态</button>
+                <button onclick="checkUploadEndpoint()">检查上传端点</button>
+                <button onclick="checkFileStructure()">检查文件结构</button>
+                <div id="debugResult" class="result" style="display:none;"></div>
+            </div>
+            
+            <div class="test-item">
+                <h3>数据库连接测试</h3>
+                <button onclick="testDatabaseConnection()">测试数据库连接</button>
+                <button onclick="listUploadedFiles()">列出已上传文件</button>
+                <div id="dbResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://genhuman-digital-human.zeabur.app';
+        
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+            element.textContent = content;
+        }
+        
+        function showProgress(progressId, show = true) {
+            document.getElementById(progressId).style.display = show ? 'block' : 'none';
+        }
+        
+        function updateProgress(barId, percent) {
+            document.getElementById(barId).style.width = percent + '%';
+        }
+        
+        async function uploadVideo() {
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResult('videoResult', '请选择视频文件', 'error');
+                return;
+            }
+            
+            showProgress('videoProgress');
+            updateProgress('videoProgressBar', 0);
+            
+            try {
+                const formData = new FormData();
+                formData.append('video', file);
+                
+                const response = await fetch(`${BASE_URL}/vidspark-simple-upload/video`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                updateProgress('videoProgressBar', 100);
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult('videoResult', `上传成功！\n响应: ${result}`, 'success');
+                    
+                    // 尝试解析返回的URL并测试访问
+                    try {
+                        const jsonResult = JSON.parse(result);
+                        if (jsonResult.file_url) {
+                            setTimeout(() => {
+                                testFileAccess(jsonResult.file_url, 'videoResult');
+                            }, 2000);
+                        }
+                    } catch (e) {
+                        console.log('无法解析JSON响应');
+                    }
+                } else {
+                    showResult('videoResult', `上传失败！\n状态: ${response.status}\n响应: ${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('videoResult', `上传错误: ${error.message}`, 'error');
+            } finally {
+                showProgress('videoProgress', false);
+            }
+        }
+        
+        async function uploadAudio() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResult('audioResult', '请选择音频文件', 'error');
+                return;
+            }
+            
+            showProgress('audioProgress');
+            updateProgress('audioProgressBar', 0);
+            
+            try {
+                const formData = new FormData();
+                formData.append('audio', file);
+                
+                const response = await fetch(`${BASE_URL}/vidspark-simple-upload/audio`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                updateProgress('audioProgressBar', 100);
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult('audioResult', `上传成功！\n响应: ${result}`, 'success');
+                    
+                    // 尝试解析返回的URL并测试访问
+                    try {
+                        const jsonResult = JSON.parse(result);
+                        if (jsonResult.file_url) {
+                            setTimeout(() => {
+                                testFileAccess(jsonResult.file_url, 'audioResult');
+                            }, 2000);
+                        }
+                    } catch (e) {
+                        console.log('无法解析JSON响应');
+                    }
+                } else {
+                    showResult('audioResult', `上传失败！\n状态: ${response.status}\n响应: ${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('audioResult', `上传错误: ${error.message}`, 'error');
+            } finally {
+                showProgress('audioProgress', false);
+            }
+        }
+        
+        async function testFileAccess(url, resultId = 'knownFileResult') {
+            try {
+                showResult(resultId, '正在测试文件访问...', 'info');
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                const contentType = response.headers.get('content-type');
+                const contentLength = response.headers.get('content-length');
+                
+                if (response.ok) {
+                    showResult(resultId, 
+                        `✅ 文件访问成功！\n` +
+                        `状态: ${response.status}\n` +
+                        `内容类型: ${contentType}\n` +
+                        `文件大小: ${contentLength} bytes\n` +
+                        `URL: ${url}`, 
+                        'success'
+                    );
+                } else {
+                    const errorText = await response.text();
+                    showResult(resultId, 
+                        `❌ 文件访问失败！\n` +
+                        `状态: ${response.status}\n` +
+                        `响应: ${errorText}\n` +
+                        `URL: ${url}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult(resultId, `❌ 访问错误: ${error.message}\nURL: ${url}`, 'error');
+            }
+        }
+        
+        async function testFileHead(url) {
+            try {
+                showResult('knownFileResult', '正在执行HEAD请求...', 'info');
+                
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    mode: 'cors'
+                });
+                
+                const headers = {};
+                for (let [key, value] of response.headers.entries()) {
+                    headers[key] = value;
+                }
+                
+                if (response.ok) {
+                    showResult('knownFileResult', 
+                        `✅ HEAD请求成功！\n` +
+                        `状态: ${response.status}\n` +
+                        `响应头: ${JSON.stringify(headers, null, 2)}`, 
+                        'success'
+                    );
+                } else {
+                    showResult('knownFileResult', 
+                        `❌ HEAD请求失败！\n` +
+                        `状态: ${response.status}\n` +
+                        `响应头: ${JSON.stringify(headers, null, 2)}`, 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('knownFileResult', `❌ HEAD请求错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testCustomUrl() {
+            const url = document.getElementById('customUrl').value.trim();
+            if (!url) {
+                showResult('customUrlResult', '请输入URL', 'error');
+                return;
+            }
+            testFileAccess(url, 'customUrlResult');
+        }
+        
+        async function checkServerStatus() {
+            try {
+                showResult('debugResult', '正在检查服务器状态...', 'info');
+                
+                const response = await fetch(`${BASE_URL}/vidspark-simple-upload/test`);
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult('debugResult', `✅ 服务器正常\n响应: ${result}`, 'success');
+                } else {
+                    showResult('debugResult', `❌ 服务器异常\n状态: ${response.status}\n响应: ${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('debugResult', `❌ 服务器连接失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkUploadEndpoint() {
+            try {
+                showResult('debugResult', '正在检查上传端点...', 'info');
+                
+                const endpoints = [
+                    '/vidspark-simple-upload/video',
+                    '/vidspark-simple-upload/audio',
+                    '/vidspark-simple-upload/test',
+                    '/vidspark-simple-upload/debug'
+                ];
+                
+                let results = [];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`${BASE_URL}${endpoint}`, {
+                            method: 'OPTIONS'
+                        });
+                        results.push(`${endpoint}: ${response.status}`);
+                    } catch (e) {
+                        results.push(`${endpoint}: 连接失败`);
+                    }
+                }
+                
+                showResult('debugResult', `端点检查结果:\n${results.join('\n')}`, 'info');
+            } catch (error) {
+                showResult('debugResult', `❌ 端点检查失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkFileStructure() {
+            try {
+                showResult('debugResult', '正在检查文件结构...', 'info');
+                
+                const response = await fetch(`${BASE_URL}/vidspark-simple-upload/debug`);
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult('debugResult', `文件结构信息:\n${result}`, 'info');
+                } else {
+                    showResult('debugResult', `❌ 无法获取文件结构\n状态: ${response.status}\n响应: ${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('debugResult', `❌ 文件结构检查失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testDatabaseConnection() {
+            try {
+                showResult('dbResult', '正在测试数据库连接...', 'info');
+                
+                // 这里需要一个专门的数据库测试端点
+                const response = await fetch(`${BASE_URL}/api/test-db.php`);
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult('dbResult', `✅ 数据库连接正常\n${result}`, 'success');
+                } else {
+                    showResult('dbResult', `❌ 数据库连接失败\n状态: ${response.status}\n响应: ${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('dbResult', `❌ 数据库测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function listUploadedFiles() {
+            try {
+                showResult('dbResult', '正在获取已上传文件列表...', 'info');
+                
+                // 这里需要一个专门的文件列表端点
+                const response = await fetch(`${BASE_URL}/api/list-files.php`);
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showResult('dbResult', `已上传文件列表:\n${result}`, 'info');
+                } else {
+                    showResult('dbResult', `❌ 无法获取文件列表\n状态: ${response.status}\n响应: ${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('dbResult', `❌ 文件列表获取失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载时自动检查服务器状态
+        window.addEventListener('load', function() {
+            setTimeout(checkServerStatus, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件访问测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; }
+        input[type="file"] { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>文件访问和上传测试</h1>
+    
+    <div class="test-section">
+        <h2>1. 测试现有文件访问</h2>
+        <button onclick="testExistingFile()">测试现有文件</button>
+        <div id="existing-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 测试文件上传</h2>
+        <input type="file" id="fileInput" accept="video/*,audio/*">
+        <button onclick="testUpload()">上传并测试访问</button>
+        <div id="upload-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 测试URL格式</h2>
+        <button onclick="testUrlFormats()">测试不同URL格式</button>
+        <div id="url-result"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            element.appendChild(div);
+        }
+
+        async function testExistingFile() {
+            const resultId = 'existing-result';
+            document.getElementById(resultId).innerHTML = '';
+            
+            const testUrls = [
+                'https://genhuman-digital-human.zeabur.app/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4',
+                '/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4',
+                'http://localhost:8080/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4'
+            ];
+            
+            for (const url of testUrls) {
+                try {
+                    showResult(resultId, `测试URL: ${url}`, 'info');
+                    const response = await fetch(url, { method: 'HEAD' });
+                    showResult(resultId, `响应: ${response.status} ${response.statusText}`, 
+                              response.ok ? 'success' : 'error');
+                    
+                    if (response.ok) {
+                        const contentLength = response.headers.get('content-length');
+                        const contentType = response.headers.get('content-type');
+                        showResult(resultId, `文件大小: ${contentLength} bytes, 类型: ${contentType}`, 'success');
+                    }
+                } catch (error) {
+                    showResult(resultId, `错误: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testUpload() {
+            const resultId = 'upload-result';
+            document.getElementById(resultId).innerHTML = '';
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!fileInput.files[0]) {
+                showResult(resultId, '请先选择文件', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            showResult(resultId, `上传文件: ${file.name} (${file.size} bytes)`, 'info');
+            
+            try {
+                // 测试FormData上传
+                const formData = new FormData();
+                const fileType = file.type.startsWith('video/') ? 'video' : 'audio';
+                formData.append(fileType, file);
+                
+                const uploadResponse = await fetch(`/vidspark-simple-upload/${fileType}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                showResult(resultId, `上传响应: ${uploadResponse.status}`, 
+                          uploadResponse.ok ? 'success' : 'error');
+                
+                const result = await uploadResponse.json();
+                showResult(resultId, `上传结果: ${JSON.stringify(result, null, 2)}`, 
+                          result.success ? 'success' : 'error');
+                
+                if (result.success && result.data.file_url) {
+                    // 立即测试上传的文件是否可访问
+                    setTimeout(async () => {
+                        try {
+                            const testResponse = await fetch(result.data.file_url, { method: 'HEAD' });
+                            showResult(resultId, `文件访问测试: ${testResponse.status} ${testResponse.statusText}`, 
+                                      testResponse.ok ? 'success' : 'error');
+                        } catch (error) {
+                            showResult(resultId, `文件访问错误: ${error.message}`, 'error');
+                        }
+                    }, 2000);
+                }
+                
+            } catch (error) {
+                showResult(resultId, `上传错误: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUrlFormats() {
+            const resultId = 'url-result';
+            document.getElementById(resultId).innerHTML = '';
+            
+            // 测试不同的URL格式和转义问题
+            const testCases = [
+                {
+                    name: '正常URL',
+                    url: 'https://genhuman-digital-human.zeabur.app/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4'
+                },
+                {
+                    name: '转义的URL',
+                    url: 'https:\\/\\/genhuman-digital-human.zeabur.app\\/vidspark\\/files\\/video\\/video_20250912044539_68c3a57352b4e.mp4'
+                },
+                {
+                    name: 'JSON转义后的URL',
+                    url: JSON.stringify('https://genhuman-digital-human.zeabur.app/vidspark/files/video/video_20250912044539_68c3a57352b4e.mp4').slice(1, -1)
+                }
+            ];
+            
+            for (const testCase of testCases) {
+                showResult(resultId, `测试 ${testCase.name}: ${testCase.url}`, 'info');
+                
+                try {
+                    const response = await fetch(testCase.url, { method: 'HEAD' });
+                    showResult(resultId, `${testCase.name} 响应: ${response.status}`, 
+                              response.ok ? 'success' : 'error');
+                } catch (error) {
+                    showResult(resultId, `${testCase.name} 错误: ${error.message}`, 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
