@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>端點測試修復版</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .test-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .endpoint-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 端點測試修復版</h1>
+        <p><strong>目標：</strong>測試所有API端點，找出可用的替代方案</p>
+        
+        <div class="test-section">
+            <h3>📊 系統狀態檢查</h3>
+            <button class="test-button" onclick="testSystemStatus()">檢查系統狀態</button>
+            <div id="system-result" class="result info" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🗄️ 數據庫連接測試</h3>
+            <p>嘗試多種方式訪問數據庫測試功能：</p>
+            <button class="test-button" onclick="testDatabase('/api/test-db.php')">原始路徑</button>
+            <button class="test-button" onclick="testDatabase('/vidspark-simple-upload/test-db')">新路徑</button>
+            <button class="test-button" onclick="testDatabase('/vidspark-simple-upload/testDatabase')">方法名路徑</button>
+            <div id="database-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📁 文件列表測試</h3>
+            <p>嘗試多種方式訪問文件列表功能：</p>
+            <button class="test-button" onclick="testFileList('/api/list-files.php')">原始路徑</button>
+            <button class="test-button" onclick="testFileList('/vidspark-simple-upload/list-files')">新路徑</button>
+            <button class="test-button" onclick="testFileList('/vidspark-simple-upload/listFiles')">方法名路徑</button>
+            <div id="filelist-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📤 上傳端點測試</h3>
+            <p>測試所有上傳相關端點：</p>
+            <div class="endpoint-list">
+                <button class="test-button" onclick="testEndpoint('/vidspark-simple-upload/test')">測試端點</button>
+                <button class="test-button" onclick="testEndpoint('/vidspark-simple-upload/debug')">調試端點</button>
+                <button class="test-button" onclick="testUploadEndpoint('/vidspark-simple-upload/video')">視頻上傳</button>
+                <button class="test-button" onclick="testUploadEndpoint('/vidspark-simple-upload/audio')">音頻上傳</button>
+            </div>
+            <div id="upload-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 完整端點掃描</h3>
+            <p>掃描所有可能的端點組合：</p>
+            <button class="test-button" onclick="scanAllEndpoints()">開始掃描</button>
+            <div id="scan-result" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://genhuman-digital-human.zeabur.app';
+        
+        async function testSystemStatus() {
+            const resultDiv = document.getElementById('system-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在檢查系統狀態...';
+            resultDiv.className = 'result info';
+            
+            try {
+                const response = await fetch(`${BASE_URL}/vidspark-simple-upload/test`);
+                const data = await response.text();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ 系統正常\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 系統異常\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 連接失敗\n錯誤: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function testDatabase(endpoint) {
+            const resultDiv = document.getElementById('database-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `正在測試數據庫連接: ${endpoint}...`;
+            resultDiv.className = 'result info';
+            
+            try {
+                const response = await fetch(`${BASE_URL}${endpoint}`);
+                const data = await response.text();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ 數據庫連接成功\n端點: ${endpoint}\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 數據庫連接失敗\n端點: ${endpoint}\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 請求失敗\n端點: ${endpoint}\n錯誤: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function testFileList(endpoint) {
+            const resultDiv = document.getElementById('filelist-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `正在測試文件列表: ${endpoint}...`;
+            resultDiv.className = 'result info';
+            
+            try {
+                const response = await fetch(`${BASE_URL}${endpoint}`);
+                const data = await response.text();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ 文件列表獲取成功\n端點: ${endpoint}\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 文件列表獲取失敗\n端點: ${endpoint}\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 請求失敗\n端點: ${endpoint}\n錯誤: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function testEndpoint(endpoint) {
+            const resultDiv = document.getElementById('upload-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `正在測試端點: ${endpoint}...`;
+            resultDiv.className = 'result info';
+            
+            try {
+                const response = await fetch(`${BASE_URL}${endpoint}`);
+                const data = await response.text();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ 端點正常\n端點: ${endpoint}\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 端點異常\n端點: ${endpoint}\n狀態碼: ${response.status}\n響應: ${data}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 請求失敗\n端點: ${endpoint}\n錯誤: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function testUploadEndpoint(endpoint) {
+            const resultDiv = document.getElementById('upload-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `正在測試上傳端點: ${endpoint}...`;
+            resultDiv.className = 'result info';
+            
+            try {
+                // 使用OPTIONS請求測試CORS
+                const response = await fetch(`${BASE_URL}${endpoint}`, {
+                    method: 'OPTIONS'
+                });
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ 上傳端點可用\n端點: ${endpoint}\n狀態碼: ${response.status}\nCORS支持: 是`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 上傳端點不可用\n端點: ${endpoint}\n狀態碼: ${response.status}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 請求失敗\n端點: ${endpoint}\n錯誤: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function scanAllEndpoints() {
+            const resultDiv = document.getElementById('scan-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '開始掃描所有端點...';
+            resultDiv.className = 'result info';
+            
+            const endpoints = [
+                '/api/test-db.php',
+                '/api/list-files.php',
+                '/vidspark-simple-upload/test',
+                '/vidspark-simple-upload/debug',
+                '/vidspark-simple-upload/test-db',
+                '/vidspark-simple-upload/testDatabase',
+                '/vidspark-simple-upload/list-files',
+                '/vidspark-simple-upload/listFiles',
+                '/vidspark-simple-upload/video',
+                '/vidspark-simple-upload/audio'
+            ];
+            
+            let results = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${BASE_URL}${endpoint}`);
+                    const status = response.status;
+                    results.push(`${endpoint}: ${status} ${status === 200 ? '✅' : status === 404 ? '❌' : '⚠️'}`);
+                } catch (error) {
+                    results.push(`${endpoint}: ERROR ❌`);
+                }
+                
+                // 更新進度
+                resultDiv.textContent = `掃描進度: ${results.length}/${endpoints.length}\n\n${results.join('\n')}`;
+            }
+            
+            resultDiv.textContent = `掃描完成！\n\n${results.join('\n')}`;
+            resultDiv.className = 'result success';
+        }
+        
+        // 頁面加載時自動檢查系統狀態
+        window.onload = function() {
+            testSystemStatus();
+        };
+    </script>
+</body>
+</html>
