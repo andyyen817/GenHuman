@@ -9,12 +9,18 @@ use support\Response;
 
 // 直接API文件路由 - 用於測試和調試
 Route::get('/api/test-db.php', function () {
-    require_once base_path() . '/api/test-db.php';
+    require_once __DIR__ . '/../api/test-db.php';
     return '';
 });
 
 Route::get('/api/list-files.php', function () {
-    require_once base_path() . '/api/list-files.php';
+    require_once __DIR__ . '/../api/list-files.php';
+    return '';
+});
+
+// 數據庫診斷工具路由
+Route::get('/debug-db.php', function () {
+    require_once __DIR__ . '/../public/debug-db.php';
     return '';
 });
 
@@ -680,6 +686,8 @@ Route::post('/vidspark-simple-upload/audio', [app\controller\VidsparkSimpleUploa
 Route::post('/vidspark-simple-upload/upload-base64', [app\controller\VidsparkSimpleUploadController::class, 'uploadBase64']);
 Route::get('/vidspark-simple-upload/test', [app\controller\VidsparkSimpleUploadController::class, 'test']);
 Route::any('/vidspark-simple-upload/debug', [app\controller\VidsparkSimpleUploadController::class, 'debug']);
+Route::get('/vidspark-simple-upload/test-db', [app\controller\VidsparkSimpleUploadController::class, 'testDatabase']);
+Route::get('/vidspark-simple-upload/list-files', [app\controller\VidsparkSimpleUploadController::class, 'listFiles']);
 
 // 🆕 簡單文件存儲路由（與存儲結構完全匹配）
 Route::any('/vidspark/files/{type}/{filename}', function ($request, $type, $filename) {

@@ -16,17 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 try {
     require_once __DIR__ . '/../config/database.php';
     
-    // 初始化数据库配置
-    DatabaseConfig::init();
-    $config = DatabaseConfig::getConfig();
-    
-    // 创建数据库连接
-    $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset=utf8mb4";
-    $pdo = new PDO($dsn, $config['username'], $config['password'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
-    ]);
+    // 使用内建的数据库连接函数
+    $pdo = getDatabase();
     
     $result = [
         'success' => true,

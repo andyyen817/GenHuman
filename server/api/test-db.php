@@ -16,26 +16,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 try {
     require_once __DIR__ . '/../config/database.php';
     
-    // 初始化数据库配置
-    DatabaseConfig::init();
-    $config = DatabaseConfig::getConfig();
+    // 使用内建的数据库连接函数
+    $pdo = getDatabase();
     
-    // 创建数据库连接
-    $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset=utf8mb4";
-    $pdo = new PDO($dsn, $config['username'], $config['password'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
-    ]);
+    // 获取数据库配置信息
+    $host = DatabaseConfig::getHost();
+    $port = DatabaseConfig::getPort();
+    $database = DatabaseConfig::getDatabaseName();
+    $username = DatabaseConfig::getUsername();
     
     $result = [
         'success' => true,
-        'message' => '数据库连接成功',
+        'message' => 'MySQL数据库连接成功',
         'database_info' => [
-            'host' => $config['host'],
-            'port' => $config['port'],
-            'database' => $config['database'],
-            'username' => $config['username']
+            'host' => $host,
+            'port' => $port,
+            'database' => $database,
+            'username' => $username
         ],
         'server_info' => $pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
         'connection_status' => $pdo->getAttribute(PDO::ATTR_CONNECTION_STATUS)
@@ -63,10 +60,22 @@ try {
         $result['recent_files'] = $stmt->fetchAll();
     }
     
-    // 检查yc_upload表
-    if (in_array('yc_upload', $tables)) {
-        $stmt = $pdo->query("SELECT type, COUNT(*) as count FROM yc_upload GROUP BY type");
-        $result['yc_upload_counts'] = $stmt->fetchAll();
+    // 检查用户表
+    if (in_array('users', $tables)) {
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM users");
+        $result['users_count'] = $stmt->fetch()['count'];
+    }
+    
+    // 检查项目表
+    if (in_array('projects', $tables)) {
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM projects");
+        $result['projects_count'] = $stmt->fetch()['count'];
+    }
+    
+    // 检查任务表
+    if (in_array('genhuman_tasks', $tables)) {
+        $stmt = $pdo->query("SELECT status, COUNT(*) as count FROM genhuman_tasks GROUP BY status");
+        $result['task_counts'] = $stmt->fetchAll();
     }
     
     echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
