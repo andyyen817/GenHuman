@@ -74,6 +74,7 @@ class DatabaseConfig {
 DatabaseConfig::init();
 
 // 全局數據庫連接函數
+if (!function_exists('getDatabase')) {
 function getDatabase() {
     static $pdo = null;
     
@@ -118,8 +119,10 @@ function getDatabase() {
     
     return $pdo;
 }
+}
 
 // 測試數據庫連接
+if (!function_exists('testDatabaseConnection')) {
 function testDatabaseConnection() {
     try {
         $pdo = getDatabase();
@@ -130,8 +133,11 @@ function testDatabaseConnection() {
         return false;
     }
 }
+}
+}
 
 // 創建必要的數據庫表
+if (!function_exists('initializeTables')) {
 function initializeTables() {
     try {
         $pdo = getDatabase();
@@ -201,6 +207,7 @@ function initializeTables() {
         error_log('Failed to initialize tables: ' . $e->getMessage());
         return false;
     }
+}
 }
 
 // 如果是直接訪問此文件，執行初始化
