@@ -438,6 +438,129 @@ class VidsparkSimpleUploadController
     }
     
     /**
+     * 數據庫連接測試端點
+     */
+    public function testDatabase(Request $request): Response
+    {
+        try {
+            require_once __DIR__ . '/../../config/database.php';
+            
+            // 初始化數據庫配置
+            DatabaseConfig::init();
+            $config = DatabaseConfig::getConfig();
+            
+            // 創建數據庫連接
+            $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset=utf8mb4";
+            $pdo = new \PDO($dsn, $config['username'], $config['password'], [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+            ]);
+            
+            $result = [
+                'success' => true,
+                'message' => '數據庫連接成功',
+                'database_info' => [
+                    'host' => $config['host'],
+                    'port' => $config['port'],
+                    'database' => $config['database'],
+                    'username' => $config['username']
+                ],
+                'server_info' => $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION),
+                'connection_status' => $pdo->getAttribute(\PDO::ATTR_CONNECTION_STATUS)
+            ];
+            
+            // 檢查表是否存在
+            $tables = [];
+            $stmt = $pdo->query("SHOW TABLES");
+            while ($row = $stmt->fetch(\PDO::FETCH_NUM)) {
+                $tables[] = $row[0];
+            }
+            $result['tables'] = $tables;
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8',
+                'Access-Control-Allow-Origin' => '*'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (\Exception $e) {
+            return new Response(500, [
+                'Content-Type' => 'application/json; charset=utf-8',
+                'Access-Control-Allow-Origin' => '*'
+            ], json_encode([
+                'success' => false,
+                'message' => '數據庫連接失敗',
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+    
+    /**
+     * 文件列表端點
+     */
+    public function listFiles(Request $request): Response
+    {
+        try {
+            require_once __DIR__ . '/../../config/database.php';
+            
+            // 初始化數據庫配置
+            DatabaseConfig::init();
+            $config = DatabaseConfig::getConfig();
+            
+            // 創建數據庫連接
+            $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset=utf8mb4";
+            $pdo = new \PDO($dsn, $config['username'], $config['password'], [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+            ]);
+            
+            $result = [
+                'success' => true,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+            
+            // 獲取uploaded_files表中的文件
+            $stmt = $pdo->query("
+                SELECT 
+                    id,
+                    filename,
+                    original_filename,
+                    file_type,
+                    file_size,
+                    mime_type,
+                    upload_time,
+                    access_count,
+                    last_access,
+                    CASE 
+                        WHEN file_data IS NOT NULL THEN 'YES'
+                        ELSE 'NO'
+                    END as has_data
+                FROM uploaded_files 
+                ORDER BY upload_time DESC 
+                LIMIT 50
+            ");
+            
+            $result['uploaded_files'] = $stmt->fetchAll();
+            
+            return new Response(200, [
+                'Content-Type' => 'application/json; charset=utf-8',
+                'Access-Control-Allow-Origin' => '*'
+            ], json_encode($result, JSON_UNESCAPED_UNICODE));
+            
+        } catch (\Exception $e) {
+            return new Response(500, [
+                'Content-Type' => 'application/json; charset=utf-8',
+                'Access-Control-Allow-Origin' => '*'
+            ], json_encode([
+                'success' => false,
+                'message' => '獲取文件列表失敗',
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE));
+        }
+    }
+
+    /**
      * 格式化文件大小
      */
     private function formatFileSize($bytes): string

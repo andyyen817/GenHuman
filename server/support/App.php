@@ -134,7 +134,9 @@ class App
                 'upload-base64' => ['method' => 'POST', 'action' => 'uploadBase64'],
                 'audio' => ['method' => 'POST', 'action' => 'uploadAudio'],
                 'video' => ['method' => 'POST', 'action' => 'uploadVideo'],
-                'debug' => ['method' => 'ANY', 'action' => 'debug']
+                'debug' => ['method' => 'ANY', 'action' => 'debug'],
+                'test-db' => ['method' => 'GET', 'action' => 'testDatabase'],
+                'list-files' => ['method' => 'GET', 'action' => 'listFiles']
             ];
             
             if (isset($routeMap[$action])) {
