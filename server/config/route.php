@@ -7,6 +7,17 @@
 use Webman\Route;
 use support\Response;
 
+// 直接API文件路由 - 用於測試和調試
+Route::get('/api/test-db.php', function () {
+    require_once base_path() . '/api/test-db.php';
+    return '';
+});
+
+Route::get('/api/list-files.php', function () {
+    require_once base_path() . '/api/list-files.php';
+    return '';
+});
+
 // 前端API路由
 Route::group('/api/v1', function () {
     // 用戶相關API
