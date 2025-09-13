@@ -56,6 +56,7 @@ try {
     $isZeaburProduction = isset($_ENV['ZEABUR']) || isset($_SERVER['ZEABUR']) || 
                          isset($_ENV['ZEABUR_ENVIRONMENT']) || isset($_SERVER['ZEABUR_ENVIRONMENT']) ||
                          (isset($_ENV['MYSQL_HOST']) && strpos($_ENV['MYSQL_HOST'], 'zeabur.internal') !== false) ||
+                         (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'zeabur.app') !== false) ||
                          (isset($_SERVER['MYSQL_HOST']) && strpos($_SERVER['MYSQL_HOST'], 'zeabur.internal') !== false);
     
     $result['environment_detection'] = [
@@ -123,6 +124,12 @@ try {
         $result['database_test'] = [
             'connection' => 'failed',
             'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        ];
+    } catch (Exception $e) {
+        $result['database_test'] = [
+            'connection' => 'failed',
+            'error' => 'General error: ' . $e->getMessage(),
             'error_code' => $e->getCode()
         ];
     }
