@@ -96,6 +96,30 @@ class App
             return;
         }
         
+        // 處理 /api/ 路徑的直接文件訪問
+        if (strpos($path, '/api/') === 0) {
+            $apiFile = str_replace('/api/', '', $path);
+            $apiFilePath = __DIR__ . '/../api/' . $apiFile;
+            
+            if (file_exists($apiFilePath) && pathinfo($apiFilePath, PATHINFO_EXTENSION) === 'php') {
+                // 設置適當的headers
+                header('Access-Control-Allow-Origin: *');
+                header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+                header('Access-Control-Allow-Headers: Content-Type, Authorization');
+                header('Content-Type: application/json; charset=utf-8');
+                
+                // 包含並執行API文件
+                ob_start();
+                include $apiFilePath;
+                $output = ob_get_clean();
+                
+                return new Response(200, [
+                    'Content-Type' => 'application/json; charset=utf-8',
+                    'Access-Control-Allow-Origin' => '*'
+                ], $output);
+            }
+        }
+        
         // 處理 VidsparkSimpleUploadController 的路由
         if (strpos($path, '/vidspark-simple-upload/') === 0) {
             $action = str_replace('/vidspark-simple-upload/', '', $path);
