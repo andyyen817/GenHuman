@@ -9,19 +9,40 @@ use support\Response;
 
 // 直接API文件路由 - 用於測試和調試
 Route::get('/api/test-db.php', function () {
-    require_once __DIR__ . '/../api/test-db.php';
-    return '';
+    $apiFile = __DIR__ . '/../api/test-db.php';
+    if (file_exists($apiFile)) {
+        ob_start();
+        require_once $apiFile;
+        $content = ob_get_clean();
+        return response($content, 200, ['Content-Type' => 'application/json']);
+    } else {
+        return response(json_encode(['error' => 'API file not found']), 404, ['Content-Type' => 'application/json']);
+    }
 });
 
 Route::get('/api/list-files.php', function () {
-    require_once __DIR__ . '/../api/list-files.php';
-    return '';
+    $apiFile = __DIR__ . '/../api/list-files.php';
+    if (file_exists($apiFile)) {
+        ob_start();
+        require_once $apiFile;
+        $content = ob_get_clean();
+        return response($content, 200, ['Content-Type' => 'application/json']);
+    } else {
+        return response(json_encode(['error' => 'API file not found']), 404, ['Content-Type' => 'application/json']);
+    }
 });
 
 // 數據庫診斷工具路由
 Route::get('/debug-db.php', function () {
-    require_once __DIR__ . '/../public/debug-db.php';
-    return '';
+    $debugFile = __DIR__ . '/../public/debug-db.php';
+    if (file_exists($debugFile)) {
+        ob_start();
+        require_once $debugFile;
+        $content = ob_get_clean();
+        return response($content, 200, ['Content-Type' => 'application/json']);
+    } else {
+        return response(json_encode(['error' => 'Debug file not found', 'path' => $debugFile]), 404, ['Content-Type' => 'application/json']);
+    }
 });
 
 // 前端API路由
