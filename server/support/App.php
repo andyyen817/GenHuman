@@ -81,7 +81,16 @@ class App
         $path = $request->path();
         $method = $request->method();
         
-        // 處理靜態文件
+        // 處理根路徑，返回 index.html
+        if ($path === '/') {
+            $indexPath = __DIR__ . '/../public/index.html';
+            if (file_exists($indexPath)) {
+                self::serveStaticFile($indexPath);
+                return;
+            }
+        }
+        
+        // 處理其他靜態文件
         if ($path !== '/' && file_exists(__DIR__ . '/../public' . $path)) {
             self::serveStaticFile(__DIR__ . '/../public' . $path);
             return;
