@@ -35,6 +35,6 @@ RUN cd server && composer install --no-dev --optimize-autoloader --no-interactio
 # 暴露端口 8080
 EXPOSE 8080
 
-# 簡化啟動命令 - 不使用守護進程模式
+# 使用PHP內建Web服務器啟動
 WORKDIR /var/www/html/server
-CMD ["php", "start.php", "start"]
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
