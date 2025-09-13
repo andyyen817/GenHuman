@@ -11,8 +11,36 @@ try {
     $result = [
         'timestamp' => date('Y-m-d H:i:s'),
         'environment_check' => [],
-        'database_test' => []
+        'database_test' => [],
+        'file_system_check' => []
     ];
+    
+    // 檢查文件系統路徑
+    $currentDir = __DIR__;
+    $apiDir = __DIR__ . '/../api';
+    $testDbFile = __DIR__ . '/../api/test-db.php';
+    $configDir = __DIR__ . '/../config';
+    $databaseFile = __DIR__ . '/../config/database.php';
+    
+    $result['file_system_check'] = [
+        'current_dir' => $currentDir,
+        'api_dir' => $apiDir,
+        'api_dir_exists' => is_dir($apiDir),
+        'test_db_file' => $testDbFile,
+        'test_db_exists' => file_exists($testDbFile),
+        'config_dir' => $configDir,
+        'config_dir_exists' => is_dir($configDir),
+        'database_file' => $databaseFile,
+        'database_file_exists' => file_exists($databaseFile)
+    ];
+    
+    if (is_dir($apiDir)) {
+        $result['file_system_check']['api_files'] = array_diff(scandir($apiDir), ['.', '..']);
+    }
+    
+    if (is_dir($configDir)) {
+        $result['file_system_check']['config_files'] = array_diff(scandir($configDir), ['.', '..']);
+    }
     
     // 檢查環境變量
     $envVars = ['MYSQL_HOST', 'MYSQL_PORT', 'MYSQL_DATABASE', 'MYSQL_USERNAME', 'MYSQL_PASSWORD', 'ZEABUR', 'ZEABUR_ENVIRONMENT'];
