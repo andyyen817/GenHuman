@@ -133,8 +133,6 @@ function testDatabaseConnection() {
         return false;
     }
 }
-}
-}
 
 // 創建必要的數據庫表
 if (!function_exists('initializeTables')) {
