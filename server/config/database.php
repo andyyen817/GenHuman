@@ -65,7 +65,7 @@ class DatabaseConfig {
     
     public static function getHost() { return self::$host; }
     public static function getPort() { return self::$port; }
-    public static function getDatabase() { return self::$database; }
+    public static function getDatabaseName() { return self::$database; }
     public static function getUsername() { return self::$username; }
     public static function getPassword() { return self::$password; }
 }
@@ -81,7 +81,7 @@ function getDatabase() {
         try {
             $host = DatabaseConfig::getHost();
             $port = DatabaseConfig::getPort();
-            $database = DatabaseConfig::getDatabase();
+            $database = DatabaseConfig::getDatabaseName();
             $username = DatabaseConfig::getUsername();
             $password = DatabaseConfig::getPassword();
             
